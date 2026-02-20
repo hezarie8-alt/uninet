@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}پروفایل کاربری | یونی نت{% endblock %}
+
+{% block content %}
+<!-- Profile Header -->
+<div class="form-card" style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+    <div class="profile-avatar" style="width: 100px; height: 100px; font-size: 2.5rem; background-color: var(--primary-color); color: var(--text-on-primary);">
+        {{ user.name[0] }}
+    </div>
+    <div style="flex: 1;">
+        <h1 class="profile-name" style="font-size: 1.8rem; font-weight: 700;">{{ user.name }}</h1>
+        <div style="display: flex; gap: 1.5rem; margin-top: 0.5rem; color: var(--text-secondary); flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.25rem;">
+                <i class="material-icons" style="font-size: 1.2rem; color: var(--primary-color);">school</i>
+                <span>{{ user.major }}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.25rem;">
+                <i class="material-icons" style="font-size: 1.2rem; color: var(--primary-color);">calendar_today</i>
+                <span>عضو از {{ user.created_at.strftime('%Y/%m/%d') if user.created_at else 'نامشخص' }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Message for non-owners -->
+{% if not can_edit %}
+    <div class="form-card" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; background-color: var(--chat-bg-received);">
+        <i class="material-icons" style="color: var(--primary-color); font-size: 2rem;">info</i>
+        <div>
+            <div style="font-weight: 600; margin-bottom: 0.25rem;">پروفایل کاربر دیگر</div>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
+                شما در حال مشاهده پروفایل {{ user.name }} هستید.
+            </p>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Tabs Container -->
+{% if can_edit %}
+<div class="form-card" style="padding: 0; overflow: hidden;">
+    <div style="display: flex; border-bottom: 1px solid var(--border-color);">
+        <button class="tab-button active" onclick="switchTab('profile-info')">
+            <i class="material-icons">person</i>
+            اطلاعات پروفایل
+        </button>
+        <button class="tab-button" onclick="switchTab('password')">
+            <i class="material-icons">lock</i>
+            تغییر رمز عبور
+        </button>
+        <button class="tab-button" onclick="switchTab('account')">
+            <i class="material-icons">settings</i>
+            تنظیمات حساب
+        </button>
+    </div>
+    
+    <!-- Profile Info Tab -->
+    <div id="profile-info" class="tab-content active" style="padding: 2rem;">
+        <h2 style="font-size: 1.3rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="material-icons">edit</i>
+            ویرایش اطلاعات پروفایل
+        </h2>
+        
+        <form method="POST" action="{{ url_for('update_profile') }}">
+            {{ update_profile_form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ update_profile_form.name.label(class="form-label") }}
+                {{ update_profile_form.name(class="form-control") }}
+                {% if update_profile_form.name.errors %}
+                    <div class="error-message">
+                        {% for error in update_profile_form.name.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- New Email Field -->
+            <div class="form-group">
+                {{ update_profile_form.email.label(class="form-label") }}
+                {{ update_profile_form.email(class="form-control") }}
+                {% if update_profile_form.email.errors %}
+                    <div class="error-message">
+                        {% for error in update_profile_form.email.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ update_profile_form.major.label(class="form-label") }}
+                {{ update_profile_form.major(class="form-select") }}
+                {% if update_profile_form.major.errors %}
+                    <div class="error-message">
+                        {% for error in update_profile_form.major.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-custom">
+                    <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">save</i>
+                    ذخیره تغییرات
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Password Tab -->
+    <div id="password" class="tab-content" style="padding: 2rem;">
+        <h2 style="font-size: 1.3rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="material-icons">lock</i>
+            تغییر رمز عبور
+        </h2>
+        
+        <form method="POST" action="{{ url_for('update_password') }}">
+            {{ update_password_form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ update_password_form.current_password.label(class="form-label") }}
+                {{ update_password_form.current_password(class="form-control") }}
+                {% if update_password_form.current_password.errors %}
+                    <div class="error-message">
+                        {% for error in update_password_form.current_password.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ update_password_form.new_password.label(class="form-label") }}
+                {{ update_password_form.new_password(class="form-control") }}
+                {% if update_password_form.new_password.errors %}
+                    <div class="error-message">
+                        {% for error in update_password_form.new_password.errors %}{{ error }}{% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                {{ update_password_form.confirm_new_password.label(class="form-label") }}
+                {{ update_password_form.confirm_new_password(class="form-control") }}
+            </div>
+            
+            <button type="submit" class="btn btn-custom">
+                <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">lock</i>
+                تغییر رمز عبور
+            </button>
+        </form>
+    </div>
+    
+    <!-- Account Tab -->
+    <div id="account" class="tab-content" style="padding: 2rem;">
+        <h2 style="font-size: 1.3rem; margin-bottom: 1.5rem; color: var(--error); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="material-icons">warning</i>
+            منطقه خطر
+        </h2>
+        
+        <div style="background-color: rgba(183, 28, 28, 0.05); border-right: 4px solid var(--error); padding: 1.5rem; border-radius: 4px; margin-bottom: 1.5rem;">
+            <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--error);">هشدار حذف حساب کاربری</div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                با حذف حساب کاربری خود، تمام اطلاعات شما به طور کامل از سیستم حذف خواهد شد و این عمل غیرقابل بازگشت است.
+            </p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('delete_account') }}" onsubmit="return confirmDeleteAccount()">
+            {{ delete_account_form.hidden_tag() }}
+            
+            <button type="submit" class="btn" style="background-color: var(--error); color: white;">
+                <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">delete_forever</i>
+                حذف حساب کاربری
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function switchTab(tabName) {
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // Remove active class from all tab buttons
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active');
+            button.style.borderBottom = 'none';
+            button.style.color = 'var(--text-secondary)';
+        });
+        
+        // Show selected tab
+        document.getElementById(tabName).classList.add('active');
+        
+        // Add active class to clicked tab button
+        const activeBtn = event.target.closest('.tab-button');
+        activeBtn.classList.add('active');
+        activeBtn.style.borderBottom = '3px solid var(--primary-color)';
+        activeBtn.style.color = 'var(--primary-color)';
+    }
+    
+    function confirmDeleteAccount() {
+        return confirm('آیا از حذف حساب کاربری خود اطمینان دارید؟ این عمل غیرقابل بازگشت است.');
+    }
+</script>
+{% endblock %}

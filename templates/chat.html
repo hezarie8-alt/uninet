@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}چت با {{ other_user.name }} | یونی نت{% endblock %}
+
+{% block content %}
+<div class="chat-container" style="height: calc(100vh - 100px); border: 1px solid var(--border-color);">
+    <!-- Chat Header -->
+    <div class="chat-header">
+        <a href="{{ url_for('inbox') }}" style="color: white; margin-left: 1rem;">
+            <i class="material-icons">arrow_forward</i>
+        </a>
+        <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1.2rem;">{{ other_user.name[0] }}</div>
+        <div style="flex: 1;">
+            <div style="font-weight: 600;">{{ other_user.name }}</div>
+            <div style="font-size: 0.8rem; opacity: 0.8; display: flex; align-items: center; gap: 0.25rem;">
+                <span id="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background-color: #ccc;"></span>
+                <span id="status-text">در حال بررسی...</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chat Messages -->
+    <div class="chat-messages" id="chat-messages">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                    {% if message.sender_id != current_user.id %}
+                        <div class="message-avatar">{{ other_user.name[0] }}</div>
+                    {% endif %}
+                    <div class="message-content">
+                        <div class="message-text">{{ message.content }}</div>
+                        <div class="message-time">{{ message.timestamp.strftime('%H:%M') }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; color: var(--text-secondary); margin-top: 2rem;">
+                شروع گفتگو با {{ other_user.name }}
+            </div>
+        {% endif %}
+        
+        <!-- Typing Indicator -->
+        <div id="typing-indicator" class="typing-indicator" style="display: none;">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+    </div>
+    
+    <!-- Chat Input -->
+    <div class="chat-input-container">
+        <form id="message-form" style="display: flex; gap: 0.5rem;">
+            <input type="text" id="message-input" class="chat-input" placeholder="پیام خود را بنویسید..." autocomplete="off">
+            <button type="submit" class="send-button">
+                <i class="material-icons">send</i>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const socket = io();
+        const currentUserId = {{ current_user.id }};
+        const otherUserId = {{ other_user.id }};
+        const roomName = `chat-${Math.min(currentUserId, otherUserId)}-${Math.max(currentUserId, otherUserId)}`;
+        
+        const chatMessages = document.getElementById('chat-messages');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+
+        // Scroll to bottom initially
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        scrollToBottom();
+
+        // Join Chat Room
+        socket.on('connect', () => {
+            socket.emit('join_chat', { other_user_id: otherUserId });
+        });
+
+        // Check online status via HTTP (backup)
+        fetch(`/api/user_status/${otherUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                if(data.online) {
+                    statusIndicator.style.backgroundColor = 'var(--success)';
+                    statusText.textContent = 'آنلاین';
+                } else {
+                    statusIndicator.style.backgroundColor = '#ccc';
+                    statusText.textContent = 'آفلاین';
+                }
+            });
+
+        // Handle Send Message
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const content = messageInput.value.trim();
+            if (!content) return;
+
+            // Optimistic UI update
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message sent';
+            const time = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+            msgDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="message-text">${content}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            // Insert before typing indicator
+            chatMessages.insertBefore(msgDiv, typingIndicator);
+            scrollToBottom();
+            messageInput.value = '';
+
+            // Send via Socket
+            socket.emit('send_message', {
+                other_user_id: otherUserId,
+                content: content
+            });
+        });
+
+        // Handle Receive Message
+        socket.on('new_message', (data) => {
+            if (data.sender_id == otherUserId) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message received';
+                msgDiv.innerHTML = `
+                    <div class="message-avatar">{{ other_user.name[0] }}</div>
+                    <div class="message-content">
+                        <div class="message-text">${data.content}</div>
+                        <div class="message-time">${data.timestamp}</div>
+                    </div>
+                `;
+                chatMessages.insertBefore(msgDiv, typingIndicator);
+                scrollToBottom();
+            }
+        });
+
+        // Typing Indicators
+        let typingTimer;
+        messageInput.addEventListener('input', () => {
+            clearTimeout(typingTimer);
+            socket.emit('typing', { room: roomName });
+            typingTimer = setTimeout(() => socket.emit('stop_typing', { room: roomName }), 1000);
+        });
+
+        socket.on('typing', (data) => {
+            if (data.user_id == otherUserId) {
+                typingIndicator.style.display = 'flex';
+                scrollToBottom();
+            }
+        });
+
+        socket.on('stop_typing', (data) => {
+            if (data.user_id == otherUserId) {
+                typingIndicator.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

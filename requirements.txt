@@ -1,0 +1,12 @@
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-WTF
+Werkzeug
+python-dotenv
+email-validator
+psycopg2-binary
+gunicorn
+Flask-SocketIO
+flask-limiter
+eventlet

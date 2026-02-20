@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}درباره ما | یونی نت{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero" style="background-image: url('{{ url_for('static', filename='images/2.png') }}'); background-blend-mode: overlay;">
+    <div class="container">
+        <div class="hero-content" style="text-align: center; justify-content: center;">
+            <h1 class="hero-title">درباره یونی نت</h1>
+            <p class="hero-subtitle">پلتفرمی نوآورانه برای ارتباط دانشجویان جهت به اشتراک گذاشتن دانش و تجربیات</p>
+        </div>
+    </div>
+</section>
+
+<!-- Mission Section -->
+<section class="section" style="background-color: var(--surface); padding: 4rem 0;">
+    <div class="container">
+        <p class="section-subtitle">چشم‌انداز ما برای آینده آموزش و ارتباطات</p>
+        
+        <div class="mission-content">
+            <div class="mission-text">
+                <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.8;">ما در یونی نت باور داریم که ارتباط مؤثر و به اشتراک گذاشتن دانش، کلید موفقیت در دنیای آموزش امروز است. مأموریت ما ایجاد فضایی امن و کاربرپسند است که در آن دانشجویان و دانش‌آموزان بتوانند به راحتی با یکدیگر ارتباط برقرار کرده، منابع درسی را به اشتراک بگذارند و از تجربیات یکدیگر بیاموزند.</p>
+                <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.8;">با تمرکز بر طراحی رابط کاربری ساده و کاربردی، ما تلاش می‌کنیم تا موانع ارتباطی را از بین برده و جامعه‌ای پویا از یادگیرندگان ایجاد کنیم.</p>
+            </div>
+            <div class="mission-image">
+                <img src="{{ url_for('static', filename='images/1.png') }}" alt="مأموریت">
+            </div>
+        </div>
+    </div>
+</section>
+    
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">ویژگی‌های برجسته</h2>
+        <p class="section-subtitle">ابزارهایی که ما را متمایز می‌کنند</p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="material-icons feature-icon">school</i>
+                <h3 class="feature-title">محیط آموزشی تخصصی</h3>
+                <p class="feature-description">فضایی امن و متمرکز برای بحث در مورد مسائل درسی و علمی</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="material-icons feature-icon">groups</i>
+                <h3 class="feature-title">شبکه‌سازی آکادمیک</h3>
+                <p class="feature-description">ایجاد ارتباطات حرفه‌ای با دانشجویان هم‌رشته</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="material-icons feature-icon">bolt</i>
+                <h3 class="feature-title">چت آنی و سریع</h3>
+                <p class="feature-description">ارتباط فوری و بدون تأخیر</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="material-icons feature-icon">security</i>
+                <h3 class="feature-title">امنیت و حریم خصوصی</h3>
+                <p class="feature-description">محافظت از اطلاعات شخصی با بالاترین استانداردها</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="material-icons feature-icon">devices</i>
+                <h3 class="feature-title">دسترسی از هر دستگاه</h3>
+                <p class="feature-description">تجربه کاربری یکپارچه در موبایل و دسکتاپ</p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="material-icons feature-icon">search</i>
+                <h3 class="feature-title">جستجوی هوشمند</h3>
+                <p class="feature-description">پیدا کردن سریع همکلاسی‌ها بر اساس رشته و علاقه‌مندی‌ها</p>
+            </div>
+        </div>
+    </div>
+</section>
+    
+<!-- Story Section -->
+<section class="section" style="background-color: var(--surface);">
+    <div class="container">
+        <h2 class="section-title">داستان ما</h2>
+        <p class="section-subtitle">از ایده تا اجرا</p>
+        
+        <div class="story-content">
+            <div class="story-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">مهر</div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-title">شروع ایده</h3>
+                        <p class="timeline-description">ایده اولیه برای ایجاد پلتفرمی تخصصی جهت ارتباط دانشجویان شکل گرفت.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">آبان</div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-title">توسعه اولیه</h3>
+                        <p class="timeline-description">تیم ما شروع به طراحی و توسعه نسخه اولیه اپلیکیشن کرد.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">آذر</div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-title">راه‌اندازی نسخه بتا</h3>
+                        <p class="timeline-description">نسخه اولیه برای گروه کوچکی از دانشجویان منتشر شد.</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">دی</div>
+                    <div class="timeline-content">
+                        <h3 class="timeline-title">رشد و توسعه</h3>
+                        <p class="timeline-description">با بازخوردهای کاربران، ویژگی‌های جدیدی اضافه شد.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+    
+<!-- Team Section -->
+<section class="section" style="background-color: var(--background);">
+    <div class="container">
+        <h2 class="section-title">تیم ما</h2>
+        <p class="section-subtitle">افراد پشت این پروژه</p>
+        
+        <div class="team-grid">
+            <div class="team-member">
+                <div class="member-avatar">ا</div>
+                <h3 class="member-name">احسان هزاری</h3>
+                <p class="member-role">مهندسی کامپیوتر</p>
+                <p class="member-bio">فول استک</p>
+                <div class="member-social">
+                    <a href="mailto:hzarie8@gmai.com" class="social-link" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="material-icons" style="font-size: 1.2rem;">email</i>
+                    </a>
+                    <a href="https://t.me/EhsanHezari" class="social-link" target="_blank" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="material-icons" style="font-size: 1.2rem;">send</i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- سایر اعضای تیم به همین ترتیب -->
+            <div class="team-member">
+                <div class="member-avatar">م</div>
+                <h3 class="member-name">مصطفی جنگی</h3>
+                <p class="member-role">مهندسی کامپیوتر</p>
+                <p class="member-bio">بک اند</p>
+                <div class="member-social">
+                    <a href="#" class="social-link" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="material-icons" style="font-size: 1.2rem;">email</i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="team-member">
+                <div class="member-avatar">م</div>
+                <h3 class="member-name">مسعود اخباری</h3>
+                <p class="member-role">مهندسی کامپیوتر</p>
+                <p class="member-bio">پروداکت اونر</p>
+                <div class="member-social">
+                    <a href="#" class="social-link" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="material-icons" style="font-size: 1.2rem;">email</i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="team-member">
+                <div class="member-avatar">م</div>
+                <h3 class="member-name">مهدی محمدی</h3>
+                <p class="member-role">مهندس کامپیوتر</p>
+                <p class="member-bio">پروداکت منیجر</p>
+                <div class="member-social">
+                    <a href="#" class="social-link" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="material-icons" style="font-size: 1.2rem;">email</i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="container">
+        <h2 class="cta-title">به جامعه ما بپیوندید</h2>
+        <p class="cta-subtitle">همین امروز ثبت‌نام کنید و با همکلاسی‌های خود ارتباط برقرار کنید</p>
+        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">ثبت‌نام رایگان</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Scroll animations
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const animatedElements = document.querySelectorAll('.feature-card, .team-member, .timeline-item, .section-title, .section-subtitle');
+        
+        animatedElements.forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Add delay for feature cards
+        const featureCards = document.querySelectorAll('.feature-card');
+        featureCards.forEach((card, index) => {
+            card.style.transitionDelay = `${index * 0.1}s`;
+        });
+    });
+</script>
+{% endblock %}

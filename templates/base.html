@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}یونی نت{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- CSS (Link to the centralized file) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Dark Mode Script (Prevent Flash of Unstyled Content) -->
+    <script>
+        // Apply theme immediately before render
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark' || (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="navbar-brand">یونی نت</a>
+            
+            <ul class="navbar-nav">
+                {% if current_user %}
+                    <li><a href="{{ url_for('match') }}" class="nav-link">جستجوی کاربران</a></li>
+                    <li><a href="{{ url_for('inbox') }}" class="nav-link">صندوق پیام</a></li>
+                    <li><a href="{{ url_for('profile', user_id=current_user.id) }}" class="nav-link">پروفایل</a></li>
+                    <li><a href="{{ url_for('logout') }}" class="nav-link">خروج</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('index') }}" class="nav-link">صفحه اصلی</a></li>
+                    <li><a href="{{ url_for('about') }}" class="nav-link">درباره ما</a></li>
+                    <li><a href="{{ url_for('show_auth_page') }}" class="nav-link">ورود / ثبت‌نام</a></li>
+                {% endif %}
+                
+                <!-- Dark Mode Toggle Button -->
+                <li>
+                    <button id="theme-toggle" class="nav-link" style="background: none; border: none; cursor: pointer; display: flex; align-items: center;">
+                        <i class="material-icons" id="theme-icon">light_mode</i>
+                    </button>
+                </li>
+            </ul>
+            
+            {% if current_user %}
+                <div class="user-info">
+                    <span>{{ current_user.name }}</span>
+                    <i class="material-icons">account_circle</i>
+                </div>
+            {% endif %}
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    <div class="container">
+        <div class="flash-messages" style="margin-top: 1rem;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            <i class="material-icons">
+                                {% if category == 'success' %}check_circle
+                                {% elif category == 'error' %}error
+                                {% elif category == 'warning' %}warning
+                                {% else %}info
+                                {% endif %}
+                            </i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container" style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+            <div class="footer-section">
+                <h3 class="footer-title">درباره ما</h3>
+                <ul class="footer-links">
+                    <li><a href="{{ url_for('about') }}">معرفی اپلیکیشن</a></li>
+                    <li><a href="#">قوانین و مقررات</a></li>
+                    <li><a href="#">حریم خصوصی</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">پشتیبانی</h3>
+                <ul class="footer-links">
+                    <li><a href="#">راهنمای استفاده</a></li>
+                    <li><a href="#">سوالات متداول</a></li>
+                    <li><a href="#">تماس با ما</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">شبکه‌های اجتماعی</h3>
+                <ul class="footer-links">
+                    <li><a href="#">تلگرام</a></li>
+                    <li><a href="#">اینستاگرام</a></li>
+                    <li><a href="#">توییتر</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="copyright">
+            <p>© 2025 یونی نت. تمام حقوق محفوظ است.</p>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    
+    <!-- Theme Toggler Script -->
+    <script>
+        const toggleBtn = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        const themeIcon = document.getElementById('theme-icon');
+
+        function updateIcon() {
+            if (htmlElement.getAttribute('data-theme') === 'dark') {
+                themeIcon.textContent = 'dark_mode';
+            } else {
+                themeIcon.textContent = 'light_mode';
+            }
+        }
+
+        // Initial icon state on page load
+        updateIcon();
+
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                htmlElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateIcon();
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
