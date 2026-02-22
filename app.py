@@ -532,25 +532,24 @@ def handle_send_message(data):
         'message_id': msg.id
     }, room=room_id)
 
+
+with app.app_context():
+    db.create_all()
+
+    if not User.query.filter_by(student_id='admin').first():
+        print("Creating admin user...")
+        hashed_pw = generate_password_hash('admin', method='pbkdf2:sha256')
+        admin_user = User(
+            full_name='مدیر سایت', 
+            student_id='admin', 
+            major='مدیریت سیستم', 
+            password_hash=hashed_pw, 
+            is_admin=True
+        )
+        db.session.add(admin_user)
+        db.session.commit()
+        print("Admin created successfully.")
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        
-        # --- ساخت خودکار ادمین ---
-        # بررسی می‌کند اگر کاربری با شماره دانشجویی admin وجود ندارد، او را می‌سازد
-        if not User.query.filter_by(student_id='admin').first():
-            print("Creating admin user...")
-            hashed_pw = generate_password_hash('admin', method='pbkdf2:sha256')
-            admin_user = User(
-                full_name='مدیر سایت', 
-                student_id='admin', 
-                major='مدیریت سیستم', 
-                password_hash=hashed_pw, 
-                is_admin=True
-            )
-            db.session.add(admin_user)
-            db.session.commit()
-            print("Admin created successfully. Username: admin | Password: admin")
-            
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, host='0.0.0.0', port=port)
