@@ -11,8 +11,8 @@
             یافتن همکلاسی‌ها
         </h2>
         
-        <form action="{{ url_for('match') }}" method="GET" style="display: flex; gap: 1rem;">
-            <input type="text" name="q" class="form-control" placeholder="جستجو بر اساس نام، شماره دانشجویی یا رشته..." value="{{ request.args.get('q', '') }}">
+        <form action="{{ url_for('match') }}" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <input type="text" name="q" class="form-control" style="flex: 1; min-width: 200px;" placeholder="جستجو بر اساس نام، شماره دانشجویی یا رشته..." value="{{ request.args.get('q', '') }}">
             <button type="submit" class="btn btn-custom">جستجو</button>
         </form>
     </section>
