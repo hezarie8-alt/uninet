@@ -11,7 +11,7 @@
                 <i class="material-icons">event_note</i> برنامه هفتگی من
             </button>
             <button class="dash-tab" onclick="openTab('reserve-room')">
-                <i class="material-icons">meeting_room</i> رزرو کلاس
+                <i class="material-icons">meeting_room</i> درخواست رزرو کلاس
             </button>
         </div>
     </div>
@@ -159,7 +159,9 @@
         <h3 style="margin-bottom: 1rem;">ثبت درخواست رزرو</h3>
         <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;" id="reserve-slot-info"></p>
         
-        <form id="reserve-form" method="POST">
+        {# Fixed Form: Added CSRF Token and Action URL #}
+        <form id="reserve-form" method="POST" action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label class="form-label">دلیل رزرو</label>
                 <textarea id="reserve-reason" name="reason" class="form-control" rows="3" required placeholder="مثال: جلسه انجمن علمی"></textarea>
@@ -203,7 +205,7 @@
 
     // --- 2. Personal Schedule Logic ---
     const dayMap = {'saturday':'شنبه','sunday':'یکشنبه','monday':'دوشنبه','tuesday':'سه‌شنبه','wednesday':'چهارشنبه'};
-    const mySchedules = {{ schedules | tojson }};
+    const mySchedules = {% if schedules %}{{ schedules | tojson }}{% else %}[]{% endif %};
     
     document.addEventListener('DOMContentLoaded', () => {
         mySchedules.forEach(item => {
@@ -278,6 +280,7 @@
     function openReserveModal(id, day, time, loc) {
         document.getElementById('reserve-slot-id').value = id;
         document.getElementById('reserve-slot-info').innerText = `کلاس ${dayMap[day]} - ساعت ${time} - ${loc}`;
+        // Set form action dynamically
         document.getElementById('reserve-form').action = `/submit_reservation/${id}`;
         document.getElementById('reserve-modal').style.display = 'flex';
     }

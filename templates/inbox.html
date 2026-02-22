@@ -34,8 +34,9 @@
     <div style="max-height: 600px; overflow-y: auto;">
         {% if conversations %}
             {% for conversation in conversations %}
-                <a href="{{ url_for('chat', other_user_id=conversation.other_user_id) }}" class="conversation-item" style="display: flex; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background 0.2s; {% if conversation.has_unread %}background-color: var(--chat-bg-received);{% endif %}">
-                    <div class="conversation-avatar" style="position: relative;">
+                {# Fixed: Changed 'chat' to 'chat_main' and 'other_user_id' to 'user_id' to match app.py route #}
+                <a href="{{ url_for('chat_main', user_id=conversation.other_user_id) }}" class="conversation-item" style="display: flex; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background 0.2s; {% if conversation.has_unread %}background-color: rgba(0, 131, 143, 0.05);{% endif %}">
+                    <div class="conversation-avatar" style="position: relative; width: 48px; height: 48px; border-radius: 50%; background-color: var(--primary-light); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
                         {{ conversation.other_user_name[0] }}
                         {% if conversation.is_online %}
                             <span class="online-indicator" style="position: absolute; bottom: 0; left: 0; width: 12px; height: 12px; background-color: var(--success); border: 2px solid var(--surface); border-radius: 50%;"></span>

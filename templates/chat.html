@@ -33,11 +33,11 @@
                         </div>
                         
                         <div class="convo-info">
-                            <div class="convo-header">
+                            <div class="convo-header" style="display: flex; justify-content: space-between; width: 100%;">
                                 <span class="convo-name">{{ convo.other_user_name }}</span>
-                                <span class="convo-time">{{ convo.last_message_timestamp.strftime('%H:%M') }}</span>
+                                <span class="convo-time" style="font-size: 0.75rem; color: var(--text-secondary);">{{ convo.last_message_timestamp.strftime('%H:%M') }}</span>
                             </div>
-                            <div class="convo-msg" style="display: flex; justify-content: space-between;">
+                            <div class="convo-msg" style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                     {% if convo.last_message_content %}{{ convo.last_message_content }}{% else %}بدون پیام{% endif %}
                                 </span>
@@ -62,7 +62,7 @@
     <main class="chat-main" id="chat-main-area">
         {% if active_chat_user %}
             <!-- Active Chat Window -->
-            <div class="chat-window">
+            <div class="chat-window" style="display: flex; flex-direction: column; height: 100%;">
                 <div class="chat-header-active">
                     <button class="btn btn-outline" onclick="showSidebar()" style="display: none; padding: 0.5rem;" id="back-btn">
                         <i class="material-icons">arrow_forward</i>
@@ -77,8 +77,8 @@
                     </div>
                     
                     <div class="chat-header-info">
-                        <h3>{{ active_chat_user.full_name }}</h3>
-                        <span id="status-text-header">در حال بررسی...</span>
+                        <h3 style="margin: 0; font-size: 1rem;">{{ active_chat_user.full_name }}</h3>
+                        <span id="status-text-header" style="font-size: 0.8rem; color: var(--text-secondary);">در حال بررسی...</span>
                     </div>
                     
                     <div style="margin-right: auto; display: flex; gap: 0.5rem;">
@@ -107,7 +107,7 @@
         {% else %}
             <!-- Empty State -->
             <div class="chat-empty">
-                <i class="material-icons">forum</i>
+                <i class="material-icons" style="font-size: 4rem; color: var(--text-secondary);">forum</i>
                 <h3>یک گفتگو انتخاب کنید</h3>
                 <p>از لیست سمت راست یک گفتگو را انتخاب کنید یا شروعی جدید بسازید.</p>
             </div>
@@ -119,11 +119,13 @@
 {% block scripts %}
 <script>
     const socket = io();
-    const currentUserId = {{ current_user.id }};
+    // Fix: Ensure current_user is accessed correctly from context
+    const currentUserId = {{ current_user.id if current_user else 'null' }};
     let otherUserId = {{ active_chat_user.id if active_chat_user else 'null' }};
     
     // --- Socket.IO Logic ---
     socket.on('connect', () => {
+        console.log('Socket connected');
         if (otherUserId) {
             socket.emit('join_chat', { other_user_id: otherUserId });
             checkStatus(otherUserId);
@@ -196,13 +198,8 @@
 
     // --- Navigation Logic (Mobile) ---
     function loadChat(userId) {
-        // On mobile, hide sidebar and show chat
-        if (window.innerWidth <= 768) {
-            document.getElementById('chat-sidebar').style.display = 'none';
-            document.getElementById('chat-main-area').style.display = 'flex';
-            document.getElementById('back-btn').style.display = 'block';
-        }
-        // Reload page to fetch messages
+        // On mobile, hide sidebar and show chat (logic handled by page reload in this version)
+        // Reload page to fetch messages via HTTP (simpler state management)
         window.location.href = `/chat?user_id=${userId}`;
     }
 
@@ -214,8 +211,10 @@
     function updateSidebarPreview(uid, text, isNew=false) {
         const item = document.querySelector(`.convo-item[data-id="${uid}"]`);
         if (item) {
-            item.querySelector('.convo-msg span').textContent = text;
-            item.querySelector('.convo-time').textContent = 'الان';
+            const msgSpan = item.querySelector('.convo-msg span');
+            if(msgSpan) msgSpan.textContent = text;
+            const timeSpan = item.querySelector('.convo-time');
+            if(timeSpan) timeSpan.textContent = 'الان';
         }
     }
 

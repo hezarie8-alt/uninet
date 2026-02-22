@@ -42,7 +42,8 @@
                     </div>
                     
                     <div style="display: flex; gap: 0.5rem;">
-                        <a href="{{ url_for('chat_main') }}?user_id={{ user.id }}" class="btn btn-custom" style="flex: 1; font-size: 0.9rem;">
+                        {# Fixed: Changed 'chat' to 'chat_main' and 'other_user_id' to 'user_id' #}
+                        <a href="{{ url_for('chat_main', user_id=user.id) }}" class="btn btn-custom" style="flex: 1; font-size: 0.9rem;">
                             <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">chat</i>
                             شروع چت
                         </a>
