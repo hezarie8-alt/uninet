@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
 from sqlalchemy import or_, and_, func, case, Index
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, CSRFProtect
 from wtforms import StringField, PasswordField, SubmitField, SelectField, HiddenField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
 from flask_socketio import SocketIO, emit, join_room
@@ -43,6 +43,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 limiter = Limiter(key_func=get_remote_address, app=app, storage_uri="memory://")
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+csrf = CSRFProtect(app)
 
 # --- مدیریت آنلاین ---
 ONLINE_USERS_MEMORY = set()
@@ -260,14 +261,12 @@ def logout():
     flash('خروج موفق.', 'info')
     return redirect(url_for('index'))
 
-# --- داشبورد (اصلاح شده) ---
+# --- داشبورد ---
 @app.route('/dashboard')
 @login_required
 def dashboard():
     current_user_id = session['current_user_id']
-    # برنامه شخصی کاربر
     my_schedules = ClassSchedule.query.filter_by(user_id=current_user_id).all()
-    # درخواست‌های رزرو کاربر (برای نمایش در لیست)
     my_reservations = ReservationRequest.query.filter_by(user_id=current_user_id).order_by(ReservationRequest.created_at.desc()).limit(5).all()
     
     return render_template('dashboard.html', schedules=my_schedules, my_reservations=my_reservations)
@@ -282,8 +281,9 @@ def get_available_slots():
         output.append({'id': s.id, 'day': s.day, 'time_slot': s.time_slot, 'location': s.location})
     return jsonify(output)
 
-# ذخیره برنامه شخصی
+# ذخیره برنامه شخصی (CSRF exempt for AJAX)
 @app.route('/update_schedule', methods=['POST'])
+@csrf.exempt
 @login_required
 def update_schedule():
     data = request.json
@@ -304,6 +304,12 @@ def submit_reservation(slot_id):
     
     if slot.is_reserved:
         flash('این کلاس قبلاً رزرو شده است.', 'error')
+        return redirect(url_for('dashboard'))
+
+    # بررسی اینکه کاربر قبلاً برای این کلاس درخواست داده یا نه
+    existing = ReservationRequest.query.filter_by(user_id=session['current_user_id'], slot_id=slot.id).first()
+    if existing:
+        flash('شما قبلاً برای این کلاس درخواست ثبت کرده‌اید.', 'warning')
         return redirect(url_for('dashboard'))
 
     new_req = ReservationRequest(user_id=session['current_user_id'], slot_id=slot.id, reason=reason)
@@ -349,7 +355,7 @@ def admin_delete_slot(slot_id):
     flash('کلاس حذف شد.', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# مدیریت درخواست‌ها (منطق همزمانی)
+# مدیریت درخواست‌ها
 @app.route('/admin/handle_reservation/<int:req_id>/<string:action>')
 @admin_required
 def handle_reservation(req_id, action):
@@ -361,14 +367,14 @@ def handle_reservation(req_id, action):
             req.status = 'approved'
             slot.is_reserved = True
             
-            # رد کردن سایر درخواست‌ها برای همین کلاس
+            # رد کردن سایر درخواست‌های پندینگ برای همین کلاس
             ReservationRequest.query.filter(
                 ReservationRequest.slot_id == slot.id,
                 ReservationRequest.id != req.id,
                 ReservationRequest.status == 'pending'
             ).update({ReservationRequest.status: 'rejected'}, synchronize_session=False)
             
-            flash('درخواست تایید شد. سایر درخواست‌ها رد شدند.', 'success')
+            flash('درخواست تایید شد. سایر درخواست‌های همزمان رد شدند.', 'success')
         else:
             flash('این کلاس قبلاً رزرو شده است.', 'error')
     
@@ -453,7 +459,8 @@ def chat_main():
     if other_user_id:
         active_chat_user = db.session.get(User, other_user_id)
         if active_chat_user: messages = ChatService.get_chat_history(session['current_user_id'], other_user_id)
-    return render_template('chat_layout.html', conversations=conversations, active_chat_user=active_chat_user, messages=messages)
+    # تغییر نام فایل از chat_layout.html به chat.html
+    return render_template('chat.html', conversations=conversations, active_chat_user=active_chat_user, messages=messages)
 
 @app.route('/api/user_status/<int:user_id>')
 def check_user_online(user_id):
