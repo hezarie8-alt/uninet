@@ -189,11 +189,7 @@
             div.innerHTML = `${data.content}<div class="message-time">${data.timestamp}</div>`;
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
-            
-            // Mark as read
-            socket.emit('join_chat', { other_user_id: otherUserId }); // Re-join triggers read update in backend logic simple version
         } else {
-            // Notification for other chats? (Future improvement)
             updateSidebarPreview(data.sender_id, data.content, true);
         }
     });
@@ -206,7 +202,7 @@
             document.getElementById('chat-main-area').style.display = 'flex';
             document.getElementById('back-btn').style.display = 'block';
         }
-        // Reload page to fetch messages (Simple approach for this structure)
+        // Reload page to fetch messages
         window.location.href = `/chat?user_id=${userId}`;
     }
 
@@ -220,7 +216,6 @@
         if (item) {
             item.querySelector('.convo-msg span').textContent = text;
             item.querySelector('.convo-time').textContent = 'الان';
-            // Move to top of list? (Future improvement)
         }
     }
 

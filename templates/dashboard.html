@@ -4,20 +4,21 @@
 
 {% block content %}
 <div class="dashboard-container">
+    <!-- برنامه کلاسی شخصی -->
     <div class="schedule-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <h2 class="section-title" style="margin: 0;">
-                <i class="material-icons" style="vertical-align: middle; margin-left: 5px;">calendar_today</i>
+                <i class="material-icons" style="vertical-align: middle; margin-left: 5px;">event_note</i>
                 برنامه کلاسی هفتگی
             </h2>
-            <button class="btn btn-custom" onclick="printSchedule()">
+            <button class="btn btn-outline" onclick="printSchedule()">
                 <i class="material-icons">print</i> چاپ برنامه
             </button>
         </div>
 
         <div class="schedule-grid" id="schedule-table">
             <!-- Header Row -->
-            <div class="schedule-header"></div> <!-- Empty corner -->
+            <div class="schedule-header"></div>
             <div class="schedule-header">شنبه</div>
             <div class="schedule-header">یکشنبه</div>
             <div class="schedule-header">دوشنبه</div>
@@ -64,11 +65,63 @@
             <div class="schedule-cell" data-day="monday" data-time="16-18" onclick="openEditModal(this)"></div>
             <div class="schedule-cell" data-day="tuesday" data-time="16-18" onclick="openEditModal(this)"></div>
             <div class="schedule-cell" data-day="wednesday" data-time="16-18" onclick="openEditModal(this)"></div>
+
+            <!-- 18-20 (جدید) -->
+            <div class="schedule-time">۱۸ - ۲۰</div>
+            <div class="schedule-cell" data-day="saturday" data-time="18-20" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="sunday" data-time="18-20" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="monday" data-time="18-20" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="tuesday" data-time="18-20" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="wednesday" data-time="18-20" onclick="openEditModal(this)"></div>
+        </div>
+    </div>
+
+    <!-- بخش رزرو کلاس (جدید) -->
+    <div class="schedule-card" style="margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary-color);">
+                <i class="material-icons">meeting_room</i>
+                درخواست رزرو کلاس
+            </h3>
+            <button class="btn btn-custom" onclick="openReserveModal()">
+                <i class="material-icons">add</i> ثبت درخواست جدید
+            </button>
+        </div>
+        
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+            در این بخش می‌توانید برای استفاده از کلاس‌های خالی در ساعات تعیین شده، درخواست ارسال کنید. درخواست شما پس از بررسی مدیر تایید می‌شود.
+        </p>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+            <h4 style="font-size: 1rem; margin-bottom: 0.5rem;">وضعیت درخواست‌های اخیر</h4>
+            {% if reservations %}
+                <div style="display: grid; gap: 0.5rem;">
+                    {% for res in reservations %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: var(--background); border-radius: 8px; font-size: 0.9rem;">
+                            <div>
+                                <strong>{{ res.day }}</strong> | ساعت {{ res.time_slot }}
+                                <span style="margin-right: 0.5rem; color: var(--text-secondary);">({{ res.reason }})</span>
+                            </div>
+                            <span class="badge" style="padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem;
+                                {% if res.status == 'pending' %}background: #FFF3E0; color: #E65100;{% endif %}
+                                {% if res.status == 'approved' %}background: #E8F5E9; color: #2E7D32;{% endif %}
+                                {% if res.status == 'rejected' %}background: #FFEBEE; color: #C62828;{% endif %}"
+                            >
+                                {% if res.status == 'pending' %}در انتظار{% endif %}
+                                {% if res.status == 'approved' %}تایید شده{% endif %}
+                                {% if res.status == 'rejected' %}رد شده{% endif %}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="color: var(--text-secondary); text-align: center;">درخواستی ثبت نشده است.</p>
+            {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Modal for Editing -->
+<!-- Modal for Editing Schedule -->
 <div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
     <div class="form-card" style="width: 400px; max-width: 90%;">
         <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -92,7 +145,51 @@
             <div style="display: flex; gap: 1rem;">
                 <button type="submit" class="btn btn-custom" style="flex: 1;">ذخیره</button>
                 <button type="button" class="btn btn-outline" style="flex: 1; color: var(--error);" onclick="deleteClass()">حذف کلاس</button>
-                <button type="button" class="btn btn-outline" onclick="closeModal()">انصراف</button>
+                <button type="button" class="btn btn-outline" onclick="closeEditModal()">انصراف</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal for Reservation Request (جدید) -->
+<div id="reserve-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+    <div class="form-card" style="width: 450px; max-width: 90%;">
+        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="material-icons" style="color: var(--primary-color);">bookmark_add</i>
+            فرم درخواست رزرو کلاس
+        </h3>
+        <form action="{{ url_for('request_reservation') }}" method="POST">
+            <div class="form-group">
+                <label class="form-label">روز</label>
+                <select name="day" class="form-control" required>
+                    <option value="saturday">شنبه</option>
+                    <option value="sunday">یکشنبه</option>
+                    <option value="monday">دوشنبه</option>
+                    <option value="tuesday">سه‌شنبه</option>
+                    <option value="wednesday">چهارشنبه</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">ساعت</label>
+                <select name="time_slot" class="form-control" required>
+                    <option value="8-10">۸ تا ۱۰</option>
+                    <option value="10-12">۱۰ تا ۱۲</option>
+                    <option value="12-14">۱۲ تا ۱۴</option>
+                    <option value="14-16">۱۴ تا ۱۶</option>
+                    <option value="16-18">۱۶ تا ۱۸</option>
+                    <option value="18-20">۱۸ تا ۲۰</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">دلیل رزرو</label>
+                <textarea name="reason" class="form-control" rows="3" placeholder="مثال: جلسه انجمن علمی" required></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-custom" style="flex: 1;">ارسال درخواست</button>
+                <button type="button" class="btn btn-outline" onclick="closeReserveModal()">انصراف</button>
             </div>
         </form>
     </div>
@@ -102,16 +199,10 @@
 
 {% block scripts %}
 <script>
-    // Map days for matching
     const dayMap = {
-        'saturday': 'شنبه',
-        'sunday': 'یکشنبه',
-        'monday': 'دوشنبه',
-        'tuesday': 'سه‌شنبه',
-        'wednesday': 'چهارشنبه'
+        'saturday': 'شنبه', 'sunday': 'یکشنبه', 'monday': 'دوشنبه',
+        'tuesday': 'سه‌شنبه', 'wednesday': 'چهارشنبه'
     };
-
-    // Load existing schedules from backend
     const schedules = {{ schedules | tojson }};
     
     document.addEventListener('DOMContentLoaded', () => {
@@ -123,7 +214,6 @@
                     <div class="class-location">${item.class_location}</div>
                 `;
                 cell.classList.add('has-class');
-                cell.dataset.id = item.id;
             }
         });
     });
@@ -135,7 +225,6 @@
         document.getElementById('day-input').value = day;
         document.getElementById('time-input').value = time;
         
-        // Pre-fill if class exists
         const courseName = cell.querySelector('.class-name') ? cell.querySelector('.class-name').innerText : '';
         const location = cell.querySelector('.class-location') ? cell.querySelector('.class-location').innerText : '';
         
@@ -146,13 +235,10 @@
         document.getElementById('edit-modal').style.display = 'flex';
     }
 
-    function closeModal() {
-        document.getElementById('edit-modal').style.display = 'none';
-    }
+    function closeEditModal() { document.getElementById('edit-modal').style.display = 'none'; }
 
     document.getElementById('schedule-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        
         const day = document.getElementById('day-input').value;
         const time = document.getElementById('time-input').value;
         const name = document.getElementById('course-name').value;
@@ -161,29 +247,19 @@
         fetch('/update_schedule', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                day: day,
-                time_slot: time,
-                course_name: name,
-                class_location: loc
-            })
+            body: JSON.stringify({ day, time_slot: time, course_name: name, class_location: loc })
         })
         .then(response => response.json())
         .then(data => {
             if(data.status === 'success') {
-                // Update UI
                 const cell = document.querySelector(`.schedule-cell[data-day="${day}"][data-time="${time}"]`);
                 if (name) {
-                    cell.innerHTML = `
-                        <div class="class-name">${name}</div>
-                        <div class="class-location">${loc}</div>
-                    `;
+                    cell.innerHTML = `<div class="class-name">${name}</div><div class="class-location">${loc}</div>`;
                     cell.classList.add('has-class');
                 } else {
-                    cell.innerHTML = '';
-                    cell.classList.remove('has-class');
+                    cell.innerHTML = ''; cell.classList.remove('has-class');
                 }
-                closeModal();
+                closeEditModal();
             }
         });
     });
@@ -191,12 +267,13 @@
     function deleteClass() {
         document.getElementById('course-name').value = '';
         document.getElementById('class-location').value = '';
-        // Trigger submit to send empty values (which deletes in backend logic)
         document.getElementById('schedule-form').dispatchEvent(new Event('submit'));
     }
     
-    function printSchedule() {
-        window.print();
-    }
+    function printSchedule() { window.print(); }
+
+    // Reservation Modal Logic
+    function openReserveModal() { document.getElementById('reserve-modal').style.display = 'flex'; }
+    function closeReserveModal() { document.getElementById('reserve-modal').style.display = 'none'; }
 </script>
 {% endblock %}

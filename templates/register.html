@@ -6,7 +6,7 @@
 <div class="auth-container">
     <div class="auth-header">
         <h1 class="auth-title">به یونی نت خوش آمدید</h1>
-        <p class="auth-subtitle">پلتفرم ارتباطی دانشجویان</p>
+        <p class="auth-subtitle">پلتفرم یکپارچه دانشجویی</p>
     </div>
     
     <div class="auth-tabs">
@@ -22,36 +22,33 @@
                 
                 <div class="form-group">
                     {{ form.full_name.label(class="form-label") }}
-                    {{ form.full_name(class="form-control", placeholder="نام و نام خانوادگی خود را وارد کنید") }}
+                    {{ form.full_name(class="form-control", placeholder="نام و نام خانوادگی") }}
                     {% if form.full_name.errors %}
-                        <div class="error-message">
-                            {% for error in form.full_name.errors %}{{ error }}{% endfor %}
-                        </div>
+                        <div class="error-message">{{ form.full_name.errors[0] }}</div>
                     {% endif %}
                 </div>
                 
                 <div class="form-group">
                     {{ form.student_id.label(class="form-label") }}
-                    {{ form.student_id(class="form-control", placeholder="مثال: 981234567") }}
+                    {{ form.student_id(class="form-control", placeholder="۱۰ رقم (بدون خط تیره)", maxlength="10") }}
                     {% if form.student_id.errors %}
-                        <div class="error-message">
-                            {% for error in form.student_id.errors %}{{ error }}{% endfor %}
-                        </div>
+                        <div class="error-message">{{ form.student_id.errors[0] }}</div>
                     {% endif %}
                 </div>
                 
                 <div class="form-group">
                     {{ form.major.label(class="form-label") }}
                     {{ form.major(class="form-select") }}
+                    {% if form.major.errors %}
+                        <div class="error-message">{{ form.major.errors[0] }}</div>
+                    {% endif %}
                 </div>
                 
                 <div class="form-group">
                     {{ form.password.label(class="form-label") }}
-                    {{ form.password(class="form-control", placeholder="کد ملی خود را وارد کنید") }}
+                    {{ form.password(class="form-control", placeholder="کد ملی (۱۰ رقم)", maxlength="10") }}
                     {% if form.password.errors %}
-                        <div class="error-message">
-                            {% for error in form.password.errors %}{{ error }}{% endfor %}
-                        </div>
+                        <div class="error-message">{{ form.password.errors[0] }}</div>
                     {% endif %}
                 </div>
                 
@@ -60,8 +57,8 @@
                     {{ form.confirm_password(class="form-control", placeholder="تکرار کد ملی") }}
                 </div>
                 
-                <button type="submit" class="btn btn-custom" style="width: 100%;">
-                    ثبت‌نام در سامانه
+                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 1rem;">
+                    ایجاد حساب کاربری
                 </button>
             </form>
         </div>
@@ -75,21 +72,71 @@
                 
                 <div class="form-group">
                     {{ login_form.student_id.label(class="form-label") }}
-                    {{ login_form.student_id(class="form-control", placeholder="شماره دانشجویی") }}
+                    {{ login_form.student_id(class="form-control", placeholder="شماره دانشجویی یا admin") }}
                 </div>
                 
                 <div class="form-group">
                     {{ login_form.password.label(class="form-label") }}
-                    {{ login_form.password(class="form-control", placeholder="رمز عبور (کد ملی)") }}
+                    {{ login_form.password(class="form-control", placeholder="رمز عبور") }}
                 </div>
                 
-                <button type="submit" class="btn btn-custom" style="width: 100%;">
-                    ورود به حساب
+                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 1rem;">
+                    ورود به سامانه
                 </button>
             </form>
         </div>
     </div>
 </div>
+
+<style>
+    .auth-container {
+        max-width: 500px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    .auth-header { text-align: center; margin-bottom: 2rem; }
+    .auth-title { font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem; }
+    .auth-subtitle { color: var(--text-secondary); }
+    
+    .auth-tabs {
+        display: flex;
+        background: var(--surface);
+        border-radius: 12px;
+        padding: 5px;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow-sm);
+    }
+    .auth-tab {
+        flex: 1;
+        text-align: center;
+        padding: 0.75rem;
+        cursor: pointer;
+        border-radius: 8px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        transition: all 0.3s;
+    }
+    .auth-tab.active {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .form-card {
+        background: var(--surface);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 {% endblock %}
 
 {% block scripts %}
@@ -99,17 +146,15 @@
         document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
         
         document.getElementById(tabName + '-tab').classList.add('active');
-        event.target.closest('.auth-tab').classList.add('active');
+        event.target.classList.add('active');
     }
     
-    // Auto-switch logic
-    document.addEventListener('DOMContentLoaded', () => {
-        {% if login_form.errors %}
-            document.getElementById('register-tab').classList.remove('active');
-            document.getElementById('login-tab').classList.add('active');
-            document.querySelectorAll('.auth-tab')[0].classList.remove('active');
-            document.querySelectorAll('.auth-tab')[1].classList.add('active');
-        {% endif %}
-    });
+    // Auto-switch if errors in login form
+    {% if login_form.errors %}
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
+        document.getElementById('login-tab').classList.add('active');
+        document.querySelectorAll('.auth-tab')[1].classList.add('active');
+    {% endif %}
 </script>
 {% endblock %}

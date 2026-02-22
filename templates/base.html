@@ -31,6 +31,10 @@
                     <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="material-icons">dashboard</i> داشبورد</a></li>
                     <li><a href="{{ url_for('chat_main') }}" class="nav-link"><i class="material-icons">chat</i> چت</a></li>
                     <li><a href="{{ url_for('match') }}" class="nav-link"><i class="material-icons">search</i> جستجو</a></li>
+                    
+                    {% if is_admin %}
+                        <li><a href="{{ url_for('admin_dashboard') }}" class="nav-link" style="color: #ffeb3b;"><i class="material-icons">admin_panel_settings</i> پنل مدیریت</a></li>
+                    {% endif %}
                 {% else %}
                     <li><a href="{{ url_for('index') }}" class="nav-link">صفحه اصلی</a></li>
                     <li><a href="{{ url_for('about') }}" class="nav-link">درباره ما</a></li>

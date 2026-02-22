@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
 from sqlalchemy import or_, and_, func, case, Index
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, HiddenField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, HiddenField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Regexp
 from flask_socketio import SocketIO, emit, join_room
 from flask_limiter import Limiter
@@ -26,7 +26,6 @@ UPLOAD_FOLDER = 'static/uploads/profile_pics'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# ایجاد پوشه آپلود اگر وجود نداشته باشد
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
@@ -74,10 +73,11 @@ class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(100), nullable=False)
-    student_id = db.Column(db.String(20), unique=True, nullable=False, index=True) # شماره دانشجویی
+    student_id = db.Column(db.String(20), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(128), nullable=False)
     major = db.Column(db.String(100))
     profile_pic = db.Column(db.String(255), default='default.jpg')
+    is_admin = db.Column(db.Boolean, default=False) # فیلد ادمین
     created_at = db.Column(db.DateTime, server_default=func.now())
 
 class Message(db.Model):
@@ -93,15 +93,25 @@ class Message(db.Model):
         Index('idx_sender_receiver_timestamp', 'sender_id', 'receiver_id', 'timestamp'),
     )
 
-# مدل برنامه کلاسی
 class ClassSchedule(db.Model):
     __tablename__ = 'schedule'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    day = db.Column(db.String(10), nullable=False) # شنبه، یکشنبه...
-    time_slot = db.Column(db.String(20), nullable=False) # 8-10, 10-12...
+    day = db.Column(db.String(10), nullable=False)
+    time_slot = db.Column(db.String(20), nullable=False)
     course_name = db.Column(db.String(100))
     class_location = db.Column(db.String(100))
+
+# مدل درخواست رزرو
+class ReservationRequest(db.Model):
+    __tablename__ = 'reservation'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    day = db.Column(db.String(10), nullable=False)
+    time_slot = db.Column(db.String(20), nullable=False)
+    reason = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='pending') # pending, approved, rejected
+    created_at = db.Column(db.DateTime, server_default=func.now())
 
 # --- سرویس‌ها ---
 def allowed_file(filename):
@@ -111,7 +121,8 @@ class AuthService:
     @staticmethod
     def register_user(full_name, student_id, major, password):
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(full_name=full_name, student_id=student_id, major=major, password_hash=hashed_password)
+        is_admin = (student_id == 'admin') # ادمین بودن بر اساس شماره دانشجویی
+        new_user = User(full_name=full_name, student_id=student_id, major=major, password_hash=hashed_password, is_admin=is_admin)
         db.session.add(new_user)
         db.session.commit()
         return new_user
@@ -188,9 +199,9 @@ MAJOR_CHOICES = [('', 'رشته خود را انتخاب کنید'), ('مهند�
 
 class RegistrationForm(FlaskForm):
     full_name = StringField('نام و نام خانوادگی', validators=[DataRequired()])
-    student_id = StringField('شماره دانشجویی', validators=[DataRequired(), Length(min=3, max=20)])
+    student_id = StringField('شماره دانشجویی', validators=[DataRequired(), Length(min=10, max=10, message="شماره دانشجویی باید ۱۰ رقم باشد")])
     major = SelectField('رشته تحصیلی', choices=MAJOR_CHOICES, validators=[DataRequired()])
-    password = PasswordField('کد ملی (رمز عبور)', validators=[DataRequired(), Length(min=4)])
+    password = PasswordField('کد ملی (رمز عبور)', validators=[DataRequired(), Length(min=10, max=10, message="کد ملی باید ۱۰ رقم باشد")])
     confirm_password = PasswordField('تکرار رمز عبور', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('ثبت‌نام')
     
@@ -217,6 +228,10 @@ class UpdatePasswordForm(FlaskForm):
 class DeleteAccountForm(FlaskForm):
     submit = SubmitField('حذف حساب کاربری')
 
+class ReservationForm(FlaskForm):
+    reason = TextAreaField('دلیل رزرو', validators=[DataRequired()])
+    submit = SubmitField('ارسال درخواست')
+
 # --- دکوراتورها ---
 def login_required(f):
     @wraps(f)
@@ -227,16 +242,26 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('is_admin'):
+            flash('دسترسی غیرمجاز.', 'error')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 # --- Context Processors ---
 @app.context_processor
 def inject_user():
     user_id = session.get('current_user_id')
     user_name = session.get('current_user_name')
     user_pic = session.get('current_user_pic')
+    is_admin = session.get('is_admin', False)
     
     if user_id and user_name:
-        return dict(current_user={'id': user_id, 'name': user_name, 'pic': user_pic}, current_user_id=user_id)
-    return dict(current_user=None, current_user_id=None)
+        return dict(current_user={'id': user_id, 'name': user_name, 'pic': user_pic}, current_user_id=user_id, is_admin=is_admin)
+    return dict(current_user=None, current_user_id=None, is_admin=False)
 
 # --- روت‌ها ---
 @app.route('/')
@@ -250,7 +275,7 @@ def about():
 @app.route('/auth')
 def show_auth_page():
     if session.get('current_user_id'):
-        return redirect(url_for('dashboard')) # هدایت به داشبورد پس از ورود
+        return redirect(url_for('dashboard'))
     return render_template('register.html', form=RegistrationForm(), login_form=LoginForm())
 
 @app.route('/register', methods=['POST'])
@@ -262,6 +287,7 @@ def register():
         session['current_user_id'] = user.id
         session['current_user_name'] = user.full_name
         session['current_user_pic'] = user.profile_pic
+        session['is_admin'] = user.is_admin
         flash('ثبت‌نام موفقیت‌آمیز بود.', 'success')
         return redirect(url_for('dashboard'))
     return render_template('register.html', form=form, login_form=LoginForm())
@@ -276,6 +302,7 @@ def login():
             session['current_user_id'] = user.id
             session['current_user_name'] = user.full_name
             session['current_user_pic'] = user.profile_pic
+            session['is_admin'] = user.is_admin
             flash('خوش آمدید.', 'success')
             return redirect(url_for('dashboard'))
         else:
@@ -288,15 +315,15 @@ def logout():
     StateManager.set_offline(session.get('current_user_id'))
     session.clear()
     flash('خروج موفقیت‌آمیز.', 'info')
-    return redirect(url_for('show_auth_page'))
+    return redirect(url_for('index')) # اصلاح شده: رفتن به صفحه اصلی
 
-# داشبورد جدید (برنامه کلاسی)
 @app.route('/dashboard')
 @login_required
 def dashboard():
     current_user_id = session['current_user_id']
     schedules = ClassSchedule.query.filter_by(user_id=current_user_id).all()
-    return render_template('dashboard.html', schedules=schedules)
+    reservations = ReservationRequest.query.filter_by(user_id=current_user_id).order_by(ReservationRequest.created_at.desc()).limit(5).all()
+    return render_template('dashboard.html', schedules=schedules, reservations=reservations)
 
 @app.route('/update_schedule', methods=['POST'])
 @login_required
@@ -304,7 +331,6 @@ def update_schedule():
     data = request.json
     user_id = session['current_user_id']
     
-    # حذف برنامه قبلی برای آن سلول
     ClassSchedule.query.filter_by(user_id=user_id, day=data['day'], time_slot=data['time_slot']).delete()
     
     if data.get('course_name'):
@@ -320,6 +346,38 @@ def update_schedule():
     db.session.commit()
     return jsonify({'status': 'success'})
 
+@app.route('/request_reservation', methods=['POST'])
+@login_required
+def request_reservation():
+    day = request.form.get('day')
+    time_slot = request.form.get('time_slot')
+    reason = request.form.get('reason')
+    
+    new_req = ReservationRequest(user_id=session['current_user_id'], day=day, time_slot=time_slot, reason=reason)
+    db.session.add(new_req)
+    db.session.commit()
+    flash('درخواست رزرو شما ثبت شد و در انتظار تایید است.', 'success')
+    return redirect(url_for('dashboard'))
+
+@app.route('/admin')
+@admin_required
+def admin_dashboard():
+    pending_requests = ReservationRequest.query.filter_by(status='pending').all()
+    return render_template('admin_dashboard.html', requests=pending_requests)
+
+@app.route('/admin/handle_reservation/<int:req_id>/<string:action>')
+@admin_required
+def handle_reservation(req_id, action):
+    req = ReservationRequest.query.get_or_404(req_id)
+    if action == 'approve':
+        req.status = 'approved'
+        # افزودن به برنامه کلاسی ادمین یا سیستم (اختیاری)
+    elif action == 'reject':
+        req.status = 'rejected'
+    db.session.commit()
+    flash('وضعیت درخواست بروزرسانی شد.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
 @app.route('/match')
 @login_required
 def match():
@@ -329,7 +387,7 @@ def match():
     if q:
         users = query.filter((User.major.contains(q)) | (User.full_name.contains(q)) | (User.student_id.contains(q))).all()
     else:
-        users = query.limit(20).all() # محدود کردن نتایج
+        users = query.limit(20).all()
     return render_template('match.html', users=users)
 
 @app.route('/profile/<int:user_id>')
@@ -365,17 +423,16 @@ def update_profile():
         user.full_name = form.full_name.data
         user.major = form.major.data
         
-        # آپلود عکس پروفایل
         if 'profile_pic' in request.files:
             file = request.files['profile_pic']
             if file and allowed_file(file.filename):
                 filename = secure_filename(f"{user_id}_{file.filename}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 user.profile_pic = filename
-                session['current_user_pic'] = filename # آپدیت سشن
+                session['current_user_pic'] = filename
         
         db.session.commit()
-        session['current_user_name'] = user.full_name # آپدیت سشن نام
+        session['current_user_name'] = user.full_name
         flash('پروفایل بروزرسانی شد.', 'success')
     return redirect(url_for('profile', user_id=user_id))
 
@@ -407,23 +464,23 @@ def delete_account():
         db.session.commit()
     session.clear()
     flash('حساب کاربری حذف شد.', 'info')
-    return redirect(url_for('show_auth_page'))
+    return redirect(url_for('index'))
 
-# --- بخش چت (جدید - لایه بندی شده) ---
+# --- بخش چت ---
 @app.route('/chat')
 @login_required
 def chat_main():
     current_user_id = session['current_user_id']
     conversations = ChatService.get_inbox_conversations(current_user_id)
     
-    # اگر چت خاصی انتخاب نشده، لیست را خالی نشان می‌دهیم یا اولین کاربر را
     active_chat_user = None
     messages = []
     other_user_id = request.args.get('user_id', type=int)
     
     if other_user_id:
         active_chat_user = db.session.get(User, other_user_id)
-        messages = ChatService.get_chat_history(current_user_id, other_user_id)
+        if active_chat_user:
+            messages = ChatService.get_chat_history(current_user_id, other_user_id)
     
     return render_template('chat_layout.html', 
                            conversations=conversations, 
@@ -473,7 +530,7 @@ def handle_send_message(data):
         'timestamp': msg.timestamp.strftime('%H:%M'),
         'sender_id': current_user_id,
         'message_id': msg.id
-    }, room=room_id) # include_self=False را برداشتیم تا فرستنده هم پیام را ببیند (برای UI اپدیت شده)
+    }, room=room_id)
 
 if __name__ == '__main__':
     with app.app_context():

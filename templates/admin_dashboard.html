@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}پنل مدیریت | یونی نت{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="form-card" style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="display: flex; align-items: center; gap: 0.5rem; color: var(--primary-color);">
+                <i class="material-icons">admin_panel_settings</i>
+                پنل مدیریت درخواست‌ها
+            </h2>
+            <span style="background: var(--primary-light); color: white; padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.9rem;">
+                تعداد درخواست‌های در انتظار: {{ requests|length }}
+            </span>
+        </div>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+            در این بخش شما می‌توانید درخواست‌های رزرو کلاس توسط دانشجویان را مدیریت کنید.
+        </p>
+    </div>
+
+    {% if requests %}
+        <div style="display: grid; gap: 1rem;">
+            {% for req in requests %}
+                <div class="form-card" style="display: flex; flex-direction: column; gap: 1rem; border-right: 4px solid var(--warning);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem;">
+                                درخواست برای {{ req.day }} - ساعت {{ req.time_slot }}
+                            </h3>
+                            <span style="font-size: 0.85rem; color: var(--text-secondary);">
+                                ارسال شده توسط: {{ req.user.full_name }} ({{ req.user.student_id }})
+                            </span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                            {{ req.created_at.strftime('%Y/%m/%d') }}
+                        </div>
+                    </div>
+                    
+                    <div style="background: var(--background); padding: 0.75rem; border-radius: 8px;">
+                        <strong>دلیل رزرو:</strong>
+                        <p style="margin-top: 0.25rem;">{{ req.reason }}</p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <a href="{{ url_for('handle_reservation', req_id=req.id, action='approve') }}" class="btn btn-custom" style="background-color: var(--success);">
+                            <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">check</i>
+                            تایید درخواست
+                        </a>
+                        <a href="{{ url_for('handle_reservation', req_id=req.id, action='reject') }}" class="btn btn-outline" style="color: var(--error); border-color: var(--error);">
+                            <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">close</i>
+                            رد درخواست
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="form-card text-center" style="padding: 3rem;">
+            <i class="material-icons" style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 1rem;">inbox</i>
+            <h3>هیچ درخواست جدیدی وجود ندارد</h3>
+            <p style="color: var(--text-secondary);">درخواست‌های جدید دانشجویان در اینجا نمایش داده می‌شوند.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
