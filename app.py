@@ -35,22 +35,9 @@ else:
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-# تنظیمات مهم برای جلوگیری از قطع ارتباط با دیتابیس در Render
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "pool_pre_ping": True,
-    "pool_recycle": 300,
-    "pool_size": 5,
-    "max_overflow": 10
-}
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {"pool_pre_ping": True, "pool_recycle": 300}
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# تلاش برای پچ کردن psycopg2 برای eventlet (حل مشکل خطای سرور)
-try:
-    import psycogreen
-    psycogreen.patch_psycopg()
-except ImportError:
-    pass # اگر از SQLite استفاده می‌شود نادیده بگیر
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -100,6 +87,7 @@ class ClassSchedule(db.Model):
     course_name = db.Column(db.String(100))
     class_location = db.Column(db.String(100))
 
+# مدل کلاس‌های خالی
 class EmptyClassSlot(db.Model):
     __tablename__ = 'empty_slots'
     id = db.Column(db.Integer, primary_key=True)
@@ -108,13 +96,14 @@ class EmptyClassSlot(db.Model):
     location = db.Column(db.String(100), default='کلاس نامشخص')
     is_reserved = db.Column(db.Boolean, default=False)
 
+# مدل درخواست رزرو
 class ReservationRequest(db.Model):
     __tablename__ = 'reservation'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     slot_id = db.Column(db.Integer, db.ForeignKey('empty_slots.id'), nullable=False)
     reason = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(20), default='pending')
+    status = db.Column(db.String(20), default='pending') # pending, approved, rejected
     created_at = db.Column(db.DateTime, server_default=func.now())
 
 # --- سرویس‌ها و فرم‌ها ---
@@ -279,8 +268,10 @@ def dashboard():
     current_user_id = session['current_user_id']
     my_schedules = ClassSchedule.query.filter_by(user_id=current_user_id).all()
     my_reservations = ReservationRequest.query.filter_by(user_id=current_user_id).order_by(ReservationRequest.created_at.desc()).limit(5).all()
+    
     return render_template('dashboard.html', schedules=my_schedules, my_reservations=my_reservations)
 
+# API: دریافت کلاس‌های خالی
 @app.route('/api/available_slots')
 @login_required
 def get_available_slots():
@@ -290,6 +281,7 @@ def get_available_slots():
         output.append({'id': s.id, 'day': s.day, 'time_slot': s.time_slot, 'location': s.location})
     return jsonify(output)
 
+# ذخیره برنامه شخصی (CSRF exempt for AJAX)
 @app.route('/update_schedule', methods=['POST'])
 @csrf.exempt
 @login_required
@@ -303,18 +295,23 @@ def update_schedule():
     db.session.commit()
     return jsonify({'status': 'success'})
 
+# ارسال درخواست رزرو
 @app.route('/submit_reservation/<int:slot_id>', methods=['POST'])
 @login_required
 def submit_reservation(slot_id):
     reason = request.form.get('reason')
     slot = EmptyClassSlot.query.get_or_404(slot_id)
+    
     if slot.is_reserved:
         flash('این کلاس قبلاً رزرو شده است.', 'error')
         return redirect(url_for('dashboard'))
+
+    # بررسی اینکه کاربر قبلاً برای این کلاس درخواست داده یا نه
     existing = ReservationRequest.query.filter_by(user_id=session['current_user_id'], slot_id=slot.id).first()
     if existing:
         flash('شما قبلاً برای این کلاس درخواست ثبت کرده‌اید.', 'warning')
         return redirect(url_for('dashboard'))
+
     new_req = ReservationRequest(user_id=session['current_user_id'], slot_id=slot.id, reason=reason)
     db.session.add(new_req)
     db.session.commit()
@@ -329,12 +326,14 @@ def admin_dashboard():
     pending_requests = ReservationRequest.query.filter_by(status='pending').all()
     return render_template('admin_dashboard.html', slots=empty_slots, requests=pending_requests)
 
+# اضافه کردن کلاس خالی
 @app.route('/admin/add_slot', methods=['POST'])
 @admin_required
 def admin_add_slot():
     day = request.form.get('day')
     time_slot = request.form.get('time_slot')
     location = request.form.get('location')
+    
     exists = EmptyClassSlot.query.filter_by(day=day, time_slot=time_slot, is_reserved=False).first()
     if exists:
         flash('این بازه زمانی قبلاً تعریف شده است.', 'error')
@@ -345,6 +344,7 @@ def admin_add_slot():
         flash('کلاس خالی جدید اضافه شد.', 'success')
     return redirect(url_for('admin_dashboard'))
 
+# حذف کلاس خالی
 @app.route('/admin/delete_slot/<int:slot_id>')
 @admin_required
 def admin_delete_slot(slot_id):
@@ -355,26 +355,33 @@ def admin_delete_slot(slot_id):
     flash('کلاس حذف شد.', 'success')
     return redirect(url_for('admin_dashboard'))
 
+# مدیریت درخواست‌ها
 @app.route('/admin/handle_reservation/<int:req_id>/<string:action>')
 @admin_required
 def handle_reservation(req_id, action):
     req = ReservationRequest.query.get_or_404(req_id)
     slot = EmptyClassSlot.query.get(req.slot_id)
+
     if action == 'approve':
         if slot and not slot.is_reserved:
             req.status = 'approved'
             slot.is_reserved = True
+            
+            # رد کردن سایر درخواست‌های پندینگ برای همین کلاس
             ReservationRequest.query.filter(
                 ReservationRequest.slot_id == slot.id,
                 ReservationRequest.id != req.id,
                 ReservationRequest.status == 'pending'
             ).update({ReservationRequest.status: 'rejected'}, synchronize_session=False)
+            
             flash('درخواست تایید شد. سایر درخواست‌های همزمان رد شدند.', 'success')
         else:
             flash('این کلاس قبلاً رزرو شده است.', 'error')
+    
     elif action == 'reject':
         req.status = 'rejected'
         flash('درخواست رد شد.', 'info')
+    
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
 
@@ -452,6 +459,7 @@ def chat_main():
     if other_user_id:
         active_chat_user = db.session.get(User, other_user_id)
         if active_chat_user: messages = ChatService.get_chat_history(session['current_user_id'], other_user_id)
+    # تغییر نام فایل از chat_layout.html به chat.html
     return render_template('chat.html', conversations=conversations, active_chat_user=active_chat_user, messages=messages)
 
 @app.route('/api/user_status/<int:user_id>')
