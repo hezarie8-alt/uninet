@@ -40,42 +40,41 @@
                     <li><a href="{{ url_for('about') }}" class="nav-link">درباره ما</a></li>
                     <li><a href="{{ url_for('show_auth_page') }}" class="nav-link">ورود / ثبت‌نام</a></li>
                 {% endif %}
+                
+                <!-- Dark Mode Toggle -->
+                <li>
+                    <button id="theme-toggle" class="nav-link" style="background: none; border: none; cursor: pointer; display: flex; align-items: center;">
+                        <i class="material-icons" id="theme-icon">light_mode</i>
+                    </button>
+                </li>
             </ul>
             
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <!-- Dark Mode Toggle -->
-                <button id="theme-toggle" class="nav-link" style="background: none; border: none; cursor: pointer;">
-                    <i class="material-icons" id="theme-icon">light_mode</i>
-                </button>
-
-                {% if current_user %}
-                    <!-- User Dropdown Menu -->
-                    <div class="user-dropdown">
-                        <div class="user-info">
-                            <div class="user-avatar-nav">
-                                {% if current_user.pic and current_user.pic != 'default.jpg' %}
-                                    <img src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.pic) }}" alt="Avatar">
-                                {% else %}
-                                    {{ current_user.name[0] }}
-                                {% endif %}
-                            </div>
-                            <span style="font-weight: 500;">{{ current_user.name }}</span>
-                            <i class="material-icons" style="font-size: 1rem;">arrow_drop_down</i>
+            {% if current_user %}
+                <div class="user-dropdown">
+                    <div class="user-info">
+                        <div class="user-avatar-nav">
+                            {% if current_user.pic and current_user.pic != 'default.jpg' %}
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.pic) }}" alt="Avatar">
+                            {% else %}
+                                {{ current_user.name[0] }}
+                            {% endif %}
                         </div>
-                        
-                        <div class="dropdown-menu">
-                            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item">
-                                <i class="material-icons">person</i>
-                                پروفایل من
-                            </a>
-                            <a href="{{ url_for('logout') }}" class="dropdown-item danger">
-                                <i class="material-icons">exit_to_app</i>
-                                خروج
-                            </a>
-                        </div>
+                        <span style="font-weight: 500; font-size: 0.9rem;">{{ current_user.name }}</span>
+                        <i class="material-icons" style="font-size: 1rem;">arrow_drop_down</i>
                     </div>
-                {% endif %}
-            </div>
+                    
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item">
+                            <i class="material-icons">person</i>
+                            پروفایل من
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item danger">
+                            <i class="material-icons">exit_to_app</i>
+                            خروج
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </nav>
     
@@ -124,7 +123,6 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-        // Theme Toggler
         const toggleBtn = document.getElementById('theme-toggle');
         const htmlElement = document.documentElement;
         const themeIcon = document.getElementById('theme-icon');

@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
 from sqlalchemy import or_, and_, func, case, Index
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, HiddenField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
 from flask_socketio import SocketIO, emit, join_room
 from flask_limiter import Limiter
@@ -77,6 +77,7 @@ class Message(db.Model):
     read_at = db.Column(db.DateTime, nullable=True)
     __table_args__ = (Index('idx_sender_receiver_timestamp', 'sender_id', 'receiver_id', 'timestamp'),)
 
+# مدل برنامه شخصی (اجازه چند کلاس در یک سلول)
 class ClassSchedule(db.Model):
     __tablename__ = 'schedule'
     id = db.Column(db.Integer, primary_key=True)
@@ -86,7 +87,7 @@ class ClassSchedule(db.Model):
     course_name = db.Column(db.String(100))
     class_location = db.Column(db.String(100))
 
-# مدل کلاس‌های خالی
+# مدل کلاس‌های خالی (تعریف شده توسط ادمین)
 class EmptyClassSlot(db.Model):
     __tablename__ = 'empty_slots'
     id = db.Column(db.Integer, primary_key=True)
@@ -105,51 +106,7 @@ class ReservationRequest(db.Model):
     status = db.Column(db.String(20), default='pending') # pending, approved, rejected
     created_at = db.Column(db.DateTime, server_default=func.now())
 
-# --- سرویس‌ها و فرم‌ها ---
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-class AuthService:
-    @staticmethod
-    def register_user(full_name, student_id, major, password):
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        is_admin = (student_id == 'admin')
-        new_user = User(full_name=full_name, student_id=student_id, major=major, password_hash=hashed_password, is_admin=is_admin)
-        db.session.add(new_user)
-        db.session.commit()
-        return new_user
-
-    @staticmethod
-    def authenticate_user(student_id, password):
-        user = User.query.filter_by(student_id=student_id).first()
-        if user and check_password_hash(user.password_hash, password): return user
-        return None
-
-class ChatService:
-    @staticmethod
-    def get_inbox_conversations(user_id):
-        other_user_id = case((Message.sender_id == user_id, Message.receiver_id), else_=Message.sender_id).label("other_user_id")
-        subquery = db.session.query(func.max(Message.id).label("last_message_id")).filter(or_(Message.sender_id == user_id, Message.receiver_id == user_id)).group_by(other_user_id).subquery()
-        results = db.session.query(Message, User, func.sum(case((and_(Message.receiver_id == user_id, Message.read_at.is_(None)), 1), else_=0)).label("unread_count")).join(subquery, Message.id == subquery.c.last_message_id).join(User, User.id == other_user_id).group_by(Message.id, User.id).order_by(Message.timestamp.desc()).all()
-        conversations = []
-        for msg, other_user, unread in results:
-            conversations.append({'other_user_id': other_user.id, 'other_user_name': other_user.full_name, 'other_user_pic': other_user.profile_pic, 'last_message_content': msg.content, 'last_message_timestamp': msg.timestamp, 'has_unread': unread > 0, 'is_online': StateManager.is_online(other_user.id)})
-        return conversations
-
-    @staticmethod
-    def get_chat_history(current_user_id, other_user_id, limit=50):
-        Message.query.filter(and_(Message.sender_id == other_user_id, Message.receiver_id == current_user_id, Message.read_at.is_(None))).update({Message.read_at: func.now()}, synchronize_session=False)
-        db.session.commit()
-        messages = Message.query.filter(or_(and_(Message.sender_id == current_user_id, Message.receiver_id == other_user_id), and_(Message.sender_id == other_user_id, Message.receiver_id == current_user_id))).order_by(Message.timestamp.desc()).limit(limit).all()
-        return messages[::-1]
-
-    @staticmethod
-    def save_message(sender_id, receiver_id, content):
-        msg = Message(sender_id=sender_id, receiver_id=receiver_id, content=content)
-        db.session.add(msg)
-        db.session.commit()
-        return msg
-
+# --- فرم‌ها ---
 MAJOR_CHOICES = [('', 'انتخاب کنید'), ('مهندسی کامپیوتر', 'مهندسی کامپیوتر'), ('علوم کامپیوتر', 'علوم کامپیوتر')]
 class RegistrationForm(FlaskForm):
     full_name = StringField('نام', validators=[DataRequired()])
@@ -159,7 +116,7 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('تکرار', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('ثبت‌نام')
     def validate_student_id(self, field):
-        if User.query.filter_by(student_id=field.data).first(): raise ValidationError('قبلاً استفاده شده است.')
+        if User.query.filter_by(student_id=field.data).first(): raise ValidationError('وجود دارد.')
 
 class LoginForm(FlaskForm):
     student_id = StringField('شماره دانشجویی', validators=[DataRequired()])
@@ -176,9 +133,6 @@ class UpdatePasswordForm(FlaskForm):
     new_password = PasswordField('رمز جدید', validators=[DataRequired()])
     confirm_new_password = PasswordField('تکرار', validators=[DataRequired(), EqualTo('new_password')])
     submit = SubmitField('تغییر رمز')
-
-class DeleteAccountForm(FlaskForm):
-    submit = SubmitField('حذف حساب')
 
 # --- دکوراتورها ---
 def login_required(f):
@@ -223,11 +177,14 @@ def show_auth_page():
     return render_template('register.html', form=RegistrationForm(), login_form=LoginForm())
 
 @app.route('/register', methods=['POST'])
-@limiter.limit("5 per minute")
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = AuthService.register_user(form.full_name.data, form.student_id.data, form.major.data, form.password.data)
+        hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
+        is_admin = (form.student_id.data == 'admin')
+        user = User(full_name=form.full_name.data, student_id=form.student_id.data, major=form.major.data, password_hash=hashed_password, is_admin=is_admin)
+        db.session.add(user)
+        db.session.commit()
         session['current_user_id'] = user.id
         session['current_user_name'] = user.full_name
         session['current_user_pic'] = user.profile_pic
@@ -237,105 +194,110 @@ def register():
     return render_template('register.html', form=form, login_form=LoginForm())
 
 @app.route('/login', methods=['POST'])
-@limiter.limit("10 per minute")
 def login():
-    login_form = LoginForm()
-    if login_form.validate_on_submit():
-        user = AuthService.authenticate_user(login_form.student_id.data, login_form.password.data)
-        if user:
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(student_id=form.student_id.data).first()
+        if user and check_password_hash(user.password_hash, form.password.data):
             session['current_user_id'] = user.id
             session['current_user_name'] = user.full_name
             session['current_user_pic'] = user.profile_pic
             session['is_admin'] = user.is_admin
             flash('خوش آمدید.', 'success')
             return redirect(url_for('dashboard'))
-        else: flash('اطلاعات اشتباه است.', 'error')
-    return render_template('register.html', form=RegistrationForm(), login_form=login_form)
+        flash('اطلاعات اشتباه است.', 'error')
+    return render_template('register.html', form=RegistrationForm(), login_form=form)
 
 @app.route('/logout')
-@login_required
 def logout():
     StateManager.set_offline(session.get('current_user_id'))
     session.clear()
-    flash('خروج موفق.', 'info')
     return redirect(url_for('index'))
 
-# --- داشبورد (اصلاح شده) ---
+# --- داشبورد کاربر ---
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    current_user_id = session['current_user_id']
-    # برنامه شخصی کاربر
-    my_schedules = ClassSchedule.query.filter_by(user_id=current_user_id).all()
-    # درخواست‌های رزرو کاربر (برای نمایش در لیست)
-    my_reservations = ReservationRequest.query.filter_by(user_id=current_user_id).order_by(ReservationRequest.created_at.desc()).limit(5).all()
-    
+    uid = session['current_user_id']
+    my_schedules = ClassSchedule.query.filter_by(user_id=uid).all()
+    my_reservations = ReservationRequest.query.filter_by(user_id=uid).order_by(ReservationRequest.created_at.desc()).limit(10).all()
     return render_template('dashboard.html', schedules=my_schedules, my_reservations=my_reservations)
 
-# API: دریافت کلاس‌های خالی
+# API: دریافت کلاس‌های خالی برای دانشجو
 @app.route('/api/available_slots')
 @login_required
 def get_available_slots():
     slots = EmptyClassSlot.query.filter_by(is_reserved=False).all()
-    output = []
-    for s in slots:
-        output.append({'id': s.id, 'day': s.day, 'time_slot': s.time_slot, 'location': s.location})
-    return jsonify(output)
+    return jsonify([{'id': s.id, 'day': s.day, 'time_slot': s.time_slot, 'location': s.location} for s in slots])
 
-# ذخیره برنامه شخصی
+# ذخیره برنامه شخصی (منطق جدید: حذف همه کلاس‌های سلول، سپس اضافه کردن)
 @app.route('/update_schedule', methods=['POST'])
 @login_required
 def update_schedule():
     data = request.json
-    user_id = session['current_user_id']
-    ClassSchedule.query.filter_by(user_id=user_id, day=data['day'], time_slot=data['time_slot']).delete()
-    if data.get('course_name'):
-        new_schedule = ClassSchedule(user_id=user_id, day=data['day'], time_slot=data['time_slot'], course_name=data['course_name'], class_location=data.get('class_location', ''))
-        db.session.add(new_schedule)
+    uid = session['current_user_id']
+    
+    # حذف کلاس‌های قبلی آن سلول (پاکسازی قبل از ذخیره جدید)
+    # نکته: در فرانت‌اند ما لیست کلاس‌ها را می‌فرستیم
+    ClassSchedule.query.filter_by(user_id=uid, day=data['day'], time_slot=data['time_slot']).delete()
+    
+    classes = data.get('classes', [])
+    if classes:
+        for c in classes:
+            if c.get('name'):
+                new_s = ClassSchedule(user_id=uid, day=data['day'], time_slot=data['time_slot'], course_name=c['name'], class_location=c.get('location',''))
+                db.session.add(new_s)
+    
     db.session.commit()
     return jsonify({'status': 'success'})
 
-# ارسال درخواست رزرو
+# ثبت درخواست رزرو
 @app.route('/submit_reservation/<int:slot_id>', methods=['POST'])
 @login_required
 def submit_reservation(slot_id):
     reason = request.form.get('reason')
     slot = EmptyClassSlot.query.get_or_404(slot_id)
-    
     if slot.is_reserved:
         flash('این کلاس قبلاً رزرو شده است.', 'error')
+        return redirect(url_for('dashboard'))
+    
+    # چک کردن اینکه کاربر قبلا برای این کلاس درخواست داده یا نه
+    exists = ReservationRequest.query.filter_by(user_id=session['current_user_id'], slot_id=slot.id, status='pending').first()
+    if exists:
+        flash('شما قبلاً برای این کلاس درخواست داده‌اید.', 'warning')
         return redirect(url_for('dashboard'))
 
     new_req = ReservationRequest(user_id=session['current_user_id'], slot_id=slot.id, reason=reason)
     db.session.add(new_req)
     db.session.commit()
-    flash('درخواست رزرو شما ثبت شد و در انتظار تایید است.', 'success')
+    flash('درخواست رزرو ثبت شد.', 'success')
     return redirect(url_for('dashboard'))
 
-# --- پنل ادمین ---
+# --- پنل ادمین (جدید و جداگانه) ---
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
-    empty_slots = EmptyClassSlot.query.filter_by(is_reserved=False).all()
     pending_requests = ReservationRequest.query.filter_by(status='pending').all()
-    return render_template('admin_dashboard.html', slots=empty_slots, requests=pending_requests)
+    # برای نمایش جدول، لیست همه کلاس‌های خالی را می‌فرستیم
+    empty_slots = EmptyClassSlot.query.filter_by(is_reserved=False).all()
+    return render_template('admin_panel.html', requests=pending_requests, slots=empty_slots)
 
-# اضافه کردن کلاس خالی
+# اضافه کردن کلاس خالی توسط ادمین
 @app.route('/admin/add_slot', methods=['POST'])
 @admin_required
 def admin_add_slot():
     day = request.form.get('day')
     time_slot = request.form.get('time_slot')
-    location = request.form.get('location')
+    location = request.form.get('location', 'کلاس')
     
+    # محدودیت تکراری نباشد (برای همان روز و ساعت)
     exists = EmptyClassSlot.query.filter_by(day=day, time_slot=time_slot, is_reserved=False).first()
     if exists:
-        flash('این بازه زمانی قبلاً تعریف شده است.', 'error')
+        flash('این زمان قبلاً تعریف شده است.', 'error')
     else:
-        new_slot = EmptyClassSlot(day=day, time_slot=time_slot, location=location)
-        db.session.add(new_slot)
+        db.session.add(EmptyClassSlot(day=day, time_slot=time_slot, location=location))
         db.session.commit()
-        flash('کلاس خالی جدید اضافه شد.', 'success')
+        flash('کلاس خالی اضافه شد.', 'success')
     return redirect(url_for('admin_dashboard'))
 
 # حذف کلاس خالی
@@ -349,8 +311,8 @@ def admin_delete_slot(slot_id):
     flash('کلاس حذف شد.', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# مدیریت درخواست‌ها (منطق همزمانی)
-@app.route('/admin/handle_reservation/<int:req_id>/<string:action>')
+# مدیریت درخواست‌ها
+@app.route('/admin/handle/<int:req_id>/<string:action>')
 @admin_required
 def handle_reservation(req_id, action):
     req = ReservationRequest.query.get_or_404(req_id)
@@ -360,18 +322,15 @@ def handle_reservation(req_id, action):
         if slot and not slot.is_reserved:
             req.status = 'approved'
             slot.is_reserved = True
-            
-            # رد کردن سایر درخواست‌ها برای همین کلاس
+            # رد کردن بقیه
             ReservationRequest.query.filter(
                 ReservationRequest.slot_id == slot.id,
                 ReservationRequest.id != req.id,
                 ReservationRequest.status == 'pending'
             ).update({ReservationRequest.status: 'rejected'}, synchronize_session=False)
-            
-            flash('درخواست تایید شد. سایر درخواست‌ها رد شدند.', 'success')
+            flash('تایید شد و کلاس رزرو شد.', 'success')
         else:
-            flash('این کلاس قبلاً رزرو شده است.', 'error')
-    
+            flash('این کلاس قبلاً رزرو شده یا وجود ندارد.', 'error')
     elif action == 'reject':
         req.status = 'rejected'
         flash('درخواست رد شد.', 'info')
@@ -379,13 +338,15 @@ def handle_reservation(req_id, action):
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
 
-# --- مسیرهای پروفایل و چت ---
+# --- پروفایل و چت (با مدیریت خطا) ---
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/match')
 @login_required
 def match():
-    current_user_id = session['current_user_id']
     q = request.args.get('q', '')
-    query = User.query.filter(User.id != current_user_id)
+    query = User.query.filter(User.id != session['current_user_id'])
     if q: users = query.filter((User.major.contains(q)) | (User.full_name.contains(q))).all()
     else: users = query.limit(20).all()
     return render_template('match.html', users=users)
@@ -393,15 +354,22 @@ def match():
 @app.route('/profile/<int:user_id>')
 @login_required
 def profile(user_id):
-    user = db.session.get(User, user_id) or abort(404)
+    user = db.session.get(User, user_id)
+    if not user: abort(404)
     can_edit = (session['current_user_id'] == user_id)
-    forms = {'update_profile': UpdateProfileForm(obj=user) if can_edit else None, 'update_password': UpdatePasswordForm() if can_edit else None, 'delete_account': DeleteAccountForm() if can_edit else None}
-    return render_template('profile.html', user=user, can_edit=can_edit, update_profile_form=forms['update_profile'], update_password_form=forms['update_password'], delete_account_form=forms['delete_account'])
+    forms = {
+        'update_profile': UpdateProfileForm(obj=user) if can_edit else None,
+        'update_password': UpdatePasswordForm() if can_edit else None
+    }
+    return render_template('profile.html', user=user, can_edit=can_edit, 
+                           update_profile_form=forms['update_profile'],
+                           update_password_form=forms['update_password'])
 
 @app.route('/update_profile', methods=['POST'])
 @login_required
 def update_profile():
-    user = db.session.get(User, session['current_user_id']) or abort(404)
+    user = db.session.get(User, session['current_user_id'])
+    if not user: return redirect(url_for('logout'))
     form = UpdateProfileForm(obj=user)
     if form.validate_on_submit():
         user.full_name = form.full_name.data
@@ -421,13 +389,13 @@ def update_profile():
 @app.route('/update_password', methods=['POST'])
 @login_required
 def update_password():
-    user = db.session.get(User, session['current_user_id']) or abort(404)
+    user = db.session.get(User, session['current_user_id'])
     form = UpdatePasswordForm()
     if form.validate_on_submit():
         if check_password_hash(user.password_hash, form.current_password.data):
-            user.password_hash = generate_password_hash(form.new_password.data, method='pbkdf2:sha256')
+            user.password_hash = generate_password_hash(form.new_password.data)
             db.session.commit()
-            flash('رمز عبور تغییر کرد.', 'success')
+            flash('رمز تغییر کرد.', 'success')
         else: flash('رمز فعلی اشتباه است.', 'error')
     return redirect(url_for('profile', user_id=user.id))
 
@@ -436,27 +404,45 @@ def update_password():
 def delete_account():
     user = db.session.get(User, session['current_user_id'])
     if user:
-        StateManager.set_offline(user.id)
         db.session.delete(user)
         db.session.commit()
     session.clear()
-    flash('حساب حذف شد.', 'info')
     return redirect(url_for('index'))
 
 @app.route('/chat')
 @login_required
 def chat_main():
-    conversations = ChatService.get_inbox_conversations(session['current_user_id'])
+    uid = session['current_user_id']
+    
+    # منطق پیچیده برای لیست مکالمات (با ایمن‌سازی)
+    other_user_id = case((Message.sender_id == uid, Message.receiver_id), else_=Message.sender_id).label("other_user_id")
+    subquery = db.session.query(func.max(Message.id).label("last_id")).filter(or_(Message.sender_id == uid, Message.receiver_id == uid)).group_by(other_user_id).subquery()
+    
+    results = db.session.query(Message, User).join(subquery, Message.id == subquery.c.last_id).join(User, User.id == other_user_id).order_by(Message.timestamp.desc()).all()
+    
+    conversations = []
+    for msg, other_user in results:
+        conversations.append({
+            'other_user_id': other_user.id, 'other_user_name': other_user.full_name,
+            'other_user_pic': other_user.profile_pic, 'last_message_content': msg.content,
+            'last_message_timestamp': msg.timestamp, 'is_online': StateManager.is_online(other_user.id)
+        })
+        
     active_chat_user = None
     messages = []
-    other_user_id = request.args.get('user_id', type=int)
-    if other_user_id:
-        active_chat_user = db.session.get(User, other_user_id)
-        if active_chat_user: messages = ChatService.get_chat_history(session['current_user_id'], other_user_id)
+    other_id = request.args.get('user_id', type=int)
+    if other_id:
+        active_chat_user = db.session.get(User, other_id)
+        if active_chat_user:
+            # خواندن پیام‌ها
+            Message.query.filter_by(sender_id=other_id, receiver_id=uid, read_at=None).update({Message.read_at: func.now()})
+            db.session.commit()
+            messages = Message.query.filter(or_(and_(Message.sender_id == uid, Message.receiver_id == other_id), and_(Message.sender_id == other_id, Message.receiver_id == uid))).order_by(Message.timestamp.asc()).all()
+            
     return render_template('chat_layout.html', conversations=conversations, active_chat_user=active_chat_user, messages=messages)
 
 @app.route('/api/user_status/<int:user_id>')
-def check_user_online(user_id):
+def user_status(user_id):
     return jsonify({'online': StateManager.is_online(user_id)})
 
 # --- سوکت‌ها ---
@@ -478,11 +464,13 @@ def handle_join_chat(data):
 def handle_send_message(data):
     uid = session.get('current_user_id')
     if not uid or not data.get('other_user_id') or not data.get('content'): return
-    msg = ChatService.save_message(uid, data['other_user_id'], data['content'])
+    msg = Message(sender_id=uid, receiver_id=data['other_user_id'], content=data['content'])
+    db.session.add(msg)
+    db.session.commit()
     oid = data['other_user_id']
     emit('new_message', {'sender_name': session['current_user_name'], 'content': data['content'], 'timestamp': msg.timestamp.strftime('%H:%M'), 'sender_id': uid, 'message_id': msg.id}, room=f"chat-{min(uid, oid)}-{max(uid, oid)}")
 
-# --- اجرای برنامه ---
+# --- اجرا ---
 with app.app_context():
     db.create_all()
     if not User.query.filter_by(student_id='admin').first():

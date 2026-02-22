@@ -39,9 +39,6 @@
                 <div class="form-group">
                     {{ form.major.label(class="form-label") }}
                     {{ form.major(class="form-select") }}
-                    {% if form.major.errors %}
-                        <div class="error-message">{{ form.major.errors[0] }}</div>
-                    {% endif %}
                 </div>
                 
                 <div class="form-group">
@@ -57,7 +54,7 @@
                     {{ form.confirm_password(class="form-control", placeholder="تکرار کد ملی") }}
                 </div>
                 
-                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 1rem;">
+                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 0.5rem;">
                     ایجاد حساب کاربری
                 </button>
             </form>
@@ -80,7 +77,7 @@
                     {{ login_form.password(class="form-control", placeholder="رمز عبور") }}
                 </div>
                 
-                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 1rem;">
+                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 0.5rem;">
                     ورود به سامانه
                 </button>
             </form>
@@ -89,53 +86,23 @@
 </div>
 
 <style>
-    .auth-container {
-        max-width: 500px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-    }
+    .auth-container { max-width: 500px; margin: 2rem auto; padding: 0 1rem; }
     .auth-header { text-align: center; margin-bottom: 2rem; }
     .auth-title { font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem; }
     .auth-subtitle { color: var(--text-secondary); }
     
-    .auth-tabs {
-        display: flex;
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 5px;
-        margin-bottom: 1.5rem;
-        box-shadow: var(--shadow-sm);
-    }
-    .auth-tab {
-        flex: 1;
-        text-align: center;
-        padding: 0.75rem;
-        cursor: pointer;
-        border-radius: 8px;
-        font-weight: 500;
-        color: var(--text-secondary);
-        transition: all 0.3s;
-    }
-    .auth-tab.active {
-        background: var(--primary-color);
-        color: white;
-        box-shadow: var(--shadow-md);
-    }
+    .auth-tabs { display: flex; background: var(--surface); border-radius: 12px; padding: 5px; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm); }
+    .auth-tab { flex: 1; text-align: center; padding: 0.75rem; cursor: pointer; border-radius: 8px; font-weight: 500; color: var(--text-secondary); transition: all 0.3s; }
+    .auth-tab.active { background: var(--primary-color); color: white; box-shadow: var(--shadow-md); }
     
-    .form-card {
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: var(--shadow-md);
-    }
+    .form-card { background: var(--surface); border-radius: 12px; padding: 2rem; box-shadow: var(--shadow-md); }
     
     .tab-content { display: none; animation: fadeIn 0.3s ease; }
     .tab-content.active { display: block; }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+    .error-message { color: var(--error); font-size: 0.85rem; margin-top: 0.25rem; text-align: right; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 {% endblock %}
 

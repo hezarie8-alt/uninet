@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}صندوق پیام | یونی نت{% endblock %}
+{% block title %}چت | یونی نت{% endblock %}
 
 {% block content %}
 <div class="chat-layout">
@@ -8,53 +8,13 @@
     <aside class="chat-sidebar" id="chat-sidebar">
         <div class="sidebar-header">
             <div class="sidebar-search">
-                <i class="material-icons" style="color: var(--text-secondary);">search</i>
-                <input type="text" placeholder="جستجو در گفتگوها..." id="search-input" oninput="filterConversations()">
+                <i class="material-icons" style="color: var(--text-secondary); font-size: 1.2rem;">search</i>
+                <input type="text" placeholder="جستجو..." id="search-input" oninput="filterConversations()">
             </div>
         </div>
         
         <div class="conversation-list" id="conversation-list">
-            {% if conversations %}
-                {% for convo in conversations %}
-                    <div class="convo-item {% if active_chat_user and active_chat_user.id == convo.other_user_id %}active{% endif %}" 
-                         onclick="loadChat({{ convo.other_user_id }})" 
-                         data-name="{{ convo.other_user_name }}" 
-                         data-id="{{ convo.other_user_id }}">
-                        
-                        <div class="convo-avatar">
-                            {% if convo.other_user_pic and convo.other_user_pic != 'default.jpg' %}
-                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + convo.other_user_pic) }}" alt="">
-                            {% else %}
-                                {{ convo.other_user_name[0] }}
-                            {% endif %}
-                            {% if convo.is_online %}
-                                <span style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background-color: var(--success); border: 2px solid var(--surface); border-radius: 50%;"></span>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="convo-info">
-                            <div class="convo-header">
-                                <span class="convo-name">{{ convo.other_user_name }}</span>
-                                <span class="convo-time">{{ convo.last_message_timestamp.strftime('%H:%M') }}</span>
-                            </div>
-                            <div class="convo-msg" style="display: flex; justify-content: space-between;">
-                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                    {% if convo.last_message_content %}{{ convo.last_message_content }}{% else %}بدون پیام{% endif %}
-                                </span>
-                                {% if convo.has_unread %}
-                                    <span style="background: var(--primary-color); color: white; border-radius: 50%; min-width: 20px; height: 20px; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; margin-right: 5px;">!</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
-                    <i class="material-icons" style="font-size: 3rem;">chat</i>
-                    <p>هیچ گفتگویی ندارید</p>
-                    <a href="{{ url_for('match') }}" class="btn btn-outline" style="margin-top: 1rem; font-size: 0.8rem;">یافتن دوستان</a>
-                </div>
-            {% endif %}
+            <!-- Loaded via JS -->
         </div>
     </aside>
 
@@ -64,11 +24,11 @@
             <!-- Active Chat Window -->
             <div class="chat-window">
                 <div class="chat-header-active">
-                    <button class="btn btn-outline" onclick="showSidebar()" style="display: none; padding: 0.5rem;" id="back-btn">
+                    <button class="btn-icon" onclick="showSidebar()" style="display: none;" id="back-btn">
                         <i class="material-icons">arrow_forward</i>
                     </button>
                     
-                    <div class="convo-avatar">
+                    <div class="chat-avatar-lg">
                         {% if active_chat_user.profile_pic and active_chat_user.profile_pic != 'default.jpg' %}
                             <img src="{{ url_for('static', filename='uploads/profile_pics/' + active_chat_user.profile_pic) }}" alt="">
                         {% else %}
@@ -82,19 +42,21 @@
                     </div>
                     
                     <div style="margin-right: auto; display: flex; gap: 0.5rem;">
-                        <a href="{{ url_for('profile', user_id=active_chat_user.id) }}" class="btn btn-outline" style="padding: 0.5rem;">
+                        <a href="{{ url_for('profile', user_id=active_chat_user.id) }}" class="btn btn-outline btn-sm">
                             <i class="material-icons">person</i>
                         </a>
                     </div>
                 </div>
                 
                 <div class="chat-messages-active" id="chat-messages-container">
-                    {% for msg in messages %}
-                        <div class="message-bubble {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">
-                            {{ msg.content }}
-                            <div class="message-time">{{ msg.timestamp.strftime('%H:%M') }}</div>
-                        </div>
-                    {% endfor %}
+                    {% if messages %}
+                        {% for msg in messages %}
+                            <div class="message-bubble {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                                {{ msg.content }}
+                                <div class="message-time">{{ msg.timestamp.strftime('%H:%M') }}</div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
                 
                 <div class="chat-input-area">
@@ -107,9 +69,10 @@
         {% else %}
             <!-- Empty State -->
             <div class="chat-empty">
-                <i class="material-icons">forum</i>
-                <h3>یک گفتگو انتخاب کنید</h3>
-                <p>از لیست سمت راست یک گفتگو را انتخاب کنید یا شروعی جدید بسازید.</p>
+                <i class="material-icons" style="font-size: 5rem; opacity: 0.3;">chat</i>
+                <h3>شروع گفتگو</h3>
+                <p>یک گفتگو را از لیست سمت راست انتخاب کنید یا کاربر جدیدی را پیدا کنید.</p>
+                <a href="{{ url_for('match') }}" class="btn btn-custom" style="margin-top: 1rem;">یافتن کاربران</a>
             </div>
         {% endif %}
     </main>
@@ -122,7 +85,49 @@
     const currentUserId = {{ current_user.id }};
     let otherUserId = {{ active_chat_user.id if active_chat_user else 'null' }};
     
-    // --- Socket.IO Logic ---
+    // Data Injection for initial load
+    const initialConversations = {{ conversations | tojson }};
+
+    // --- Render Conversation List ---
+    function renderConversations(data) {
+        const list = document.getElementById('conversation-list');
+        list.innerHTML = '';
+        
+        if (data.length === 0) {
+            list.innerHTML = '<div class="empty-state"><p>هیچ گفتگویی ندارید</p></div>';
+            return;
+        }
+
+        data.forEach(convo => {
+            const item = document.createElement('div');
+            item.className = 'convo-item';
+            if(otherUserId && convo.other_user_id === otherUserId) item.classList.add('active');
+            
+            item.onclick = () => loadChat(convo.other_user_id);
+            
+            item.innerHTML = `
+                <div class="convo-avatar">
+                    ${convo.other_user_pic && convo.other_user_pic !== 'default.jpg' 
+                        ? `<img src="/static/uploads/profile_pics/${convo.other_user_pic}" alt="">` 
+                        : convo.other_user_name[0]}
+                    ${convo.is_online ? '<span class="online-dot"></span>' : ''}
+                </div>
+                <div class="convo-info">
+                    <div class="convo-header">
+                        <span class="convo-name">${convo.other_user_name}</span>
+                        <span class="convo-time">${new Date(convo.last_message_timestamp).toLocaleTimeString('fa-IR', {hour: '2-digit', minute: '2-digit'})}</span>
+                    </div>
+                    <div class="convo-msg">${convo.last_message_content || '...'}</div>
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    // Initial Render
+    renderConversations(initialConversations);
+
+    // --- Socket Logic ---
     socket.on('connect', () => {
         if (otherUserId) {
             socket.emit('join_chat', { other_user_id: otherUserId });
@@ -130,101 +135,137 @@
         }
     });
 
-    // Check user status via HTTP
     function checkStatus(uid) {
         if(!uid) return;
         fetch(`/api/user_status/${uid}`)
             .then(res => res.json())
             .then(data => {
-                const statusText = document.getElementById('status-text-header');
-                if(statusText) {
-                    statusText.textContent = data.online ? 'آنلاین' : 'آفلاین';
-                    statusText.style.color = data.online ? 'var(--success)' : 'var(--text-secondary)';
+                const txt = document.getElementById('status-text-header');
+                if(txt) {
+                    txt.textContent = data.online ? 'آنلاین' : 'آفلاین';
+                    txt.style.color = data.online ? 'var(--success)' : 'var(--text-secondary)';
                 }
             });
     }
 
     // Send Message
-    const sendBtn = document.getElementById('send-btn');
     const msgInput = document.getElementById('message-input');
-    
+    const sendBtn = document.getElementById('send-btn');
+    const msgContainer = document.getElementById('chat-messages-container');
+
     if (sendBtn && msgInput) {
         sendBtn.addEventListener('click', sendMessage);
-        msgInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+        msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
     }
 
     function sendMessage() {
         const content = msgInput.value.trim();
         if (!content || !otherUserId) return;
 
-        // Optimistic UI Update
-        const container = document.getElementById('chat-messages-container');
+        // Optimistic UI
         const div = document.createElement('div');
         div.className = 'message-bubble sent';
         div.innerHTML = `${content}<div class="message-time">${new Date().toLocaleTimeString('fa-IR', {hour: '2-digit', minute: '2-digit'})}</div>`;
-        container.appendChild(div);
+        msgContainer.appendChild(div);
+        msgContainer.scrollTop = msgContainer.scrollHeight;
         
-        // Scroll & Clear
-        container.scrollTop = container.scrollHeight;
         msgInput.value = '';
-
-        // Send to Server
-        socket.emit('send_message', {
-            other_user_id: otherUserId,
-            content: content
-        });
-        
-        // Update Sidebar Last Message
-        updateSidebarPreview(otherUserId, content);
+        socket.emit('send_message', { other_user_id: otherUserId, content: content });
     }
 
     // Receive Message
     socket.on('new_message', (data) => {
         if (data.sender_id === otherUserId) {
-            const container = document.getElementById('chat-messages-container');
             const div = document.createElement('div');
             div.className = 'message-bubble received';
             div.innerHTML = `${data.content}<div class="message-time">${data.timestamp}</div>`;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        } else {
-            updateSidebarPreview(data.sender_id, data.content, true);
+            msgContainer.appendChild(div);
+            msgContainer.scrollTop = msgContainer.scrollHeight;
         }
     });
 
-    // --- Navigation Logic (Mobile) ---
+    // --- Navigation ---
     function loadChat(userId) {
-        // On mobile, hide sidebar and show chat
         if (window.innerWidth <= 768) {
             document.getElementById('chat-sidebar').style.display = 'none';
             document.getElementById('chat-main-area').style.display = 'flex';
-            document.getElementById('back-btn').style.display = 'block';
         }
-        // Reload page to fetch messages
         window.location.href = `/chat?user_id=${userId}`;
     }
 
     function showSidebar() {
-        document.getElementById('chat-sidebar').style.display = 'block';
+        document.getElementById('chat-sidebar').style.display = 'flex';
         document.getElementById('chat-main-area').style.display = 'none';
     }
 
-    function updateSidebarPreview(uid, text, isNew=false) {
-        const item = document.querySelector(`.convo-item[data-id="${uid}"]`);
-        if (item) {
-            item.querySelector('.convo-msg span').textContent = text;
-            item.querySelector('.convo-time').textContent = 'الان';
-        }
-    }
-
     function filterConversations() {
-        const query = document.getElementById('search-input').value.toLowerCase();
-        document.querySelectorAll('.convo-item').forEach(item => {
-            const name = item.getAttribute('data-name').toLowerCase();
-            item.style.display = name.includes(query) ? 'flex' : 'none';
+        const q = document.getElementById('search-input').value.toLowerCase();
+        const items = document.querySelectorAll('.convo-item');
+        items.forEach(item => {
+            const name = item.querySelector('.convo-name').innerText.toLowerCase();
+            item.style.display = name.includes(q) ? 'flex' : 'none';
         });
     }
 </script>
+
+<style>
+    /* Specific Chat Layout Fixes */
+    .chat-layout { display: flex; height: calc(100vh - 70px); background: var(--background); overflow: hidden; }
+    
+    /* Sidebar */
+    .chat-sidebar { width: 320px; background: var(--surface); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; }
+    .sidebar-header { padding: 1rem; border-bottom: 1px solid var(--border-color); }
+    .sidebar-search { display: flex; align-items: center; gap: 0.5rem; background: var(--background); padding: 0.5rem 1rem; border-radius: 8px; }
+    .sidebar-search input { border: none; background: none; outline: none; width: 100%; font-size: 0.9rem; font-family: inherit; }
+    
+    .conversation-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
+    .convo-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-bottom: 0.25rem; }
+    .convo-item:hover { background: var(--background); }
+    .convo-item.active { background: rgba(0, 131, 143, 0.1); }
+    
+    .convo-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--primary-light); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; position: relative; overflow: hidden; flex-shrink: 0; }
+    .convo-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .online-dot { position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--success); border-radius: 50%; border: 2px solid var(--surface); }
+    
+    .convo-info { flex: 1; overflow: hidden; }
+    .convo-header { display: flex; justify-content: space-between; margin-bottom: 0.25rem; }
+    .convo-name { font-weight: 600; font-size: 0.95rem; }
+    .convo-time { font-size: 0.75rem; color: var(--text-secondary); }
+    .convo-msg { font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Main Chat */
+    .chat-main { flex: 1; display: flex; flex-direction: column; background: #f0f2f5; }
+    .chat-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); }
+    
+    .chat-header-active { background: var(--surface); padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .chat-avatar-lg { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; overflow: hidden; }
+    .chat-avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
+    .chat-header-info h3 { font-size: 1rem; margin-bottom: 2px; }
+    .chat-header-info span { font-size: 0.8rem; }
+    
+    .btn-icon { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; transition: background 0.2s; }
+    .btn-icon:hover { background: var(--background); }
+    .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
+
+    .chat-messages-active { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v-2h4v4h2v-4h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4v-2H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+    
+    .message-bubble { max-width: 65%; padding: 0.75rem 1rem; border-radius: 12px; position: relative; word-wrap: break-word; font-size: 0.95rem; }
+    .message-bubble.sent { background: var(--primary-color); color: white; align-self: flex-end; border-bottom-left-radius: 2px; }
+    .message-bubble.received { background: var(--surface); color: var(--text-primary); align-self: flex-start; border-bottom-right-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .message-time { font-size: 0.7rem; margin-top: 0.25rem; opacity: 0.8; text-align: left; }
+    .message-bubble.sent .message-time { text-align: right; }
+
+    .chat-input-area { background: var(--surface); padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 0.5rem; border-top: 1px solid var(--border-color); }
+    .chat-input-area input { flex: 1; border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: 24px; font-size: 0.95rem; font-family: inherit; background: var(--background); }
+    .chat-input-area input:focus { outline: none; border-color: var(--primary-color); }
+    .send-btn { background: var(--primary-color); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+    .send-btn:hover { transform: scale(1.05); }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .chat-layout { flex-direction: column; }
+        .chat-sidebar { width: 100%; display: flex; }
+        .chat-main { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; }
+    }
+</style>
 {% endblock %}
