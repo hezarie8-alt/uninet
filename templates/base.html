@@ -9,12 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
-    <!-- CSS (Link to the centralized file) -->
+    <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <!-- Dark Mode Script (Prevent Flash of Unstyled Content) -->
+    <!-- Dark Mode Script -->
     <script>
-        // Apply theme immediately before render
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'dark' || (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.setAttribute('data-theme', 'dark');
@@ -29,60 +28,70 @@
             
             <ul class="navbar-nav">
                 {% if current_user %}
-                    <li><a href="{{ url_for('match') }}" class="nav-link">جستجوی کاربران</a></li>
-                    <li><a href="{{ url_for('inbox') }}" class="nav-link">صندوق پیام</a></li>
-                    <li><a href="{{ url_for('profile', user_id=current_user.id) }}" class="nav-link">پروفایل</a></li>
-                    <li><a href="{{ url_for('logout') }}" class="nav-link">خروج</a></li>
+                    <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="material-icons">dashboard</i> داشبورد</a></li>
+                    <li><a href="{{ url_for('chat_main') }}" class="nav-link"><i class="material-icons">chat</i> چت</a></li>
+                    <li><a href="{{ url_for('match') }}" class="nav-link"><i class="material-icons">search</i> جستجو</a></li>
                 {% else %}
                     <li><a href="{{ url_for('index') }}" class="nav-link">صفحه اصلی</a></li>
                     <li><a href="{{ url_for('about') }}" class="nav-link">درباره ما</a></li>
                     <li><a href="{{ url_for('show_auth_page') }}" class="nav-link">ورود / ثبت‌نام</a></li>
                 {% endif %}
-                
-                <!-- Dark Mode Toggle Button -->
-                <li>
-                    <button id="theme-toggle" class="nav-link" style="background: none; border: none; cursor: pointer; display: flex; align-items: center;">
-                        <i class="material-icons" id="theme-icon">light_mode</i>
-                    </button>
-                </li>
             </ul>
             
-            {% if current_user %}
-                <div class="user-info">
-                    <span>{{ current_user.name }}</span>
-                    <i class="material-icons">account_circle</i>
-                </div>
-            {% endif %}
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Dark Mode Toggle -->
+                <button id="theme-toggle" class="nav-link" style="background: none; border: none; cursor: pointer;">
+                    <i class="material-icons" id="theme-icon">light_mode</i>
+                </button>
+
+                {% if current_user %}
+                    <!-- User Dropdown Menu -->
+                    <div class="user-dropdown">
+                        <div class="user-info">
+                            <div class="user-avatar-nav">
+                                {% if current_user.pic and current_user.pic != 'default.jpg' %}
+                                    <img src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.pic) }}" alt="Avatar">
+                                {% else %}
+                                    {{ current_user.name[0] }}
+                                {% endif %}
+                            </div>
+                            <span style="font-weight: 500;">{{ current_user.name }}</span>
+                            <i class="material-icons" style="font-size: 1rem;">arrow_drop_down</i>
+                        </div>
+                        
+                        <div class="dropdown-menu">
+                            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item">
+                                <i class="material-icons">person</i>
+                                پروفایل من
+                            </a>
+                            <a href="{{ url_for('logout') }}" class="dropdown-item danger">
+                                <i class="material-icons">exit_to_app</i>
+                                خروج
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
         </div>
     </nav>
     
     <!-- Flash Messages -->
-    <div class="container">
-        <div class="flash-messages" style="margin-top: 1rem;">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash-message {{ category }}">
-                            <i class="material-icons">
-                                {% if category == 'success' %}check_circle
-                                {% elif category == 'error' %}error
-                                {% elif category == 'warning' %}warning
-                                {% else %}info
-                                {% endif %}
-                            </i>
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        </div>
+    <div class="container" style="margin-top: 1rem;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; {% if category == 'success' %}background-color: rgba(46, 125, 50, 0.1); color: var(--success);{% elif category == 'error' %}background-color: rgba(183, 28, 28, 0.1); color: var(--error);{% else %}background-color: rgba(2, 136, 209, 0.1); color: var(--info);{% endif %}">
+                        <i class="material-icons">{% if category == 'success' %}check_circle{% elif category == 'error' %}error{% else %}info{% endif %}</i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </div>
     
     <!-- Main Content -->
     <main class="main-content">
-        <div class="container">
-            {% block content %}{% endblock %}
-        </div>
+        {% block content %}{% endblock %}
     </main>
     
     <!-- Footer -->
@@ -93,39 +102,25 @@
                 <ul class="footer-links">
                     <li><a href="{{ url_for('about') }}">معرفی اپلیکیشن</a></li>
                     <li><a href="#">قوانین و مقررات</a></li>
-                    <li><a href="#">حریم خصوصی</a></li>
                 </ul>
             </div>
-            
             <div class="footer-section">
-                <h3 class="footer-title">پشتیبانی</h3>
+                <h3 class="footer-title">ارتباط با ما</h3>
                 <ul class="footer-links">
-                    <li><a href="#">راهنمای استفاده</a></li>
-                    <li><a href="#">سوالات متداول</a></li>
-                    <li><a href="#">تماس با ما</a></li>
-                </ul>
-            </div>
-            
-            <div class="footer-section">
-                <h3 class="footer-title">شبکه‌های اجتماعی</h3>
-                <ul class="footer-links">
-                    <li><a href="#">تلگرام</a></li>
-                    <li><a href="#">اینستاگرام</a></li>
-                    <li><a href="#">توییتر</a></li>
+                    <li><a href="mailto:hzarie8@gmail.com">ایمیل</a></li>
+                    <li><a href="https://t.me/EhsanHezari" target="_blank">تلگرام</a></li>
                 </ul>
             </div>
         </div>
-        
         <div class="copyright">
             <p>© 2025 یونی نت. تمام حقوق محفوظ است.</p>
         </div>
     </footer>
-    
-    <!-- JavaScript -->
+
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    
-    <!-- Theme Toggler Script -->
     <script>
+        // Theme Toggler
         const toggleBtn = document.getElementById('theme-toggle');
         const htmlElement = document.documentElement;
         const themeIcon = document.getElementById('theme-icon');
@@ -137,8 +132,6 @@
                 themeIcon.textContent = 'light_mode';
             }
         }
-
-        // Initial icon state on page load
         updateIcon();
 
         toggleBtn.addEventListener('click', () => {
@@ -153,7 +146,6 @@
             updateIcon();
         });
     </script>
-    
     {% block scripts %}{% endblock %}
 </body>
 </html>

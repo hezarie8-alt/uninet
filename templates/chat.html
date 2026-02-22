@@ -1,170 +1,235 @@
 {% extends "base.html" %}
 
-{% block title %}چت با {{ other_user.name }} | یونی نت{% endblock %}
+{% block title %}صندوق پیام | یونی نت{% endblock %}
 
 {% block content %}
-<div class="chat-container" style="height: calc(100vh - 100px); border: 1px solid var(--border-color);">
-    <!-- Chat Header -->
-    <div class="chat-header">
-        <a href="{{ url_for('inbox') }}" style="color: white; margin-left: 1rem;">
-            <i class="material-icons">arrow_forward</i>
-        </a>
-        <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1.2rem;">{{ other_user.name[0] }}</div>
-        <div style="flex: 1;">
-            <div style="font-weight: 600;">{{ other_user.name }}</div>
-            <div style="font-size: 0.8rem; opacity: 0.8; display: flex; align-items: center; gap: 0.25rem;">
-                <span id="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background-color: #ccc;"></span>
-                <span id="status-text">در حال بررسی...</span>
+<div class="chat-layout">
+    <!-- Sidebar: Conversation List -->
+    <aside class="chat-sidebar" id="chat-sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-search">
+                <i class="material-icons" style="color: var(--text-secondary);">search</i>
+                <input type="text" placeholder="جستجو در گفتگوها..." id="search-input" oninput="filterConversations()">
             </div>
         </div>
-    </div>
-    
-    <!-- Chat Messages -->
-    <div class="chat-messages" id="chat-messages">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="message {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}">
-                    {% if message.sender_id != current_user.id %}
-                        <div class="message-avatar">{{ other_user.name[0] }}</div>
-                    {% endif %}
-                    <div class="message-content">
-                        <div class="message-text">{{ message.content }}</div>
-                        <div class="message-time">{{ message.timestamp.strftime('%H:%M') }}</div>
+        
+        <div class="conversation-list" id="conversation-list">
+            {% if conversations %}
+                {% for convo in conversations %}
+                    <div class="convo-item {% if active_chat_user and active_chat_user.id == convo.other_user_id %}active{% endif %}" 
+                         onclick="loadChat({{ convo.other_user_id }})" 
+                         data-name="{{ convo.other_user_name }}" 
+                         data-id="{{ convo.other_user_id }}">
+                        
+                        <div class="convo-avatar">
+                            {% if convo.other_user_pic and convo.other_user_pic != 'default.jpg' %}
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + convo.other_user_pic) }}" alt="">
+                            {% else %}
+                                {{ convo.other_user_name[0] }}
+                            {% endif %}
+                            {% if convo.is_online %}
+                                <span style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background-color: var(--success); border: 2px solid var(--surface); border-radius: 50%;"></span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="convo-info">
+                            <div class="convo-header">
+                                <span class="convo-name">{{ convo.other_user_name }}</span>
+                                <span class="convo-time">{{ convo.last_message_timestamp.strftime('%H:%M') }}</span>
+                            </div>
+                            <div class="convo-msg" style="display: flex; justify-content: space-between;">
+                                <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    {% if convo.last_message_content %}{{ convo.last_message_content }}{% else %}بدون پیام{% endif %}
+                                </span>
+                                {% if convo.has_unread %}
+                                    <span style="background: var(--primary-color); color: white; border-radius: 50%; min-width: 20px; height: 20px; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; margin-right: 5px;">!</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
+                    <i class="material-icons" style="font-size: 3rem;">chat</i>
+                    <p>هیچ گفتگویی ندارید</p>
+                    <a href="{{ url_for('match') }}" class="btn btn-outline" style="margin-top: 1rem; font-size: 0.8rem;">یافتن دوستان</a>
+                </div>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main class="chat-main" id="chat-main-area">
+        {% if active_chat_user %}
+            <!-- Active Chat Window -->
+            <div class="chat-window">
+                <div class="chat-header-active">
+                    <button class="btn btn-outline" onclick="showSidebar()" style="display: none; padding: 0.5rem;" id="back-btn">
+                        <i class="material-icons">arrow_forward</i>
+                    </button>
+                    
+                    <div class="convo-avatar">
+                        {% if active_chat_user.profile_pic and active_chat_user.profile_pic != 'default.jpg' %}
+                            <img src="{{ url_for('static', filename='uploads/profile_pics/' + active_chat_user.profile_pic) }}" alt="">
+                        {% else %}
+                            {{ active_chat_user.full_name[0] }}
+                        {% endif %}
+                    </div>
+                    
+                    <div class="chat-header-info">
+                        <h3>{{ active_chat_user.full_name }}</h3>
+                        <span id="status-text-header">در حال بررسی...</span>
+                    </div>
+                    
+                    <div style="margin-right: auto; display: flex; gap: 0.5rem;">
+                        <a href="{{ url_for('profile', user_id=active_chat_user.id) }}" class="btn btn-outline" style="padding: 0.5rem;">
+                            <i class="material-icons">person</i>
+                        </a>
                     </div>
                 </div>
-            {% endfor %}
+                
+                <div class="chat-messages-active" id="chat-messages-container">
+                    {% for msg in messages %}
+                        <div class="message-bubble {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                            {{ msg.content }}
+                            <div class="message-time">{{ msg.timestamp.strftime('%H:%M') }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="chat-input-area">
+                    <input type="text" id="message-input" placeholder="پیام خود را بنویسید..." autocomplete="off">
+                    <button class="send-btn" id="send-btn">
+                        <i class="material-icons">send</i>
+                    </button>
+                </div>
+            </div>
         {% else %}
-            <div style="text-align: center; color: var(--text-secondary); margin-top: 2rem;">
-                شروع گفتگو با {{ other_user.name }}
+            <!-- Empty State -->
+            <div class="chat-empty">
+                <i class="material-icons">forum</i>
+                <h3>یک گفتگو انتخاب کنید</h3>
+                <p>از لیست سمت راست یک گفتگو را انتخاب کنید یا شروعی جدید بسازید.</p>
             </div>
         {% endif %}
-        
-        <!-- Typing Indicator -->
-        <div id="typing-indicator" class="typing-indicator" style="display: none;">
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-        </div>
-    </div>
-    
-    <!-- Chat Input -->
-    <div class="chat-input-container">
-        <form id="message-form" style="display: flex; gap: 0.5rem;">
-            <input type="text" id="message-input" class="chat-input" placeholder="پیام خود را بنویسید..." autocomplete="off">
-            <button type="submit" class="send-button">
-                <i class="material-icons">send</i>
-            </button>
-        </form>
-    </div>
+    </main>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const socket = io();
-        const currentUserId = {{ current_user.id }};
-        const otherUserId = {{ other_user.id }};
-        const roomName = `chat-${Math.min(currentUserId, otherUserId)}-${Math.max(currentUserId, otherUserId)}`;
-        
-        const chatMessages = document.getElementById('chat-messages');
-        const messageForm = document.getElementById('message-form');
-        const messageInput = document.getElementById('message-input');
-        const typingIndicator = document.getElementById('typing-indicator');
-        const statusIndicator = document.getElementById('status-indicator');
-        const statusText = document.getElementById('status-text');
-
-        // Scroll to bottom initially
-        function scrollToBottom() {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        scrollToBottom();
-
-        // Join Chat Room
-        socket.on('connect', () => {
+    const socket = io();
+    const currentUserId = {{ current_user.id }};
+    let otherUserId = {{ active_chat_user.id if active_chat_user else 'null' }};
+    
+    // --- Socket.IO Logic ---
+    socket.on('connect', () => {
+        if (otherUserId) {
             socket.emit('join_chat', { other_user_id: otherUserId });
-        });
+            checkStatus(otherUserId);
+        }
+    });
 
-        // Check online status via HTTP (backup)
-        fetch(`/api/user_status/${otherUserId}`)
-            .then(response => response.json())
+    // Check user status via HTTP
+    function checkStatus(uid) {
+        if(!uid) return;
+        fetch(`/api/user_status/${uid}`)
+            .then(res => res.json())
             .then(data => {
-                if(data.online) {
-                    statusIndicator.style.backgroundColor = 'var(--success)';
-                    statusText.textContent = 'آنلاین';
-                } else {
-                    statusIndicator.style.backgroundColor = '#ccc';
-                    statusText.textContent = 'آفلاین';
+                const statusText = document.getElementById('status-text-header');
+                if(statusText) {
+                    statusText.textContent = data.online ? 'آنلاین' : 'آفلاین';
+                    statusText.style.color = data.online ? 'var(--success)' : 'var(--text-secondary)';
                 }
             });
+    }
 
-        // Handle Send Message
-        messageForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const content = messageInput.value.trim();
-            if (!content) return;
+    // Send Message
+    const sendBtn = document.getElementById('send-btn');
+    const msgInput = document.getElementById('message-input');
+    
+    if (sendBtn && msgInput) {
+        sendBtn.addEventListener('click', sendMessage);
+        msgInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    }
 
-            // Optimistic UI update
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message sent';
-            const time = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
-            msgDiv.innerHTML = `
-                <div class="message-content">
-                    <div class="message-text">${content}</div>
-                    <div class="message-time">${time}</div>
-                </div>
-            `;
+    function sendMessage() {
+        const content = msgInput.value.trim();
+        if (!content || !otherUserId) return;
+
+        // Optimistic UI Update
+        const container = document.getElementById('chat-messages-container');
+        const div = document.createElement('div');
+        div.className = 'message-bubble sent';
+        div.innerHTML = `${content}<div class="message-time">${new Date().toLocaleTimeString('fa-IR', {hour: '2-digit', minute: '2-digit'})}</div>`;
+        container.appendChild(div);
+        
+        // Scroll & Clear
+        container.scrollTop = container.scrollHeight;
+        msgInput.value = '';
+
+        // Send to Server
+        socket.emit('send_message', {
+            other_user_id: otherUserId,
+            content: content
+        });
+        
+        // Update Sidebar Last Message
+        updateSidebarPreview(otherUserId, content);
+    }
+
+    // Receive Message
+    socket.on('new_message', (data) => {
+        if (data.sender_id === otherUserId) {
+            const container = document.getElementById('chat-messages-container');
+            const div = document.createElement('div');
+            div.className = 'message-bubble received';
+            div.innerHTML = `${data.content}<div class="message-time">${data.timestamp}</div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
             
-            // Insert before typing indicator
-            chatMessages.insertBefore(msgDiv, typingIndicator);
-            scrollToBottom();
-            messageInput.value = '';
-
-            // Send via Socket
-            socket.emit('send_message', {
-                other_user_id: otherUserId,
-                content: content
-            });
-        });
-
-        // Handle Receive Message
-        socket.on('new_message', (data) => {
-            if (data.sender_id == otherUserId) {
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'message received';
-                msgDiv.innerHTML = `
-                    <div class="message-avatar">{{ other_user.name[0] }}</div>
-                    <div class="message-content">
-                        <div class="message-text">${data.content}</div>
-                        <div class="message-time">${data.timestamp}</div>
-                    </div>
-                `;
-                chatMessages.insertBefore(msgDiv, typingIndicator);
-                scrollToBottom();
-            }
-        });
-
-        // Typing Indicators
-        let typingTimer;
-        messageInput.addEventListener('input', () => {
-            clearTimeout(typingTimer);
-            socket.emit('typing', { room: roomName });
-            typingTimer = setTimeout(() => socket.emit('stop_typing', { room: roomName }), 1000);
-        });
-
-        socket.on('typing', (data) => {
-            if (data.user_id == otherUserId) {
-                typingIndicator.style.display = 'flex';
-                scrollToBottom();
-            }
-        });
-
-        socket.on('stop_typing', (data) => {
-            if (data.user_id == otherUserId) {
-                typingIndicator.style.display = 'none';
-            }
-        });
+            // Mark as read
+            socket.emit('join_chat', { other_user_id: otherUserId }); // Re-join triggers read update in backend logic simple version
+        } else {
+            // Notification for other chats? (Future improvement)
+            updateSidebarPreview(data.sender_id, data.content, true);
+        }
     });
+
+    // --- Navigation Logic (Mobile) ---
+    function loadChat(userId) {
+        // On mobile, hide sidebar and show chat
+        if (window.innerWidth <= 768) {
+            document.getElementById('chat-sidebar').style.display = 'none';
+            document.getElementById('chat-main-area').style.display = 'flex';
+            document.getElementById('back-btn').style.display = 'block';
+        }
+        // Reload page to fetch messages (Simple approach for this structure)
+        window.location.href = `/chat?user_id=${userId}`;
+    }
+
+    function showSidebar() {
+        document.getElementById('chat-sidebar').style.display = 'block';
+        document.getElementById('chat-main-area').style.display = 'none';
+    }
+
+    function updateSidebarPreview(uid, text, isNew=false) {
+        const item = document.querySelector(`.convo-item[data-id="${uid}"]`);
+        if (item) {
+            item.querySelector('.convo-msg span').textContent = text;
+            item.querySelector('.convo-time').textContent = 'الان';
+            // Move to top of list? (Future improvement)
+        }
+    }
+
+    function filterConversations() {
+        const query = document.getElementById('search-input').value.toLowerCase();
+        document.querySelectorAll('.convo-item').forEach(item => {
+            const name = item.getAttribute('data-name').toLowerCase();
+            item.style.display = name.includes(query) ? 'flex' : 'none';
+        });
+    }
 </script>
 {% endblock %}

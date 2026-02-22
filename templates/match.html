@@ -3,55 +3,50 @@
 {% block title %}جستجوی کاربران | یونی نت{% endblock %}
 
 {% block content %}
-<!-- Search Section -->
-<section class="search-section" style="background-color: var(--surface); padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: var(--shadow-md);">
-    <h2 class="section-title" style="text-align: right; font-size: 1.5rem; margin-bottom: 1rem;">
-        <i class="material-icons" style="vertical-align: middle;">search</i>
-        جستجوی کاربران
-    </h2>
-    
-    <form action="{{ url_for('match') }}" method="GET" class="search-form" style="display: flex; gap: 1rem; align-items: center;">
-        <div class="search-input-group" style="flex: 1; position: relative;">
-            <i class="material-icons search-icon" style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);">search</i>
-            <input type="text" name="q" class="form-control" style="padding-right: 2.5rem; border-radius: 50px;" placeholder="جستجو بر اساس نام یا رشته تحصیلی..." value="{{ request.args.get('q', '') }}">
-        </div>
-        <button type="submit" class="btn btn-custom" style="border-radius: 50px;">
-            جستجو
-        </button>
-    </form>
-</section>
+<div class="dashboard-container">
+    <!-- Search Section -->
+    <section class="form-card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="material-icons" style="color: var(--primary-color);">search</i>
+            یافتن همکلاسی‌ها
+        </h2>
+        
+        <form action="{{ url_for('match') }}" method="GET" style="display: flex; gap: 1rem;">
+            <input type="text" name="q" class="form-control" placeholder="جستجو بر اساس نام، شماره دانشجویی یا رشته..." value="{{ request.args.get('q', '') }}">
+            <button type="submit" class="btn btn-custom">جستجو</button>
+        </form>
+    </section>
 
-<!-- Results Section -->
-<section class="results-section">
-    <div class="results-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h3 class="results-title" style="font-size: 1.25rem; font-weight: 600;">نتایج جستجو</h3>
-        <div class="results-count" style="color: var(--text-secondary); font-size: 0.9rem;">
-            {% if users %}
-                {{ users|length }} کاربر یافت شد
-            {% else %}
-                هیچ کاربری یافت نشد
-            {% endif %}
-        </div>
-    </div>
-    
+    <!-- Results Section -->
     {% if users %}
         <div class="users-grid">
             {% for user in users %}
-                <div class="user-card" style="opacity: 0; transform: translateY(20px); transition: all 0.3s ease;">
+                <div class="user-card">
                     <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-                        <div class="user-avatar">{{ user.name[0] }}</div>
+                        <div class="user-avatar" style="width: 60px; height: 60px; overflow: hidden;">
+                            {% if user.profile_pic and user.profile_pic != 'default.jpg' %}
+                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + user.profile_pic) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                {{ user.full_name[0] }}
+                            {% endif %}
+                        </div>
                         <div>
-                            <h4 class="user-name">{{ user.name }}</h4>
-                            <div class="user-major" style="color: var(--primary-color); font-size: 0.9rem;">{{ user.major }}</div>
+                            <h4 class="user-name" style="font-size: 1.1rem; margin-bottom: 2px;">{{ user.full_name }}</h4>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                                شماره دانشجویی: {{ user.student_id }}
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--primary-color);">
+                                {{ user.major }}
+                            </div>
                         </div>
                     </div>
                     
                     <div style="display: flex; gap: 0.5rem;">
-                        <a href="{{ url_for('chat', other_user_id=user.id) }}" class="btn btn-custom" style="flex: 1; font-size: 0.9rem;">
+                        <a href="{{ url_for('chat_main') }}?user_id={{ user.id }}" class="btn btn-custom" style="flex: 1; font-size: 0.9rem;">
                             <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">chat</i>
-                            چت
+                            شروع چت
                         </a>
-                        <a href="{{ url_for('profile', user_id=user.id) }}" class="btn btn-outline" style="flex: 1; font-size: 0.9rem; border: 1px solid var(--border-color); color: var(--text-primary);">
+                        <a href="{{ url_for('profile', user_id=user.id) }}" class="btn btn-outline" style="font-size: 0.9rem;">
                             پروفایل
                         </a>
                     </div>
@@ -60,29 +55,10 @@
         </div>
     {% else %}
         <div class="form-card text-center">
-            <i class="material-icons" style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 1rem;">search_off</i>
-            <h3 style="margin-bottom: 0.5rem;">کاربری یافت نشد</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">با کلمات کلیدی دیگر جستجو کنید</p>
-            <a href="{{ url_for('match') }}" class="btn btn-custom">
-                <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">refresh</i>
-                نمایش همه کاربران
-            </a>
+            <i class="material-icons" style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 1rem;">person_off</i>
+            <h3>کاربری یافت نشد</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">سعی کنید نام یا شماره دانشجویی دیگری را جستجو کنید.</p>
         </div>
     {% endif %}
-</section>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    // Animation for cards on load
-    document.addEventListener('DOMContentLoaded', () => {
-        const cards = document.querySelectorAll('.user-card');
-        cards.forEach((card, index) => {
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
-    });
-</script>
+</div>
 {% endblock %}

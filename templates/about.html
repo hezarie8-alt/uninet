@@ -1,182 +1,85 @@
 {% extends "base.html" %}
 
-{% block title %}درباره ما | یونی نت{% endblock %}
+{% block title %}درباره من | یونی نت{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero" style="background-image: url('{{ url_for('static', filename='images/2.png') }}'); background-blend-mode: overlay;">
+<section class="hero" style="min-height: 50vh; display: flex; align-items: center;">
     <div class="container">
         <div class="hero-content" style="text-align: center; justify-content: center;">
-            <h1 class="hero-title">درباره یونی نت</h1>
-            <p class="hero-subtitle">پلتفرمی نوآورانه برای ارتباط دانشجویان جهت به اشتراک گذاشتن دانش و تجربیات</p>
+            <div class="hero-text" style="padding: 0; animation: fadeInUp 1s ease;">
+                <h1 class="hero-title">احسان هزاری</h1>
+                <p class="hero-subtitle">توسعه‌دهنده فول‌استک و طراح تجربه کاربری</p>
+                <div style="margin-top: 2rem;">
+                    <a href="mailto:hzarie8@gmail.com" class="btn btn-primary" style="border-radius: 50px;">
+                        <i class="material-icons" style="margin-left: 8px;">email</i>
+                        تماس با من
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Mission Section -->
+<!-- About Me Section -->
 <section class="section" style="background-color: var(--surface); padding: 4rem 0;">
     <div class="container">
-        <p class="section-subtitle">چشم‌انداز ما برای آینده آموزش و ارتباطات</p>
-        
-        <div class="mission-content">
-            <div class="mission-text">
-                <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.8;">ما در یونی نت باور داریم که ارتباط مؤثر و به اشتراک گذاشتن دانش، کلید موفقیت در دنیای آموزش امروز است. مأموریت ما ایجاد فضایی امن و کاربرپسند است که در آن دانشجویان و دانش‌آموزان بتوانند به راحتی با یکدیگر ارتباط برقرار کرده، منابع درسی را به اشتراک بگذارند و از تجربیات یکدیگر بیاموزند.</p>
-                <p style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.8;">با تمرکز بر طراحی رابط کاربری ساده و کاربردی، ما تلاش می‌کنیم تا موانع ارتباطی را از بین برده و جامعه‌ای پویا از یادگیرندگان ایجاد کنیم.</p>
-            </div>
-            <div class="mission-image">
-                <img src="{{ url_for('static', filename='images/1.png') }}" alt="مأموریت">
-            </div>
-        </div>
-    </div>
-</section>
-    
-<!-- Features Section -->
-<section class="features-section">
-    <div class="container">
-        <h2 class="section-title">ویژگی‌های برجسته</h2>
-        <p class="section-subtitle">ابزارهایی که ما را متمایز می‌کنند</p>
-        
-        <div class="features-grid">
-            <div class="feature-card">
-                <i class="material-icons feature-icon">school</i>
-                <h3 class="feature-title">محیط آموزشی تخصصی</h3>
-                <p class="feature-description">فضایی امن و متمرکز برای بحث در مورد مسائل درسی و علمی</p>
-            </div>
-            
-            <div class="feature-card">
-                <i class="material-icons feature-icon">groups</i>
-                <h3 class="feature-title">شبکه‌سازی آکادمیک</h3>
-                <p class="feature-description">ایجاد ارتباطات حرفه‌ای با دانشجویان هم‌رشته</p>
-            </div>
-            
-            <div class="feature-card">
-                <i class="material-icons feature-icon">bolt</i>
-                <h3 class="feature-title">چت آنی و سریع</h3>
-                <p class="feature-description">ارتباط فوری و بدون تأخیر</p>
-            </div>
-            
-            <div class="feature-card">
-                <i class="material-icons feature-icon">security</i>
-                <h3 class="feature-title">امنیت و حریم خصوصی</h3>
-                <p class="feature-description">محافظت از اطلاعات شخصی با بالاترین استانداردها</p>
-            </div>
-            
-            <div class="feature-card">
-                <i class="material-icons feature-icon">devices</i>
-                <h3 class="feature-title">دسترسی از هر دستگاه</h3>
-                <p class="feature-description">تجربه کاربری یکپارچه در موبایل و دسکتاپ</p>
-            </div>
-            
-            <div class="feature-card">
-                <i class="material-icons feature-icon">search</i>
-                <h3 class="feature-title">جستجوی هوشمند</h3>
-                <p class="feature-description">پیدا کردن سریع همکلاسی‌ها بر اساس رشته و علاقه‌مندی‌ها</p>
-            </div>
-        </div>
-    </div>
-</section>
-    
-<!-- Story Section -->
-<section class="section" style="background-color: var(--surface);">
-    <div class="container">
-        <h2 class="section-title">داستان ما</h2>
-        <p class="section-subtitle">از ایده تا اجرا</p>
-        
-        <div class="story-content">
-            <div class="story-timeline">
-                <div class="timeline-item">
-                    <div class="timeline-date">مهر</div>
-                    <div class="timeline-content">
-                        <h3 class="timeline-title">شروع ایده</h3>
-                        <p class="timeline-description">ایده اولیه برای ایجاد پلتفرمی تخصصی جهت ارتباط دانشجویان شکل گرفت.</p>
-                    </div>
+        <div class="mission-content" style="flex-wrap: wrap;">
+            <div class="mission-text" style="flex: 2; min-width: 300px;">
+                <h2 class="section-title" style="text-align: right;">درباره من</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.8;">
+                    سلام! من احسان هزاری هستم، دانشجوی مهندسی کامپیوتر و علاقه‌مند به دنیای تکنولوژی و برنامه‌نویسی. "یونی نت" پروژه‌ای است که با هدف ایجاد یک محیط دیجیتال یکپارچه برای دانشجویان طراحی و کدنویسی شده است.
+                </p>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.8;">
+                    من در زمینه‌های مختلفی از طراحی فرانت‌اند با فریم‌ورک‌های مدرن تا توسعه بک‌اند با پایتون و فلاسک فعالیت دارم. هدف من ایجاد محصولاتی است که هم کاربردی باشند و هم تجربه کاربری جذاب ارائه دهند.
+                </p>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+                    <a href="https://t.me/EhsanHezari" target="_blank" class="btn btn-outline" style="border-color: var(--text-secondary); color: var(--text-primary);">
+                        <i class="material-icons" style="font-size: 1.2rem;">send</i> تلگرام
+                    </a>
+                    <a href="https://www.instagram.com/ehsan.he82" target="_blank" class="btn btn-outline" style="border-color: var(--text-secondary); color: var(--text-primary);">
+                        <i class="material-icons" style="font-size: 1.2rem;">camera_alt</i> اینستاگرام
+                    </a>
                 </div>
-                
-                <div class="timeline-item">
-                    <div class="timeline-date">آبان</div>
-                    <div class="timeline-content">
-                        <h3 class="timeline-title">توسعه اولیه</h3>
-                        <p class="timeline-description">تیم ما شروع به طراحی و توسعه نسخه اولیه اپلیکیشن کرد.</p>
-                    </div>
-                </div>
-                
-                <div class="timeline-item">
-                    <div class="timeline-date">آذر</div>
-                    <div class="timeline-content">
-                        <h3 class="timeline-title">راه‌اندازی نسخه بتا</h3>
-                        <p class="timeline-description">نسخه اولیه برای گروه کوچکی از دانشجویان منتشر شد.</p>
-                    </div>
-                </div>
-                
-                <div class="timeline-item">
-                    <div class="timeline-date">دی</div>
-                    <div class="timeline-content">
-                        <h3 class="timeline-title">رشد و توسعه</h3>
-                        <p class="timeline-description">با بازخوردهای کاربران، ویژگی‌های جدیدی اضافه شد.</p>
-                    </div>
+            </div>
+            <div class="mission-image" style="flex: 1; min-width: 300px; text-align: center;">
+                <div style="width: 200px; height: 200px; border-radius: 50%; background: var(--gradient-primary); margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg);">
+                    <i class="material-icons" style="font-size: 5rem; color: white;">code</i>
                 </div>
             </div>
         </div>
     </div>
 </section>
-    
-<!-- Team Section -->
+
+<!-- Skills Section -->
 <section class="section" style="background-color: var(--background);">
     <div class="container">
-        <h2 class="section-title">تیم ما</h2>
-        <p class="section-subtitle">افراد پشت این پروژه</p>
+        <h2 class="section-title">مهارت‌های من</h2>
+        <p class="section-subtitle">ابزارها و زبان‌هایی که در پروژه‌ها استفاده می‌کنم</p>
         
-        <div class="team-grid">
-            <div class="team-member">
-                <div class="member-avatar">ا</div>
-                <h3 class="member-name">احسان هزاری</h3>
-                <p class="member-role">مهندسی کامپیوتر</p>
-                <p class="member-bio">فول استک</p>
-                <div class="member-social">
-                    <a href="mailto:hzarie8@gmai.com" class="social-link" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="material-icons" style="font-size: 1.2rem;">email</i>
-                    </a>
-                    <a href="https://t.me/EhsanHezari" class="social-link" target="_blank" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="material-icons" style="font-size: 1.2rem;">send</i>
-                    </a>
+        <div class="features-grid">
+            <div class="feature-card" style="text-align: right;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <i class="material-icons" style="font-size: 2.5rem; color: var(--primary-color);">web</i>
+                    <h3 style="margin: 0;">طراحی وب</h3>
                 </div>
+                <p style="color: var(--text-secondary);">HTML5, CSS3, JavaScript, React.js, Vue.js</p>
             </div>
             
-            <!-- سایر اعضای تیم به همین ترتیب -->
-            <div class="team-member">
-                <div class="member-avatar">م</div>
-                <h3 class="member-name">مصطفی جنگی</h3>
-                <p class="member-role">مهندسی کامپیوتر</p>
-                <p class="member-bio">بک اند</p>
-                <div class="member-social">
-                    <a href="#" class="social-link" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="material-icons" style="font-size: 1.2rem;">email</i>
-                    </a>
+            <div class="feature-card" style="text-align: right;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <i class="material-icons" style="font-size: 2.5rem; color: var(--primary-color);">dns</i>
+                    <h3 style="margin: 0;">توسعه سرور</h3>
                 </div>
+                <p style="color: var(--text-secondary);">Python, Flask, Django, SQL, REST APIs</p>
             </div>
             
-            <div class="team-member">
-                <div class="member-avatar">م</div>
-                <h3 class="member-name">مسعود اخباری</h3>
-                <p class="member-role">مهندسی کامپیوتر</p>
-                <p class="member-bio">پروداکت اونر</p>
-                <div class="member-social">
-                    <a href="#" class="social-link" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="material-icons" style="font-size: 1.2rem;">email</i>
-                    </a>
+            <div class="feature-card" style="text-align: right;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <i class="material-icons" style="font-size: 2.5rem; color: var(--primary-color);">brush</i>
+                    <h3 style="margin: 0;">طراحی UI/UX</h3>
                 </div>
-            </div>
-            
-            <div class="team-member">
-                <div class="member-avatar">م</div>
-                <h3 class="member-name">مهدی محمدی</h3>
-                <p class="member-role">مهندس کامپیوتر</p>
-                <p class="member-bio">پروداکت منیجر</p>
-                <div class="member-social">
-                    <a href="#" class="social-link" style="background: var(--primary-color); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="material-icons" style="font-size: 1.2rem;">email</i>
-                    </a>
-                </div>
+                <p style="color: var(--text-secondary);">Figma, Adobe XD, User Research</p>
             </div>
         </div>
     </div>
@@ -185,36 +88,32 @@
 <!-- CTA Section -->
 <section class="cta">
     <div class="container">
-        <h2 class="cta-title">به جامعه ما بپیوندید</h2>
-        <p class="cta-subtitle">همین امروز ثبت‌نام کنید و با همکلاسی‌های خود ارتباط برقرار کنید</p>
-        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">ثبت‌نام رایگان</a>
+        <h2 class="cta-title">پروژه‌ای در ذهن دارید؟</h2>
+        <p class="cta-subtitle">آماده همکاری در پروژه‌های نوآورانه هستم</p>
+        <a href="mailto:hzarie8@gmail.com" class="btn btn-primary" style="background: white; color: var(--primary-color);">
+            ارسال ایمیل
+        </a>
     </div>
 </section>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Scroll animations
+    // Animation on scroll
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
             }
         });
     }, { threshold: 0.1 });
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        const animatedElements = document.querySelectorAll('.feature-card, .team-member, .timeline-item, .section-title, .section-subtitle');
-        
-        animatedElements.forEach(el => {
-            observer.observe(el);
-        });
-        
-        // Add delay for feature cards
-        const featureCards = document.querySelectorAll('.feature-card');
-        featureCards.forEach((card, index) => {
-            card.style.transitionDelay = `${index * 0.1}s`;
-        });
+
+    document.querySelectorAll('.feature-card, .mission-text').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'all 0.6s ease';
+        observer.observe(el);
     });
 </script>
 {% endblock %}

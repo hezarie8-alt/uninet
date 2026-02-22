@@ -6,7 +6,7 @@
 <div class="auth-container">
     <div class="auth-header">
         <h1 class="auth-title">به یونی نت خوش آمدید</h1>
-        <p class="auth-subtitle">با دوستان و همکلاسی‌های خود ارتباط برقرار کنید</p>
+        <p class="auth-subtitle">پلتفرم ارتباطی دانشجویان</p>
     </div>
     
     <div class="auth-tabs">
@@ -21,21 +21,21 @@
                 {{ form.hidden_tag() }}
                 
                 <div class="form-group">
-                    {{ form.name.label(class="form-label") }}
-                    {{ form.name(class="form-control", placeholder="نام کاربری (انگلیسی)") }}
-                    {% if form.name.errors %}
+                    {{ form.full_name.label(class="form-label") }}
+                    {{ form.full_name(class="form-control", placeholder="نام و نام خانوادگی خود را وارد کنید") }}
+                    {% if form.full_name.errors %}
                         <div class="error-message">
-                            {% for error in form.name.errors %}{{ error }}{% endfor %}
+                            {% for error in form.full_name.errors %}{{ error }}{% endfor %}
                         </div>
                     {% endif %}
                 </div>
                 
                 <div class="form-group">
-                    {{ form.email.label(class="form-label") }}
-                    {{ form.email(class="form-control", placeholder="example@domain.com") }}
-                    {% if form.email.errors %}
+                    {{ form.student_id.label(class="form-label") }}
+                    {{ form.student_id(class="form-control", placeholder="مثال: 981234567") }}
+                    {% if form.student_id.errors %}
                         <div class="error-message">
-                            {% for error in form.email.errors %}{{ error }}{% endfor %}
+                            {% for error in form.student_id.errors %}{{ error }}{% endfor %}
                         </div>
                     {% endif %}
                 </div>
@@ -43,16 +43,11 @@
                 <div class="form-group">
                     {{ form.major.label(class="form-label") }}
                     {{ form.major(class="form-select") }}
-                    {% if form.major.errors %}
-                        <div class="error-message">
-                            {% for error in form.major.errors %}{{ error }}{% endfor %}
-                        </div>
-                    {% endif %}
                 </div>
                 
                 <div class="form-group">
                     {{ form.password.label(class="form-label") }}
-                    {{ form.password(class="form-control", placeholder="حداقل ۶ کاراکتر") }}
+                    {{ form.password(class="form-control", placeholder="کد ملی خود را وارد کنید") }}
                     {% if form.password.errors %}
                         <div class="error-message">
                             {% for error in form.password.errors %}{{ error }}{% endfor %}
@@ -62,16 +57,11 @@
                 
                 <div class="form-group">
                     {{ form.confirm_password.label(class="form-label") }}
-                    {{ form.confirm_password(class="form-control", placeholder="تکرار رمز عبور") }}
-                    {% if form.confirm_password.errors %}
-                        <div class="error-message">
-                            {% for error in form.confirm_password.errors %}{{ error }}{% endfor %}
-                        </div>
-                    {% endif %}
+                    {{ form.confirm_password(class="form-control", placeholder="تکرار کد ملی") }}
                 </div>
                 
-                <button type="submit" class="btn btn-custom">
-                    {{ form.submit.label.text }}
+                <button type="submit" class="btn btn-custom" style="width: 100%;">
+                    ثبت‌نام در سامانه
                 </button>
             </form>
         </div>
@@ -84,27 +74,17 @@
                 {{ login_form.hidden_tag() }}
                 
                 <div class="form-group">
-                    {{ login_form.username.label(class="form-label") }}
-                    {{ login_form.username(class="form-control", placeholder="نام کاربری یا ایمیل") }}
-                    {% if login_form.username.errors %}
-                        <div class="error-message">
-                            {% for error in login_form.username.errors %}{{ error }}{% endfor %}
-                        </div>
-                    {% endif %}
+                    {{ login_form.student_id.label(class="form-label") }}
+                    {{ login_form.student_id(class="form-control", placeholder="شماره دانشجویی") }}
                 </div>
                 
                 <div class="form-group">
                     {{ login_form.password.label(class="form-label") }}
-                    {{ login_form.password(class="form-control", placeholder="رمز عبور") }}
-                    {% if login_form.password.errors %}
-                        <div class="error-message">
-                            {% for error in login_form.password.errors %}{{ error }}{% endfor %}
-                        </div>
-                    {% endif %}
+                    {{ login_form.password(class="form-control", placeholder="رمز عبور (کد ملی)") }}
                 </div>
                 
-                <button type="submit" class="btn btn-custom">
-                    {{ login_form.submit.label.text }}
+                <button type="submit" class="btn btn-custom" style="width: 100%;">
+                    ورود به حساب
                 </button>
             </form>
         </div>
@@ -115,27 +95,16 @@
 {% block scripts %}
 <script>
     function switchTab(tabName) {
-        // Hide all tabs
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
         
-        // Remove active class from all tab buttons
-        document.querySelectorAll('.auth-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        
-        // Show selected tab
         document.getElementById(tabName + '-tab').classList.add('active');
-        
-        // Add active class to clicked tab button
         event.target.closest('.auth-tab').classList.add('active');
     }
     
-    // Auto-switch logic based on form errors
+    // Auto-switch logic
     document.addEventListener('DOMContentLoaded', () => {
         {% if login_form.errors %}
-            // If login form has errors, switch to login tab
             document.getElementById('register-tab').classList.remove('active');
             document.getElementById('login-tab').classList.add('active');
             document.querySelectorAll('.auth-tab')[0].classList.remove('active');

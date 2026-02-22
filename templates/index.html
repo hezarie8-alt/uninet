@@ -8,15 +8,26 @@
     <div class="container">
         <div class="hero-content">
             <div class="hero-text">
-                <h1 class="hero-title">با همکلاسی‌های خود ارتباط برقرار کنید</h1>
-                <p class="hero-subtitle">پلتفرم چت تخصصی برای دانشجویان و دانش‌آموزان جهت ارتباط، همکاری و به اشتراک گذاشتن دانش</p>
+                <h1 class="hero-title">پلتفرم یکپارچه دانشجویی</h1>
+                <p class="hero-subtitle">
+                    مدیریت برنامه کلاسی، ارتباط با دوستان و همکلاسی‌ها در یک پلتفرم ساده و کاربردی.
+                    با یونی نت، تجربه دانشجویی خود را ارتقا دهید.
+                </p>
                 <div class="hero-buttons">
-                    <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">شروع کنید</a>
-                    <a href="{{ url_for('about') }}" class="btn btn-outline">بیشتر بدانید</a>
+                    {% if current_user %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                            <i class="material-icons" style="margin-left: 8px;">dashboard</i>
+                            داشبورد برنامه
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">شروع کنید</a>
+                        <a href="{{ url_for('about') }}" class="btn btn-outline">درباره من</a>
+                    {% endif %}
                 </div>
             </div>
             <div class="hero-image">
-                <img src="https://sfile.chatglm.cn/images-ppt/c8eeb1a1ee7c.jpg" alt="یونی نت آموزشی">
+                <!-- Using a placeholder relevant to student/education -->
+                <img src="https://sfile.chatglm.cn/images-ppt/c8eeb1a1ee7c.jpg" alt="Student Platform" style="border-radius: 10px; box-shadow: var(--shadow-lg);">
             </div>
         </div>
     </div>
@@ -25,44 +36,32 @@
 <!-- Features Section -->
 <section class="features-section">
     <div class="container">
-        <h2 class="section-title">ویژگی‌های ما</h2>
-        <p class="section-subtitle">با ابزارهای ما، ارتباط با همکلاسی‌ها و همکاران خود را آسان‌تر کنید</p>
+        <h2 class="section-title">امکانات یونی نت</h2>
+        <p class="section-subtitle">ابزارهایی که برای مدیریت بهتر زندگی دانشجویی نیاز دارید</p>
         
         <div class="features-grid">
             <div class="feature-card">
-                <i class="material-icons feature-icon">search</i>
-                <h3 class="feature-title">جستجوی همکلاسی‌ها</h3>
-                <p class="feature-description">بر اساس رشته تحصیلی، همکلاسی‌ها و همکاران خود را پیدا کنید</p>
+                <i class="material-icons feature-icon">event_note</i>
+                <h3 class="feature-title">برنامه کلاسی هوشمند</h3>
+                <p class="feature-description">برنامه هفتگی خود را وارد کنید و در هر جایی به آن دسترسی داشته باشید.</p>
             </div>
             
             <div class="feature-card">
                 <i class="material-icons feature-icon">chat</i>
                 <h3 class="feature-title">چت آنی</h3>
-                <p class="feature-description">ارتباط فوری و بدون تأخیر با دوستان و همکاران خود</p>
+                <p class="feature-description">ارتباط سریع و آسان با دیگر دانشجویان و همکلاسی‌ها.</p>
             </div>
             
             <div class="feature-card">
                 <i class="material-icons feature-icon">school</i>
-                <h3 class="feature-title">محیط آموزشی</h3>
-                <p class="feature-description">فضایی امن برای بحث در مورد مسائل درسی و علمی</p>
+                <h3 class="feature-title">شبکه دانشجویی</h3>
+                <p class="feature-description">پیدا کردن دوستان جدید بر اساس رشته و گرایش تحصیلی.</p>
             </div>
             
             <div class="feature-card">
-                <i class="material-icons feature-icon">people</i>
-                <h3 class="feature-title">شبکه اجتماعی</h3>
-                <p class="feature-description">ایجاد ارتباطات حرفه‌ی و اجتماعی با افراد هم‌رشته</p>
-            </div>
-            
-            <div class="feature-card">
-                <i class="material-icons feature-icon">notifications</i>
-                <h3 class="feature-title">اعلان‌های هوشمند</h3>
-                <p class="feature-description">اطلاع‌رسانی فوری از پیام‌ها و فعالیت‌های مهم</p>
-            </div>
-            
-            <div class="feature-card">
-                <i class="material-icons feature-icon">security</i>
-                <h3 class="feature-title">امنیت بالا</h3>
-                <p class="feature-description">محافظت از اطلاعات شخصی و حفظ حریم خصوصی کاربران</p>
+                <i class="material-icons feature-icon">dark_mode</i>
+                <h3 class="feature-title">حالت تاریک</h3>
+                <p class="feature-description">محافظت از چشمان شما با پشتیبانی کامل از تم تاریک.</p>
             </div>
         </div>
     </div>
@@ -71,41 +70,9 @@
 <!-- CTA Section -->
 <section class="cta">
     <div class="container">
-        <h2 class="cta-title">آماده‌اید شروع کنید؟</h2>
-        <p class="cta-subtitle">همین امروز به جامعه ما بپیوندید و با همکلاسی‌های خود ارتباط برقرار کنید</p>
+        <h2 class="cta-title">همین الان شروع کنید</h2>
+        <p class="cta-subtitle">با وارد کردن شماره دانشجویی، به جمع ما بپیوندید.</p>
         <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">ثبت‌نام رایگان</a>
     </div>
 </section>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    // Scroll animations
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.1
-    };
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, observerOptions);
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        const animatedElements = document.querySelectorAll('.feature-card, .section-title, .section-subtitle');
-        
-        animatedElements.forEach(el => {
-            observer.observe(el);
-        });
-        
-        const featureCards = document.querySelectorAll('.feature-card');
-        featureCards.forEach((card, index) => {
-            card.style.transitionDelay = `${index * 0.1}s`;
-        });
-    });
-</script>
 {% endblock %}

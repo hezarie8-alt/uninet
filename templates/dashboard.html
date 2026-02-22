@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}داشبورد برنامه کلاسی | یونی نت{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="schedule-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 class="section-title" style="margin: 0;">
+                <i class="material-icons" style="vertical-align: middle; margin-left: 5px;">calendar_today</i>
+                برنامه کلاسی هفتگی
+            </h2>
+            <button class="btn btn-custom" onclick="printSchedule()">
+                <i class="material-icons">print</i> چاپ برنامه
+            </button>
+        </div>
+
+        <div class="schedule-grid" id="schedule-table">
+            <!-- Header Row -->
+            <div class="schedule-header"></div> <!-- Empty corner -->
+            <div class="schedule-header">شنبه</div>
+            <div class="schedule-header">یکشنبه</div>
+            <div class="schedule-header">دوشنبه</div>
+            <div class="schedule-header">سه‌شنبه</div>
+            <div class="schedule-header">چهارشنبه</div>
+
+            <!-- Time Rows -->
+            <!-- 8-10 -->
+            <div class="schedule-time">۸ - ۱۰</div>
+            <div class="schedule-cell" data-day="saturday" data-time="8-10" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="sunday" data-time="8-10" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="monday" data-time="8-10" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="tuesday" data-time="8-10" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="wednesday" data-time="8-10" onclick="openEditModal(this)"></div>
+
+            <!-- 10-12 -->
+            <div class="schedule-time">۱۰ - ۱۲</div>
+            <div class="schedule-cell" data-day="saturday" data-time="10-12" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="sunday" data-time="10-12" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="monday" data-time="10-12" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="tuesday" data-time="10-12" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="wednesday" data-time="10-12" onclick="openEditModal(this)"></div>
+
+            <!-- 12-14 -->
+            <div class="schedule-time">۱۲ - ۱۴</div>
+            <div class="schedule-cell" data-day="saturday" data-time="12-14" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="sunday" data-time="12-14" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="monday" data-time="12-14" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="tuesday" data-time="12-14" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="wednesday" data-time="12-14" onclick="openEditModal(this)"></div>
+
+            <!-- 14-16 -->
+            <div class="schedule-time">۱۴ - ۱۶</div>
+            <div class="schedule-cell" data-day="saturday" data-time="14-16" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="sunday" data-time="14-16" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="monday" data-time="14-16" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="tuesday" data-time="14-16" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="wednesday" data-time="14-16" onclick="openEditModal(this)"></div>
+
+            <!-- 16-18 -->
+            <div class="schedule-time">۱۶ - ۱۸</div>
+            <div class="schedule-cell" data-day="saturday" data-time="16-18" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="sunday" data-time="16-18" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="monday" data-time="16-18" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="tuesday" data-time="16-18" onclick="openEditModal(this)"></div>
+            <div class="schedule-cell" data-day="wednesday" data-time="16-18" onclick="openEditModal(this)"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Editing -->
+<div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center;">
+    <div class="form-card" style="width: 400px; max-width: 90%;">
+        <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="material-icons">edit_note</i>
+            <span id="modal-title">افزودن کلاس</span>
+        </h3>
+        <form id="schedule-form">
+            <input type="hidden" id="day-input">
+            <input type="hidden" id="time-input">
+            
+            <div class="form-group">
+                <label class="form-label">نام درس</label>
+                <input type="text" id="course-name" class="form-control" placeholder="مثال: ریاضی مهندسی">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">محل برگزاری</label>
+                <input type="text" id="class-location" class="form-control" placeholder="مثال: کلاس ۲۰۱">
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-custom" style="flex: 1;">ذخیره</button>
+                <button type="button" class="btn btn-outline" style="flex: 1; color: var(--error);" onclick="deleteClass()">حذف کلاس</button>
+                <button type="button" class="btn btn-outline" onclick="closeModal()">انصراف</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Map days for matching
+    const dayMap = {
+        'saturday': 'شنبه',
+        'sunday': 'یکشنبه',
+        'monday': 'دوشنبه',
+        'tuesday': 'سه‌شنبه',
+        'wednesday': 'چهارشنبه'
+    };
+
+    // Load existing schedules from backend
+    const schedules = {{ schedules | tojson }};
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        schedules.forEach(item => {
+            const cell = document.querySelector(`.schedule-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`);
+            if (cell) {
+                cell.innerHTML = `
+                    <div class="class-name">${item.course_name}</div>
+                    <div class="class-location">${item.class_location}</div>
+                `;
+                cell.classList.add('has-class');
+                cell.dataset.id = item.id;
+            }
+        });
+    });
+
+    function openEditModal(cell) {
+        const day = cell.dataset.day;
+        const time = cell.dataset.time;
+        
+        document.getElementById('day-input').value = day;
+        document.getElementById('time-input').value = time;
+        
+        // Pre-fill if class exists
+        const courseName = cell.querySelector('.class-name') ? cell.querySelector('.class-name').innerText : '';
+        const location = cell.querySelector('.class-location') ? cell.querySelector('.class-location').innerText : '';
+        
+        document.getElementById('course-name').value = courseName;
+        document.getElementById('class-location').value = location;
+        
+        document.getElementById('modal-title').innerText = `${dayMap[day]} - ساعت ${time}`;
+        document.getElementById('edit-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('edit-modal').style.display = 'none';
+    }
+
+    document.getElementById('schedule-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const day = document.getElementById('day-input').value;
+        const time = document.getElementById('time-input').value;
+        const name = document.getElementById('course-name').value;
+        const loc = document.getElementById('class-location').value;
+        
+        fetch('/update_schedule', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                day: day,
+                time_slot: time,
+                course_name: name,
+                class_location: loc
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'success') {
+                // Update UI
+                const cell = document.querySelector(`.schedule-cell[data-day="${day}"][data-time="${time}"]`);
+                if (name) {
+                    cell.innerHTML = `
+                        <div class="class-name">${name}</div>
+                        <div class="class-location">${loc}</div>
+                    `;
+                    cell.classList.add('has-class');
+                } else {
+                    cell.innerHTML = '';
+                    cell.classList.remove('has-class');
+                }
+                closeModal();
+            }
+        });
+    });
+
+    function deleteClass() {
+        document.getElementById('course-name').value = '';
+        document.getElementById('class-location').value = '';
+        // Trigger submit to send empty values (which deletes in backend logic)
+        document.getElementById('schedule-form').dispatchEvent(new Event('submit'));
+    }
+    
+    function printSchedule() {
+        window.print();
+    }
+</script>
+{% endblock %}

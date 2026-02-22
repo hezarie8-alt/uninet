@@ -7,11 +7,12 @@ from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, abort, flash, jsonify, g
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
 from sqlalchemy import or_, and_, func, case, Index
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, EmailField
-from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Email, Regexp
+from wtforms import StringField, PasswordField, SubmitField, SelectField, HiddenField
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, Regexp
 from flask_socketio import SocketIO, emit, join_room
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -19,6 +20,15 @@ from flask_limiter.util import get_remote_address
 # --- تنظیمات اولیه ---
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_change_in_prod')
+
+# تنظیمات آپلود فایل
+UPLOAD_FOLDER = 'static/uploads/profile_pics'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# ایجاد پوشه آپلود اگر وجود نداشته باشد
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 # تنظیم دیتابیس
 database_url = os.getenv("DATABASE_URL")
@@ -63,10 +73,11 @@ class StateManager:
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True, index=True)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True) # جدید
-    major = db.Column(db.String(100))
+    full_name = db.Column(db.String(100), nullable=False)
+    student_id = db.Column(db.String(20), unique=True, nullable=False, index=True) # شماره دانشجویی
     password_hash = db.Column(db.String(128), nullable=False)
+    major = db.Column(db.String(100))
+    profile_pic = db.Column(db.String(255), default='default.jpg')
     created_at = db.Column(db.DateTime, server_default=func.now())
 
 class Message(db.Model):
@@ -82,21 +93,32 @@ class Message(db.Model):
         Index('idx_sender_receiver_timestamp', 'sender_id', 'receiver_id', 'timestamp'),
     )
 
+# مدل برنامه کلاسی
+class ClassSchedule(db.Model):
+    __tablename__ = 'schedule'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    day = db.Column(db.String(10), nullable=False) # شنبه، یکشنبه...
+    time_slot = db.Column(db.String(20), nullable=False) # 8-10, 10-12...
+    course_name = db.Column(db.String(100))
+    class_location = db.Column(db.String(100))
+
 # --- سرویس‌ها ---
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 class AuthService:
     @staticmethod
-    def register_user(name, email, major, password):
+    def register_user(full_name, student_id, major, password):
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(name=name, email=email, major=major, password_hash=hashed_password)
+        new_user = User(full_name=full_name, student_id=student_id, major=major, password_hash=hashed_password)
         db.session.add(new_user)
         db.session.commit()
         return new_user
 
     @staticmethod
-    def authenticate_user(username, password):
-        user = User.query.filter(
-            or_(User.name == username, User.email == username) # ورود با نام کاربری یا ایمیل
-        ).first()
+    def authenticate_user(student_id, password):
+        user = User.query.filter_by(student_id=student_id).first()
         if user and check_password_hash(user.password_hash, password):
             return user
         return None
@@ -127,7 +149,8 @@ class ChatService:
         for msg, other_user, unread in results:
             conversations.append({
                 'other_user_id': other_user.id,
-                'other_user_name': other_user.name,
+                'other_user_name': other_user.full_name,
+                'other_user_pic': other_user.profile_pic,
                 'last_message_content': msg.content,
                 'last_message_timestamp': msg.timestamp,
                 'has_unread': unread > 0,
@@ -164,50 +187,30 @@ class ChatService:
 MAJOR_CHOICES = [('', 'رشته خود را انتخاب کنید'), ('مهندسی کامپیوتر', 'مهندسی کامپیوتر'), ('علوم کامپیوتر', 'علوم کامپیوتر')]
 
 class RegistrationForm(FlaskForm):
-    name = StringField('نام کاربری', validators=[DataRequired(), Length(min=4, max=100), Regexp('^[A-Za-z0-9_.]+$', message="فقط حروف انگلیسی، اعداد و _ و . مجاز است")])
-    email = EmailField('ایمیل', validators=[DataRequired(), Email(message="فرمت ایمیل نامعتبر است")])
+    full_name = StringField('نام و نام خانوادگی', validators=[DataRequired()])
+    student_id = StringField('شماره دانشجویی', validators=[DataRequired(), Length(min=3, max=20)])
     major = SelectField('رشته تحصیلی', choices=MAJOR_CHOICES, validators=[DataRequired()])
-    password = PasswordField('رمز عبور', validators=[DataRequired(), Length(min=6)])
+    password = PasswordField('کد ملی (رمز عبور)', validators=[DataRequired(), Length(min=4)])
     confirm_password = PasswordField('تکرار رمز عبور', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('ثبت‌نام')
     
-    def validate_name(self, field):
-        if User.query.filter_by(name=field.data).first():
-            raise ValidationError('این نام کاربری قبلاً استفاده شده است.')
-            
-    def validate_email(self, field):
-        if User.query.filter_by(email=field.data).first():
-            raise ValidationError('این ایمیل قبلاً ثبت شده است.')
+    def validate_student_id(self, field):
+        if User.query.filter_by(student_id=field.data).first():
+            raise ValidationError('این شماره دانشجویی قبلاً ثبت شده است.')
 
 class LoginForm(FlaskForm):
-    username = StringField('نام کاربری یا ایمیل', validators=[DataRequired()])
+    student_id = StringField('شماره دانشجویی', validators=[DataRequired()])
     password = PasswordField('رمز عبور', validators=[DataRequired()])
     submit = SubmitField('ورود')
 
 class UpdateProfileForm(FlaskForm):
-    name = StringField('نام کاربری', validators=[DataRequired(), Length(min=4, max=100), Regexp('^[A-Za-z0-9_.]+$')])
-    email = EmailField('ایمیل', validators=[DataRequired(), Email()])
+    full_name = StringField('نام و نام خانوادگی', validators=[DataRequired()])
     major = SelectField('رشته تحصیلی', choices=MAJOR_CHOICES)
     submit = SubmitField('بروزرسانی پروفایل')
-    
-    def __init__(self, original_username, original_email, *args, **kwargs):
-        super(UpdateProfileForm, self).__init__(*args, **kwargs)
-        self.original_username = original_username
-        self.original_email = original_email
-        
-    def validate_name(self, field):
-        if field.data != self.original_username:
-            if User.query.filter_by(name=field.data).first():
-                raise ValidationError('نام کاربری جدید تکراری است.')
-                
-    def validate_email(self, field):
-        if field.data != self.original_email:
-            if User.query.filter_by(email=field.data).first():
-                raise ValidationError('ایمیل جدید تکراری است.')
 
 class UpdatePasswordForm(FlaskForm):
     current_password = PasswordField('رمز عبور فعلی', validators=[DataRequired()])
-    new_password = PasswordField('رمز عبور جدید', validators=[DataRequired(), Length(min=6)])
+    new_password = PasswordField('رمز عبور جدید', validators=[DataRequired(), Length(min=4)])
     confirm_new_password = PasswordField('تکرار رمز عبور جدید', validators=[DataRequired(), EqualTo('new_password')])
     submit = SubmitField('تغییر رمز عبور')
 
@@ -224,15 +227,15 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- Context Processors (بهینه‌سازی شده) ---
+# --- Context Processors ---
 @app.context_processor
 def inject_user():
-    # استفاده از سشن برای جلوگیری از کوئری دیتابیس در هر درخواست
     user_id = session.get('current_user_id')
     user_name = session.get('current_user_name')
+    user_pic = session.get('current_user_pic')
     
     if user_id and user_name:
-        return dict(current_user={'id': user_id, 'name': user_name}, current_user_id=user_id)
+        return dict(current_user={'id': user_id, 'name': user_name, 'pic': user_pic}, current_user_id=user_id)
     return dict(current_user=None, current_user_id=None)
 
 # --- روت‌ها ---
@@ -247,7 +250,7 @@ def about():
 @app.route('/auth')
 def show_auth_page():
     if session.get('current_user_id'):
-        return redirect(url_for('match'))
+        return redirect(url_for('dashboard')) # هدایت به داشبورد پس از ورود
     return render_template('register.html', form=RegistrationForm(), login_form=LoginForm())
 
 @app.route('/register', methods=['POST'])
@@ -255,11 +258,12 @@ def show_auth_page():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = AuthService.register_user(form.name.data, form.email.data, form.major.data, form.password.data)
+        user = AuthService.register_user(form.full_name.data, form.student_id.data, form.major.data, form.password.data)
         session['current_user_id'] = user.id
-        session['current_user_name'] = user.name # ذخیره نام در سشن
+        session['current_user_name'] = user.full_name
+        session['current_user_pic'] = user.profile_pic
         flash('ثبت‌نام موفقیت‌آمیز بود.', 'success')
-        return redirect(url_for('match'))
+        return redirect(url_for('dashboard'))
     return render_template('register.html', form=form, login_form=LoginForm())
 
 @app.route('/login', methods=['POST'])
@@ -267,23 +271,54 @@ def register():
 def login():
     login_form = LoginForm()
     if login_form.validate_on_submit():
-        user = AuthService.authenticate_user(login_form.username.data, login_form.password.data)
+        user = AuthService.authenticate_user(login_form.student_id.data, login_form.password.data)
         if user:
             session['current_user_id'] = user.id
-            session['current_user_name'] = user.name # ذخیره نام در سشن
+            session['current_user_name'] = user.full_name
+            session['current_user_pic'] = user.profile_pic
             flash('خوش آمدید.', 'success')
-            return redirect(url_for('match'))
+            return redirect(url_for('dashboard'))
         else:
-            flash('نام کاربری/ایمیل یا رمز عبور اشتباه است.', 'error')
+            flash('شماره دانشجویی یا رمز عبور اشتباه است.', 'error')
     return render_template('register.html', form=RegistrationForm(), login_form=login_form)
 
 @app.route('/logout')
 @login_required
 def logout():
     StateManager.set_offline(session.get('current_user_id'))
-    session.clear() # پاکسازی کامل سشن
+    session.clear()
     flash('خروج موفقیت‌آمیز.', 'info')
     return redirect(url_for('show_auth_page'))
+
+# داشبورد جدید (برنامه کلاسی)
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    current_user_id = session['current_user_id']
+    schedules = ClassSchedule.query.filter_by(user_id=current_user_id).all()
+    return render_template('dashboard.html', schedules=schedules)
+
+@app.route('/update_schedule', methods=['POST'])
+@login_required
+def update_schedule():
+    data = request.json
+    user_id = session['current_user_id']
+    
+    # حذف برنامه قبلی برای آن سلول
+    ClassSchedule.query.filter_by(user_id=user_id, day=data['day'], time_slot=data['time_slot']).delete()
+    
+    if data.get('course_name'):
+        new_schedule = ClassSchedule(
+            user_id=user_id,
+            day=data['day'],
+            time_slot=data['time_slot'],
+            course_name=data['course_name'],
+            class_location=data.get('class_location', '')
+        )
+        db.session.add(new_schedule)
+    
+    db.session.commit()
+    return jsonify({'status': 'success'})
 
 @app.route('/match')
 @login_required
@@ -292,23 +327,23 @@ def match():
     q = request.args.get('q', '')
     query = User.query.filter(User.id != current_user_id)
     if q:
-        users = query.filter((User.major.contains(q)) | (User.name.contains(q))).all()
+        users = query.filter((User.major.contains(q)) | (User.full_name.contains(q)) | (User.student_id.contains(q))).all()
     else:
-        users = query.all()
+        users = query.limit(20).all() # محدود کردن نتایج
     return render_template('match.html', users=users)
 
 @app.route('/profile/<int:user_id>')
 @login_required
 def profile(user_id):
     current_user_id = session['current_user_id']
-    user = db.session.get(User, user_id) # متد جدید SQLAlchemy 2.0
+    user = db.session.get(User, user_id)
     if not user:
         abort(404)
         
     can_edit = (current_user_id == user_id)
     
     forms = {
-        'update_profile': UpdateProfileForm(obj=user, original_username=user.name, original_email=user.email) if can_edit else None,
+        'update_profile': UpdateProfileForm(obj=user) if can_edit else None,
         'update_password': UpdatePasswordForm() if can_edit else None,
         'delete_account': DeleteAccountForm() if can_edit else None
     }
@@ -325,16 +360,22 @@ def update_profile():
     user = db.session.get(User, user_id)
     if not user: abort(404)
     
-    form = UpdateProfileForm(obj=user, original_username=user.name, original_email=user.email)
+    form = UpdateProfileForm(obj=user)
     if form.validate_on_submit():
-        user.name = form.name.data
-        user.email = form.email.data # آپدیت ایمیل
+        user.full_name = form.full_name.data
         user.major = form.major.data
+        
+        # آپلود عکس پروفایل
+        if 'profile_pic' in request.files:
+            file = request.files['profile_pic']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(f"{user_id}_{file.filename}")
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                user.profile_pic = filename
+                session['current_user_pic'] = filename # آپدیت سشن
+        
         db.session.commit()
-        
-        # آپدیت سشن
-        session['current_user_name'] = user.name
-        
+        session['current_user_name'] = user.full_name # آپدیت سشن نام
         flash('پروفایل بروزرسانی شد.', 'success')
     return redirect(url_for('profile', user_id=user_id))
 
@@ -368,25 +409,26 @@ def delete_account():
     flash('حساب کاربری حذف شد.', 'info')
     return redirect(url_for('show_auth_page'))
 
-@app.route('/chat/<int:other_user_id>')
+# --- بخش چت (جدید - لایه بندی شده) ---
+@app.route('/chat')
 @login_required
-def chat(other_user_id):
-    current_user_id = session['current_user_id']
-    if current_user_id == other_user_id:
-        return redirect(url_for('inbox'))
-    
-    other_user = db.session.get(User, other_user_id)
-    if not other_user: abort(404)
-        
-    messages = ChatService.get_chat_history(current_user_id, other_user_id)
-    return render_template('chat.html', other_user=other_user, messages=messages)
-
-@app.route('/inbox')
-@login_required
-def inbox():
+def chat_main():
     current_user_id = session['current_user_id']
     conversations = ChatService.get_inbox_conversations(current_user_id)
-    return render_template('inbox.html', conversations=conversations, user_id=current_user_id)
+    
+    # اگر چت خاصی انتخاب نشده، لیست را خالی نشان می‌دهیم یا اولین کاربر را
+    active_chat_user = None
+    messages = []
+    other_user_id = request.args.get('user_id', type=int)
+    
+    if other_user_id:
+        active_chat_user = db.session.get(User, other_user_id)
+        messages = ChatService.get_chat_history(current_user_id, other_user_id)
+    
+    return render_template('chat_layout.html', 
+                           conversations=conversations, 
+                           active_chat_user=active_chat_user,
+                           messages=messages)
 
 @app.route('/api/user_status/<int:user_id>')
 def check_user_online(user_id):
@@ -412,8 +454,6 @@ def handle_join_chat(data):
     other_user_id = data['other_user_id']
     room_id = f"chat-{min(current_user_id, other_user_id)}-{max(current_user_id, other_user_id)}"
     join_room(room_id)
-    user_name = session.get('current_user_name', 'کاربر') # استفاده از سشن
-    emit('status_message', {'msg': f"{user_name} متصل شد.", 'type': 'join'}, room=room_id, include_self=False)
 
 @socketio.on('send_message')
 def handle_send_message(data):
@@ -433,19 +473,7 @@ def handle_send_message(data):
         'timestamp': msg.timestamp.strftime('%H:%M'),
         'sender_id': current_user_id,
         'message_id': msg.id
-    }, room=room_id, include_self=False)
-
-@socketio.on('typing')
-def handle_typing(data):
-    current_user_id = session.get('current_user_id')
-    if current_user_id and data.get('room'):
-        emit('typing', {'user_id': current_user_id}, room=data['room'], include_self=False)
-
-@socketio.on('stop_typing')
-def handle_stop_typing(data):
-    current_user_id = session.get('current_user_id')
-    if current_user_id and data.get('room'):
-        emit('stop_typing', {'user_id': current_user_id}, room=data['room'], include_self=False)
+    }, room=room_id) # include_self=False را برداشتیم تا فرستنده هم پیام را ببیند (برای UI اپدیت شده)
 
 if __name__ == '__main__':
     with app.app_context():
