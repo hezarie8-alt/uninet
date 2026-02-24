@@ -4,31 +4,24 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero">
-    <div class="container">
-        <div class="hero-content">
-            <div class="hero-text">
-                <h1 class="hero-title">پلتفرم یکپارچه دانشجویی</h1>
-                <p class="hero-subtitle">
-                    مدیریت برنامه کلاسی، ارتباط با دوستان و همکلاسی‌ها در یک پلتفرم ساده و کاربردی.
-                    با یونی نت، تجربه دانشجویی خود را ارتقا دهید.
-                </p>
-                <div class="hero-buttons">
-                    {% if current_user %}
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                            <i class="material-icons" style="margin-left: 8px;">dashboard</i>
-                            داشبورد برنامه
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">شروع کنید</a>
-                        <a href="{{ url_for('about') }}" class="btn btn-outline">درباره من</a>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="hero-image">
-                <img src="https://sfile.chatglm.cn/images-ppt/c8eeb1a1ee7c.jpg" alt="Student Platform" style="border-radius: 10px; box-shadow: var(--shadow-lg); max-width: 100%; height: auto;">
-            </div>
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">پلتفرم یکپارچه دانشجویی</h1>
+        <p class="hero-subtitle">مدیریت برنامه کلاسی، ارتباط با دوستان و همکلاسی‌ها در یک پلتفرم ساده و کاربردی. با یونی نت، تجربه دانشجویی خود را ارتقا دهید.</p>
+        <div class="hero-actions">
+            {% if current_user %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                    <i class="material-icons">dashboard</i> داشبورد
+                </a>
+            {% else %}
+                <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary btn-lg">شروع کنید</a>
+                <a href="{{ url_for('about') }}" class="btn btn-outline btn-lg">درباره ما</a>
+            {% endif %}
         </div>
+    </div>
+    <div class="hero-image">
+        <!-- استفاده از یک تصویر placeholder مرتبط -->
+        <img src="https://sfile.chatglm.cn/images-ppt/c8eeb1a1ee7c.jpg" alt="Student Platform" style="border-radius: 20px; box-shadow: var(--shadow-lg);">
     </div>
 </section>
 
@@ -36,42 +29,111 @@
 <section class="features-section">
     <div class="container">
         <h2 class="section-title">امکانات یونی نت</h2>
-        <p class="section-subtitle">ابزارهایی که برای مدیریت بهتر زندگی دانشجویی نیاز دارید</p>
+        <p class="section-desc">ابزارهایی که برای مدیریت بهتر زندگی دانشجویی نیاز دارید</p>
         
         <div class="features-grid">
             <div class="feature-card">
-                <i class="material-icons feature-icon">event_note</i>
+                <div class="feature-icon"><i class="material-icons">event_note</i></div>
                 <h3 class="feature-title">برنامه کلاسی هوشمند</h3>
-                <p class="feature-description">مدیریت برنامه هفتگی با پشتیبانی از کلاس‌های زوج و فرد و نمایش تقویم شمسی.</p>
+                <p class="feature-desc">مدیریت برنامه هفتگی با پشتیبانی از کلاس‌های زوج و فرد، ورود از اکسل و تقویم شمسی.</p>
             </div>
             
             <div class="feature-card">
-                <i class="material-icons feature-icon">chat</i>
-                <h3 class="feature-title">پیام‌رسان پیشرفته</h3>
-                <p class="feature-description">چت خصوصی، گروه عمومی دانشجویان و کانال اطلاعیه‌ها در یک مکان.</p>
+                <div class="feature-icon"><i class="material-icons">groups</i></div>
+                <h3 class="feature-title">گروه و کانال</h3>
+                <p class="feature-desc">ارتباط لحظه‌ای در گروه عمومی دانشجویان و دریافت اطلاعیه‌ها از طریق کانال اختصاصی.</p>
             </div>
             
             <div class="feature-card">
-                <i class="material-icons feature-icon">meeting_room</i>
+                <div class="feature-icon"><i class="material-icons">meeting_room</i></div>
                 <h3 class="feature-title">رزرو کلاس</h3>
-                <p class="feature-description">سیستم درخواست رزرو کلاس‌های خالی به صورت هفتگی و مدیریت توسط ادمین.</p>
+                <p class="feature-desc">سیستم درخواست رزرو کلاس‌های خالی به صورت هفتگی و مدیریت توسط ادمین.</p>
             </div>
             
             <div class="feature-card">
-                <i class="material-icons feature-icon">dark_mode</i>
-                <h3 class="feature-title">حالت تاریک</h3>
-                <p class="feature-description">محافظت از چشمان شما با پشتیبانی کامل از تم تاریک و طراحی مدرن.</p>
+                <div class="feature-icon"><i class="material-icons">dark_mode</i></div>
+                <h3 class="feature-title">تم تاریک</h3>
+                <p class="feature-desc">رابط کاربری مدرن با پشتیبانی کامل از حالت تاریک برای حفظ سلامت چشم.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- CTA Section -->
-<section class="cta">
+<section class="cta-section">
     <div class="container">
-        <h2 class="cta-title">همین الان شروع کنید</h2>
-        <p class="cta-subtitle">با وارد کردن شماره دانشجویی، به جمع ما بپیوندید.</p>
-        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">ثبت‌نام رایگان</a>
+        <h2>همین الان به جمع ما بپیوندید</h2>
+        <p>با وارد کردن شماره دانشجویی، به شبکه دانشجویان دانشگاه خود متصل شوید.</p>
+        {% if not current_user %}
+            <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary btn-lg">ثبت‌نام رایگان</a>
+        {% endif %}
     </div>
 </section>
 {% endblock %}
+
+<style>
+    /* Hero */
+    .hero-section { 
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between; 
+        gap: 2rem; 
+        padding: 4rem 0; 
+        flex-wrap: wrap; 
+        background: linear-gradient(to bottom left, rgba(0,131,143,0.05), transparent);
+        border-radius: 0 0 60px 60px;
+    }
+    .hero-content { flex: 1; min-width: 300px; max-width: 600px; }
+    .hero-title { font-size: 3rem; line-height: 1.2; margin-bottom: 1.5rem; color: var(--primary-color); }
+    .hero-subtitle { font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 2rem; }
+    .hero-actions { display: flex; gap: 1rem; }
+    .hero-image { flex: 1; min-width: 300px; display: flex; justify-content: center; }
+    .btn-lg { padding: 0.8rem 2rem; font-size: 1.1rem; }
+
+    /* Features */
+    .features-section { padding: 5rem 0; background: var(--surface); margin-top: 2rem; }
+    .section-title { text-align: center; font-size: 2rem; margin-bottom: 0.5rem; }
+    .section-desc { text-align: center; color: var(--text-secondary); margin-bottom: 3rem; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
+    .feature-card { 
+        background: var(--background); 
+        padding: 2rem; 
+        border-radius: 16px; 
+        text-align: center; 
+        transition: transform 0.3s, box-shadow 0.3s; 
+    }
+    .feature-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+    .feature-icon { 
+        width: 60px; height: 60px; 
+        background: rgba(0,131,143,0.1); 
+        color: var(--primary-color); 
+        border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        margin: 0 auto 1.5rem; font-size: 1.5rem; 
+    }
+    .feature-title { margin-bottom: 0.5rem; }
+    .feature-desc { font-size: 0.9rem; color: var(--text-secondary); }
+
+    /* CTA */
+    .cta-section { 
+        text-align: center; 
+        padding: 5rem 2rem; 
+        background: var(--primary-color); 
+        color: white; 
+        margin-top: 4rem; 
+        border-radius: 60px 60px 0 0; 
+    }
+    .cta-section h2 { margin-bottom: 1rem; color: white; }
+    .cta-section p { color: rgba(255,255,255,0.9); margin-bottom: 2rem; }
+    .cta-section .btn-primary { background: white; color: var(--primary-color); }
+    .cta-section .btn-primary:hover { background: #f0f0f0; }
+
+    @media (max-width: 768px) {
+        .hero-section { padding: 2rem 0; text-align: center; }
+        .hero-title { font-size: 2rem; }
+        .hero-content { order: 2; }
+        .hero-image { order: 1; margin-bottom: 2rem; }
+        .hero-actions { justify-content: center; }
+        .features-section { padding: 3rem 0; }
+    }
+</style>

@@ -3,422 +3,359 @@
 {% block title %}پیام‌رسان | یونی نت{% endblock %}
 
 {% block content %}
-<div class="chat-layout">
+<div class="chat-container">
     <!-- Sidebar -->
     <aside class="chat-sidebar" id="chat-sidebar">
         <div class="sidebar-header">
-            <h2 style="font-size: 1.2rem; margin: 0;">پیام‌رسان</h2>
+            <h2>پیام‌رسان</h2>
         </div>
         
-        <!-- Special Sections (Group & Channel) -->
-        <div class="chat-special-sections">
-            <div class="special-item" onclick="loadChat('group')">
-                <div class="special-icon"><i class="material-icons">groups</i></div>
-                <div class="special-info">
-                    <span class="special-name">گروه عمومی دانشجویان</span>
-                    <span class="special-desc">گفتگوی آزاد بین همه دانشجویان</span>
-                </div>
-            </div>
-            <div class="special-item" onclick="loadChat('channel')">
-                <div class="special-icon"><i class="material-icons">campaign</i></div>
-                <div class="special-info">
-                    <span class="special-name">کانال اطلاعیه‌ها</span>
-                    <span class="special-desc">اطلاعیه‌های مدیریت</span>
-                </div>
-            </div>
+        <!-- Tabs for Group/Channel/Private -->
+        <div class="chat-modes">
+            <div class="mode-tab active" onclick="switchChatMode('private')">خصوصی</div>
+            <div class="mode-tab" onclick="switchChatMode('group')">گروه</div>
+            <div class="mode-tab" onclick="switchChatMode('channel')">کانال</div>
         </div>
 
-        <div class="sidebar-divider">پیام‌های خصوصی</div>
-        
-        <div class="conversation-list" id="conversation-list">
-            {% if conversations %}
-                {% for convo in conversations %}
-                    <div class="convo-item {% if active_chat_user and active_chat_user.id == convo.other_user_id %}active{% endif %}" 
-                         onclick="loadChat({{ convo.other_user_id }})" 
-                         data-name="{{ convo.other_user_name }}" 
-                         data-id="{{ convo.other_user_id }}">
-                        
-                        <div class="convo-avatar">
-                            {% if convo.other_user_pic and convo.other_user_pic != 'default.jpg' %}
-                                <img src="{{ url_for('static', filename='uploads/profile_pics/' + convo.other_user_pic) }}" alt="">
-                            {% else %}
-                                {{ convo.other_user_name[0] }}
-                            {% endif %}
-                            {% if convo.is_online %}
-                                <span class="online-dot"></span>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="convo-info">
-                            <div class="convo-header">
-                                <span class="convo-name">{{ convo.other_user_name }}</span>
-                                <span class="convo-time">{{ convo.last_message_timestamp.strftime('%H:%M') }}</span>
-                            </div>
-                            <div class="convo-msg">
-                                <span>{{ convo.last_message_content }}</span>
-                                {% if convo.has_unread %}
-                                    <span class="unread-badge">!</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state-small">هنوز گفتگویی ندارید.</div>
-            {% endif %}
+        <!-- Dynamic Content Area -->
+        <div id="sidebar-content">
+            <!-- Private List (Default) -->
+            <div id="private-list" class="list-container active">
+                <div class="search-box">
+                    <input type="text" placeholder="جستجو..." disabled>
+                </div>
+                <div class="conversation-list" id="convos">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+            
+            <!-- Group Members List -->
+            <div id="group-list" class="list-container">
+                <h4 style="padding: 0 1rem; color: var(--text-secondary);">اعضای گروه</h4>
+                <div class="member-list" id="members">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
         </div>
     </aside>
 
     <!-- Main Chat Area -->
-    <main class="chat-main" id="chat-main-area">
-        
+    <main class="chat-main">
+        <!-- Private Chat View -->
+        <div id="view-private" class="chat-view active">
+            <div class="chat-header" id="private-header">
+                <button class="btn-icon" onclick="toggleSidebar()"><i class="material-icons">menu</i></button>
+                <div class="user-info-header">
+                    <img src="" id="private-avatar" class="avatar-small">
+                    <div>
+                        <h3 id="private-name">کاربر</h3>
+                        <span id="private-status">آنلاین</span>
+                    </div>
+                </div>
+                <a href="#" id="private-profile-link" class="btn-icon"><i class="material-icons">person</i></a>
+            </div>
+            <div class="chat-messages" id="private-msgs"></div>
+            <div class="chat-input-box">
+                <label class="attach-btn"><i class="material-icons">attach_file</i><input type="file" style="display:none" onchange="uploadFile(this, 'private')"></label>
+                <input type="text" id="private-input" placeholder="پیام خود را بنویسید...">
+                <button class="send-btn" onclick="sendPrivateMessage()"><i class="material-icons">send</i></button>
+            </div>
+        </div>
+
         <!-- Group Chat View -->
-        <div id="group-view" class="chat-window" style="display: none;">
-            <div class="chat-header-active">
-                <div class="header-avatar"><i class="material-icons">groups</i></div>
-                <div class="chat-header-info">
-                    <h3>گروه عمومی</h3>
-                    <span>اعضای آنلاین را ببینید</span>
+        <div id="view-group" class="chat-view">
+            <div class="chat-header">
+                <button class="btn-icon" onclick="toggleSidebar()"><i class="material-icons">menu</i></button>
+                <div class="user-info-header">
+                    <div class="avatar-small icon-avatar"><i class="material-icons">groups</i></div>
+                    <div>
+                        <h3>گروه عمومی</h3>
+                        <span>گفتگوی دانشجویان</span>
+                    </div>
                 </div>
             </div>
-            <div class="chat-messages-active" id="group-messages-container"></div>
-            <div class="chat-input-area">
-                <label for="file-upload-group" class="attach-btn"><i class="material-icons">attach_file</i></label>
-                <input id="file-upload-group" type="file" style="display:none" onchange="handleFileUpload(this, 'group')">
-                <input type="text" id="group-msg-input" placeholder="پیام خود را بنویسید...">
+            <div class="chat-messages" id="group-msgs"></div>
+            <div class="chat-input-box">
+                <label class="attach-btn"><i class="material-icons">attach_file</i><input type="file" style="display:none" onchange="uploadFile(this, 'group')"></label>
+                <input type="text" id="group-input" placeholder="پیام در گروه...">
                 <button class="send-btn" onclick="sendGroupMessage()"><i class="material-icons">send</i></button>
             </div>
         </div>
 
         <!-- Channel View -->
-        <div id="channel-view" class="chat-window" style="display: none;">
-            <div class="chat-header-active">
-                <div class="header-avatar"><i class="material-icons">campaign</i></div>
-                <div class="chat-header-info">
-                    <h3>کانال اطلاعیه‌ها</h3>
-                    <span>فقط مدیریت پیام ارسال می‌کند</span>
+        <div id="view-channel" class="chat-view">
+            <div class="chat-header">
+                <button class="btn-icon" onclick="toggleSidebar()"><i class="material-icons">menu</i></button>
+                <div class="user-info-header">
+                    <div class="avatar-small icon-avatar"><i class="material-icons">campaign</i></div>
+                    <div>
+                        <h3>کانال اطلاعیه‌ها</h3>
+                        <span>مدیریت</span>
+                    </div>
                 </div>
             </div>
-            <div class="chat-messages-active" id="channel-messages-container"></div>
+            <div class="chat-messages" id="channel-msgs"></div>
             
             {% if is_admin %}
-            <div class="chat-input-area">
-                <label for="file-upload-channel" class="attach-btn"><i class="material-icons">attach_file</i></label>
-                <input id="file-upload-channel" type="file" style="display:none" onchange="handleFileUpload(this, 'channel')">
-                <input type="text" id="channel-msg-input" placeholder="اطلاعیه جدید...">
+            <div class="chat-input-box">
+                <label class="attach-btn"><i class="material-icons">attach_file</i><input type="file" style="display:none" onchange="uploadFile(this, 'channel')"></label>
+                <input type="text" id="channel-input" placeholder="اطلاعیه جدید...">
                 <button class="send-btn" onclick="sendChannelMessage()"><i class="material-icons">send</i></button>
             </div>
             {% else %}
-            <div class="chat-input-area disabled">
-                <span style="color:var(--text-secondary); width:100%; text-align:center; font-size:0.9rem;">شما نمی‌توانید در کانال پیام ارسال کنید</span>
-            </div>
+            <div class="chat-input-box disabled"><span>فقط ادمین می‌تواند پیام ارسال کند</span></div>
             {% endif %}
-        </div>
-
-        <!-- Private Chat View -->
-        <div id="private-view" class="chat-window" style="display: none;">
-            <div class="chat-header-active">
-                <button class="btn-icon" onclick="showSidebar()"><i class="material-icons">arrow_forward</i></button>
-                <div class="header-avatar" id="private-avatar"></div>
-                <div class="chat-header-info">
-                    <h3 id="private-name">نام کاربر</h3>
-                    <span id="private-status">آنلاین</span>
-                </div>
-                <a href="#" id="private-profile-link" class="btn-icon"><i class="material-icons">person</i></a>
-            </div>
-            <div class="chat-messages-active" id="private-messages-container"></div>
-            <div class="chat-input-area">
-                <label for="file-upload-private" class="attach-btn"><i class="material-icons">attach_file</i></label>
-                <input id="file-upload-private" type="file" style="display:none" onchange="handleFileUpload(this, 'private')">
-                <input type="text" id="private-msg-input" placeholder="پیام خصوصی...">
-                <button class="send-btn" onclick="sendPrivateMessage()"><i class="material-icons">send</i></button>
-            </div>
-        </div>
-
-        <!-- Empty State -->
-        <div id="empty-view" class="chat-empty">
-            <i class="material-icons">chat</i>
-            <h3>یک گفتگو انتخاب کنید</h3>
         </div>
     </main>
 </div>
 
 <style>
-    /* Special Sections */
-    .chat-special-sections { padding: 0.5rem; }
-    .special-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem;
-        border-radius: 8px;
-        cursor: pointer;
-        margin-bottom: 0.5rem;
-        transition: background 0.2s;
-    }
-    .special-item:hover { background: var(--background); }
-    .special-icon {
-        width: 48px;
-        height: 48px;
-        background: var(--primary-color);
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .special-info { display: flex; flex-direction: column; }
-    .special-name { font-weight: 600; font-size: 0.95rem; }
-    .special-desc { font-size: 0.8rem; color: var(--text-secondary); }
+    .chat-container { display: flex; height: calc(100vh - 60px); background: var(--background); }
     
-    .sidebar-divider {
-        padding: 0.5rem 1rem;
-        font-size: 0.75rem;
-        color: var(--text-secondary);
-        font-weight: 600;
-        margin-top: 0.5rem;
-    }
+    /* Sidebar */
+    .chat-sidebar { width: 300px; background: var(--surface); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; }
+    .sidebar-header { padding: 1rem; border-bottom: 1px solid var(--border-color); }
+    .chat-modes { display: flex; border-bottom: 1px solid var(--border-color); }
+    .mode-tab { flex: 1; padding: 0.75rem; text-align: center; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; border-bottom: 2px solid transparent; }
+    .mode-tab.active { color: var(--primary-color); border-bottom-color: var(--primary-color); background: rgba(0,131,143,0.05); }
+    .list-container { display: none; flex: 1; overflow-y: auto; padding-top: 0.5rem; }
+    .list-container.active { display: block; }
+    
+    /* Items */
+    .convo-item { display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid var(--border-color); }
+    .convo-item:hover, .member-item:hover { background: var(--background); }
+    .convo-item.active { background: var(--primary-light); color: white; }
+    .member-item { display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem; }
+    .avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; }
+    .item-info h4 { margin: 0; font-size: 0.95rem; }
+    .item-info p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); }
+    .online-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; margin-right: auto; }
 
-    /* Chat Common */
-    .chat-window { display: flex; flex-direction: column; height: 100%; }
-    .header-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--primary-light);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .btn-icon {
-        background: none;
-        border: none;
-        color: var(--text-primary);
-        cursor: pointer;
-        padding: 0.5rem;
-        border-radius: 50%;
-    }
-    .btn-icon:hover { background: var(--background); }
+    /* Main */
+    .chat-main { flex: 1; display: flex; flex-direction: column; position: relative; }
+    .chat-view { display: none; flex-direction: column; height: 100%; }
+    .chat-view.active { display: flex; }
+    
+    .chat-header { display: flex; align-items: center; padding: 0.75rem 1rem; background: var(--surface); border-bottom: 1px solid var(--border-color); gap: 1rem; }
+    .user-info-header { display: flex; align-items: center; gap: 0.75rem; flex: 1; }
+    .user-info-header h3 { margin: 0; font-size: 1rem; }
+    .user-info-header span { font-size: 0.8rem; color: var(--text-secondary); }
+    
+    .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v-2h4v4h2v-4h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4v-2H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
 
     /* Messages */
-    .message-bubble { max-width: 70%; padding: 0.5rem 1rem; border-radius: 12px; margin-bottom: 0.5rem; position: relative; word-wrap: break-word; }
-    .message-bubble.sent { background: var(--primary-color); color: white; align-self: flex-end; }
-    .message-bubble.received { background: var(--surface); border: 1px solid var(--border-color); align-self: flex-start; }
-    .message-sender { font-size: 0.75rem; font-weight: 600; color: var(--primary-color); margin-bottom: 2px; display: block; cursor: pointer; }
-    .message-time { font-size: 0.7rem; opacity: 0.7; margin-top: 4px; display: block; }
-    .message-file { 
-        display: block; 
-        margin-top: 5px; 
-        padding: 5px 10px; 
-        background: rgba(255,255,255,0.2); 
-        border-radius: 4px; 
-        font-size: 0.85rem;
-        text-decoration: none;
-        color: inherit;
-    }
-    .sent .message-file { background: rgba(0,0,0,0.2); }
-    
+    .msg { max-width: 70%; padding: 0.75rem 1rem; border-radius: 12px; position: relative; word-wrap: break-word; }
+    .msg.sent { background: var(--primary-color); color: white; align-self: flex-end; border-bottom-left-radius: 4px; }
+    .msg.received { background: var(--surface); align-self: flex-start; border-bottom-right-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .msg-sender { font-size: 0.75rem; font-weight: 700; color: var(--primary-color); margin-bottom: 0.25rem; display: block; cursor: pointer; }
+    .msg-time { font-size: 0.7rem; opacity: 0.7; margin-top: 0.25rem; text-align: left; }
+    .msg-file { display: block; margin-top: 0.5rem; font-size: 0.85rem; background: rgba(0,0,0,0.1); padding: 0.25rem 0.5rem; border-radius: 4px; }
+
     /* Input */
-    .chat-input-area { background: var(--surface); padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.5rem; border-top: 1px solid var(--border-color); }
-    .chat-input-area.disabled { background: var(--background); }
-    .chat-input-area input { flex: 1; padding: 0.75rem; border-radius: 24px; border: 1px solid var(--border-color); background: var(--background); font-family: inherit; }
-    .attach-btn { cursor: pointer; color: var(--text-secondary); padding: 0.5rem; }
+    .chat-input-box { background: var(--surface); padding: 0.75rem; display: flex; gap: 0.5rem; border-top: 1px solid var(--border-color); align-items: center; }
+    .chat-input-box input { flex: 1; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 24px; outline: none; font-family: inherit; background: var(--background); }
+    .chat-input-box input:focus { border-color: var(--primary-color); }
+    .send-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .attach-btn { color: var(--text-secondary); cursor: pointer; padding: 0.5rem; }
     .attach-btn:hover { color: var(--primary-color); }
+    .disabled { background: var(--surface); padding: 1rem; text-align: center; color: var(--text-secondary); }
 
-    .unread-badge { background: var(--primary-color); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
-    .online-dot { position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: var(--success); border-radius: 50%; border: 2px solid var(--surface); }
+    @media (max-width: 768px) {
+        .chat-sidebar { position: absolute; right: 0; width: 100%; height: 100%; z-index: 100; display: none; }
+        .chat-sidebar.active { display: flex; }
+    }
 </style>
-
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 <script>
     const socket = io();
     const currentUserId = {{ current_user.id if current_user else 'null' }};
-    let currentView = 'empty'; // 'group', 'channel', 'private'
-    let privateRecipientId = null;
+    
+    // Data Injection
+    const initialMessages = {% if messages %}{{ messages | tojson }}{% else %}[]{% endif %};
+    const groupMessages = {% if group_messages %}{{ group_messages | tojson }}{% else %}[]{% endif %};
+    const channelMessages = {% if channel_messages %}{{ channel_messages | tojson }}{% else %}[]{% endif %};
+    
+    let activePrivateUser = {% if active_chat_user %}{{ active_chat_user.id }}{% else %}null{% endif %};
+    let activeMode = 'private'; // private, group, channel
 
-    // --- Socket Connections ---
+    // --- Socket Events ---
     socket.on('connect', () => {
-        socket.emit('join_group');
-        socket.emit('join_channel');
+        console.log("Connected");
+        if(activePrivateUser) socket.emit('join_chat', {other_user_id: activePrivateUser});
+        loadGroupMembers();
     });
 
-    // --- Load Initial Data ---
-    // These variables are injected from backend for initial load
-    {% if active_chat_user %}
-        loadChat({{ active_chat_user.id }});
-    {% endif %}
-
-    // --- View Management ---
-    function loadChat(type_or_id) {
-        // Hide all views
-        document.getElementById('group-view').style.display = 'none';
-        document.getElementById('channel-view').style.display = 'none';
-        document.getElementById('private-view').style.display = 'none';
-        document.getElementById('empty-view').style.display = 'none';
-
-        if (type_or_id === 'group') {
-            currentView = 'group';
-            document.getElementById('group-view').style.display = 'flex';
-            loadGroupHistory();
-        } else if (type_or_id === 'channel') {
-            currentView = 'channel';
-            document.getElementById('channel-view').style.display = 'flex';
-            loadChannelHistory();
-        } else {
-            // It's a private chat ID
-            currentView = 'private';
-            privateRecipientId = type_or_id;
-            document.getElementById('private-view').style.display = 'flex';
-            loadPrivateChat(privateRecipientId);
+    socket.on('new_message', data => {
+        if (activeMode === 'private' && (data.sender_id === activePrivateUser || data.sender_id === currentUserId)) {
+            appendMessage('private-msgs', data, 'received', data.sender_id === currentUserId);
         }
+    });
+
+    socket.on('new_group_message', data => {
+        if (activeMode === 'group') {
+            appendMessage('group-msgs', data, 'received', data.sender_id === currentUserId);
+        }
+    });
+
+    socket.on('new_channel_message', data => {
+        if (activeMode === 'channel') {
+            appendMessage('channel-msgs', data, 'received', false); // always received style for users
+        }
+    });
+
+    // --- Logic ---
+    function switchChatMode(mode) {
+        activeMode = mode;
         
-        // On mobile, hide sidebar
-        if(window.innerWidth < 768) {
-            document.getElementById('chat-sidebar').style.display = 'none';
-        }
+        // UI Updates
+        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        document.querySelectorAll('.list-container').forEach(c => c.classList.remove('active'));
+        document.getElementById(mode + '-list').classList.add('active');
+        
+        document.querySelectorAll('.chat-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + mode).classList.add('active');
+        
+        // Load Data
+        if (mode === 'private') loadPrivateHistory();
+        else if (mode === 'group') loadGroupHistory();
+        else if (mode === 'channel') loadChannelHistory();
     }
 
-    function showSidebar() {
-        document.getElementById('chat-sidebar').style.display = 'block';
+    function loadPrivateHistory() {
+        const container = document.getElementById('private-msgs');
+        container.innerHTML = '';
+        initialMessages.forEach(m => appendMessage('private-msgs', m, 'received', m.sender_id === currentUserId));
     }
 
-    // --- Group Logic ---
     function loadGroupHistory() {
-        const container = document.getElementById('group-messages-container');
+        const container = document.getElementById('group-msgs');
         container.innerHTML = '';
-        // Load from server (omitted for brevity, using socket emit/receive pattern)
-        const messages = {% if group_messages %}{{ group_messages | tojson }}{% else %}[]{% endif %};
-        messages.forEach(msg => appendMessage('group', msg));
-        container.scrollTop = container.scrollHeight;
+        groupMessages.forEach(m => appendMessage('group-msgs', m, 'received', m.sender_id === currentUserId));
     }
 
-    function sendGroupMessage() {
-        const input = document.getElementById('group-msg-input');
-        const content = input.value.trim();
-        if (!content) return;
-        socket.emit('send_group_message', { content: content, file_path: null });
-        input.value = '';
-    }
-
-    socket.on('new_group_message', (data) => {
-        if (currentView === 'group') appendMessage('group', data);
-    });
-
-    // --- Channel Logic ---
     function loadChannelHistory() {
-        const container = document.getElementById('channel-messages-container');
+        const container = document.getElementById('channel-msgs');
         container.innerHTML = '';
-        const messages = {% if channel_messages %}{{ channel_messages | tojson }}{% else %}[]{% endif %};
-        messages.forEach(msg => appendMessage('channel', msg));
-        container.scrollTop = container.scrollHeight;
+        channelMessages.forEach(m => appendMessage('channel-msgs', m, 'received', false));
     }
 
-    function sendChannelMessage() {
-        const input = document.getElementById('channel-msg-input');
-        const content = input.value.trim();
-        if (!content) return;
-        socket.emit('send_channel_message', { content: content, file_path: null });
-        input.value = '';
+    function loadGroupMembers() {
+        fetch('/api/group_members')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('members');
+                container.innerHTML = '';
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; padding:1rem; color:var(--text-secondary);">عضوی یافت نشد</p>';
+                    return;
+                }
+                data.forEach(u => {
+                    const div = document.createElement('div');
+                    div.className = 'member-item';
+                    div.innerHTML = `
+                        <div class="avatar-small">${u.name[0]}</div>
+                        <div class="item-info" style="flex:1">
+                            <h4>${u.name}</h4>
+                        </div>
+                        ${u.online ? '<div class="online-dot"></div>' : ''}
+                        <a href="/profile/${u.id}" class="btn-icon"><i class="material-icons">person</i></a>
+                    `;
+                    container.appendChild(div);
+                });
+            });
     }
 
-    socket.on('new_channel_message', (data) => {
-        if (currentView === 'channel') appendMessage('channel', data);
-    });
-
-    // --- Private Logic ---
-    function loadPrivateChat(otherId) {
-        // Setup header
-        // We need user info. Ideally passed from backend or fetched.
-        // Simplified: use existing info if available in DOM
-        const item = document.querySelector(`.convo-item[data-id="${otherId}"]`);
-        if(item) {
-            const name = item.querySelector('.convo-name').innerText;
-            document.getElementById('private-name').innerText = name;
-            document.getElementById('private-profile-link').href = `/profile/${otherId}`;
-        }
-        
-        socket.emit('join_chat', { other_user_id: otherId });
-        
-        const container = document.getElementById('private-messages-container');
-        container.innerHTML = '';
-        const messages = {% if messages %}{{ messages | tojson }}{% else %}[]{% endif %};
-        messages.forEach(msg => appendMessage('private', msg, otherId));
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function sendPrivateMessage() {
-        const input = document.getElementById('private-msg-input');
-        const content = input.value.trim();
-        if (!content || !privateRecipientId) return;
-        socket.emit('send_message', { other_user_id: privateRecipientId, content: content });
-        input.value = '';
-    }
-
-    socket.on('new_message', (data) => {
-        if (currentView === 'private' && (data.sender_id === privateRecipientId || data.sender_id === currentUserId)) {
-             appendMessage('private', data, data.sender_id);
-        }
-    });
-
-    // --- Helpers ---
-    function appendMessage(type, data, otherId=null) {
-        const container = document.getElementById(type + '-messages-container');
+    function appendMessage(containerId, data, defaultType, isSent) {
+        const container = document.getElementById(containerId);
         const div = document.createElement('div');
+        const type = isSent ? 'sent' : defaultType;
         
-        // Determine alignment
-        let sentClass = '';
-        if (type === 'private') {
-            sentClass = (data.sender_id === currentUserId) ? 'sent' : 'received';
-        } else if (type === 'group') {
-            sentClass = (data.sender_id === currentUserId) ? 'sent' : 'received';
-        } else if (type === 'channel') {
-            sentClass = 'received'; // Always received style for channel
-        }
-
-        // HTML Construction
+        // Handle sender name for group
         let senderHtml = '';
-        if (type === 'group' && sentClass === 'received') {
-            senderHtml = `<span class="message-sender" onclick="window.location.href='/profile/${data.sender_id}'">${data.sender_name}</span>`;
+        if (type === 'received' && data.sender_name && containerId === 'group-msgs') {
+            senderHtml = `<span class="msg-sender" onclick="window.location.href='/profile/${data.sender_id}'">${data.sender_name}</span>`;
         }
 
-        let fileHtml = data.file_path ? `<a class="message-file" href="${data.file_path}" target="_blank">📎 فایل پیوست</a>` : '';
-        let contentHtml = data.content || '';
-
-        div.className = `message-bubble ${sentClass}`;
-        div.innerHTML = `${senderHtml}${contentHtml}${fileHtml}<span class="message-time">${data.timestamp}</span>`;
+        const time = data.timestamp || new Date().toLocaleTimeString('fa-IR', {hour:'2-digit', minute:'2-digit'});
+        const fileHtml = data.file_path ? `<a class="msg-file" href="${data.file_path}" target="_blank">📎 فایل</a>` : '';
+        
+        div.className = `msg ${type}`;
+        div.innerHTML = `${senderHtml}${data.content || ''}${fileHtml}<div class="msg-time">${time}</div>`;
         
         container.appendChild(div);
         container.scrollTop = container.scrollHeight;
     }
 
-    // --- File Upload ---
-    function handleFileUpload(inputElement, type) {
+    // --- Actions ---
+    function sendPrivateMessage() {
+        const input = document.getElementById('private-input');
+        const content = input.value.trim();
+        if (!content || !activePrivateUser) return;
+        
+        socket.emit('send_message', {content: content, other_user_id: activePrivateUser});
+        input.value = '';
+        // Optimistic UI handled by socket event
+    }
+
+    function sendGroupMessage() {
+        const input = document.getElementById('group-input');
+        const content = input.value.trim();
+        if (!content) return;
+        
+        socket.emit('send_group_message', {content: content});
+        input.value = '';
+    }
+
+    function sendChannelMessage() {
+        const input = document.getElementById('channel-input');
+        const content = input.value.trim();
+        if (!content) return;
+        
+        socket.emit('send_channel_message', {content: content});
+        input.value = '';
+    }
+
+    function uploadFile(inputElement, type) {
         const file = inputElement.files[0];
         if (!file) return;
-
+        
         const formData = new FormData();
         formData.append('file', file);
-
-        fetch('/upload_chat_file', {
-            method: 'POST',
-            body: formData
-        })
+        
+        fetch('/upload_chat_file', { method: 'POST', body: formData })
         .then(res => res.json())
         .then(data => {
             if (data.filepath) {
-                if (type === 'group') {
-                    socket.emit('send_group_message', { content: 'فایل ارسال شد', file_path: data.filepath });
-                } else if (type === 'channel') {
-                    socket.emit('send_channel_message', { content: 'فایل ارسال شد', file_path: data.filepath });
-                } else if (type === 'private') {
-                    socket.emit('send_message', { other_user_id: privateRecipientId, content: 'فایل ارسال شد', file_path: data.filepath });
-                }
+                if (type === 'private') socket.emit('send_message', {content: 'فایل', file_path: data.filepath, other_user_id: activePrivateUser});
+                else if (type === 'group') socket.emit('send_group_message', {content: 'فایل', file_path: data.filepath});
+                else if (type === 'channel') socket.emit('send_channel_message', {content: 'فایل', file_path: data.filepath});
             }
         });
-        inputElement.value = ''; // Reset
+        inputElement.value = '';
     }
+
+    function toggleSidebar() {
+        document.getElementById('chat-sidebar').classList.toggle('active');
+    }
+
+    // --- Initialization ---
+    // If we have an active chat user, setup the header
+    {% if active_chat_user %}
+        document.getElementById('private-name').innerText = "{{ active_chat_user.full_name }}";
+        document.getElementById('private-status').innerText = "در حال بارگذاری...";
+        document.getElementById('private-profile-link').href = "/profile/{{ active_chat_user.id }}";
+        // Load history already handled by HTML injection
+    {% endif %}
+
+    // Enter Key Listeners
+    document.getElementById('private-input').addEventListener('keypress', e => { if(e.key === 'Enter') sendPrivateMessage(); });
+    document.getElementById('group-input').addEventListener('keypress', e => { if(e.key === 'Enter') sendGroupMessage(); });
+    document.getElementById('channel-input').addEventListener('keypress', e => { if(e.key === 'Enter') sendChannelMessage(); });
+
 </script>
 {% endblock %}
