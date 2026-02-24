@@ -3,7 +3,7 @@ eventlet.monkey_patch()
 
 import os
 import jdatetime
-from datetime import datetime, timedelta  # اطمینان از ایمپورت صحیح
+from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, abort, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
 from sqlalchemy import or_, and_, func, case, Index
 from flask_wtf import FlaskForm, CSRFProtect
-from wtforms import StringField, PasswordField, SubmitField, SelectField, HiddenField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, TextAreaField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
 from flask_socketio import SocketIO, emit, join_room
 from flask_limiter import Limiter
@@ -20,7 +20,7 @@ from flask_limiter.util import get_remote_address
 
 # --- تنظیمات ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev_key_change_in_prod')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'super-secret-key-change-me')
 UPLOAD_FOLDER = 'static/uploads/profile_pics'
 CHAT_UPLOAD_FOLDER = 'static/uploads/chat_files'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'docx', 'zip'}
@@ -61,7 +61,7 @@ limiter = Limiter(key_func=get_remote_address, app=app, storage_uri="memory://")
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 csrf = CSRFProtect(app)
 
-# --- مدیریت آنلاین و تنظیمات سیستم ---
+# --- مدیریت آنلاین ---
 ONLINE_USERS_MEMORY = set()
 class StateManager:
     @staticmethod
@@ -89,7 +89,7 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    content = db.Column(db.Text, nullable=False)
+    content = db.Column(db.Text, nullable=True)
     file_path = db.Column(db.String(255), nullable=True)
     timestamp = db.Column(db.DateTime, server_default=func.now(), index=True)
     read_at = db.Column(db.DateTime, nullable=True)
@@ -163,51 +163,7 @@ class SystemSetting(db.Model):
     key = db.Column(db.String(50), primary_key=True)
     value = db.Column(db.String(100), nullable=True)
 
-# --- سرویس‌ها و فرم‌ها ---
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-class AuthService:
-    @staticmethod
-    def register_user(full_name, student_id, major, password):
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        is_admin = (student_id == 'admin')
-        new_user = User(full_name=full_name, student_id=student_id, major=major, password_hash=hashed_password, is_admin=is_admin)
-        db.session.add(new_user)
-        db.session.commit()
-        return new_user
-
-    @staticmethod
-    def authenticate_user(student_id, password):
-        user = User.query.filter_by(student_id=student_id).first()
-        if user and check_password_hash(user.password_hash, password): return user
-        return None
-
-class ChatService:
-    @staticmethod
-    def get_inbox_conversations(user_id):
-        other_user_id = case((Message.sender_id == user_id, Message.receiver_id), else_=Message.sender_id).label("other_user_id")
-        subquery = db.session.query(func.max(Message.id).label("last_message_id")).filter(or_(Message.sender_id == user_id, Message.receiver_id == user_id)).group_by(other_user_id).subquery()
-        results = db.session.query(Message, User, func.sum(case((and_(Message.receiver_id == user_id, Message.read_at.is_(None)), 1), else_=0)).label("unread_count")).join(subquery, Message.id == subquery.c.last_message_id).join(User, User.id == other_user_id).group_by(Message.id, User.id).order_by(Message.timestamp.desc()).all()
-        conversations = []
-        for msg, other_user, unread in results:
-            conversations.append({'other_user_id': other_user.id, 'other_user_name': other_user.full_name, 'other_user_pic': other_user.profile_pic, 'last_message_content': msg.content, 'last_message_timestamp': msg.timestamp, 'has_unread': unread > 0, 'is_online': StateManager.is_online(other_user.id)})
-        return conversations
-
-    @staticmethod
-    def get_chat_history(current_user_id, other_user_id, limit=50):
-        Message.query.filter(and_(Message.sender_id == other_user_id, Message.receiver_id == current_user_id, Message.read_at.is_(None))).update({Message.read_at: func.now()}, synchronize_session=False)
-        db.session.commit()
-        messages = Message.query.filter(or_(and_(Message.sender_id == current_user_id, Message.receiver_id == other_user_id), and_(Message.sender_id == other_user_id, Message.receiver_id == current_user_id))).order_by(Message.timestamp.desc()).limit(limit).all()
-        return messages[::-1]
-
-    @staticmethod
-    def save_message(sender_id, receiver_id, content, file_path=None):
-        msg = Message(sender_id=sender_id, receiver_id=receiver_id, content=content, file_path=file_path)
-        db.session.add(msg)
-        db.session.commit()
-        return msg
-
+# --- فرم‌ها ---
 MAJOR_CHOICES = [('', 'انتخاب کنید'), ('مهندسی کامپیوتر', 'مهندسی کامپیوتر'), ('علوم کامپیوتر', 'علوم کامپیوتر')]
 class RegistrationForm(FlaskForm):
     full_name = StringField('نام', validators=[DataRequired()])
@@ -224,25 +180,12 @@ class LoginForm(FlaskForm):
     password = PasswordField('رمز', validators=[DataRequired()])
     submit = SubmitField('ورود')
 
-class UpdateProfileForm(FlaskForm):
-    full_name = StringField('نام', validators=[DataRequired()])
-    major = SelectField('رشته', choices=MAJOR_CHOICES)
-    submit = SubmitField('بروزرسانی')
-
-class UpdatePasswordForm(FlaskForm):
-    current_password = PasswordField('رمز فعلی', validators=[DataRequired()])
-    new_password = PasswordField('رمز جدید', validators=[DataRequired()])
-    confirm_new_password = PasswordField('تکرار', validators=[DataRequired(), EqualTo('new_password')])
-    submit = SubmitField('تغییر رمز')
-
-class DeleteAccountForm(FlaskForm):
-    submit = SubmitField('حذف حساب')
-
 # --- دکوراتورها ---
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'current_user_id' not in session:
+            if request.is_json: return jsonify({'error': 'Unauthorized'}), 401
             flash('لطفا وارد شوید.', 'info')
             return redirect(url_for('show_auth_page'))
         return f(*args, **kwargs)
@@ -270,26 +213,24 @@ def inject_user():
 
 # --- منطق ریست هفتگی ---
 def get_week_number():
-    # استفاده از تاریخ میلادی برای محاسبه شماره هفته (استاندارد ISO)
-    # این تابع عددی بین 1 تا 52/53 برمی‌گرداند که هر دوشنبه تغییر می‌کند
     return datetime.now().isocalendar()[1]
 
 def check_weekly_reset():
-    """چک میکند اگر هفته تغییر کرده، رزروها را پاک میکند"""
-    setting = SystemSetting.query.get('last_reset_week')
-    current_week = str(get_week_number())
-    
-    if not setting:
-        setting = SystemSetting(key='last_reset_week', value=current_week)
-        db.session.add(setting)
-        db.session.commit()
-        return
-    
-    if setting.value != current_week:
-        # هفته جدید رسیده -> ریست
-        Reservation.query.delete()
-        setting.value = current_week
-        db.session.commit()
+    try:
+        setting = SystemSetting.query.get('last_reset_week')
+        current_week = str(get_week_number())
+        if not setting:
+            setting = SystemSetting(key='last_reset_week', value=current_week)
+            db.session.add(setting)
+            db.session.commit()
+            return
+        if setting.value != current_week:
+            Reservation.query.delete()
+            setting.value = current_week
+            db.session.commit()
+    except Exception as e:
+        print(f"Weekly reset error: {e}")
+        db.session.rollback()
 
 # --- روت‌های اصلی ---
 @app.route('/')
@@ -310,13 +251,21 @@ def show_auth_page():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = AuthService.register_user(form.full_name.data, form.student_id.data, form.major.data, form.password.data)
-        session['current_user_id'] = user.id
-        session['current_user_name'] = user.full_name
-        session['current_user_pic'] = user.profile_pic
-        session['is_admin'] = user.is_admin
-        flash('ثبت‌نام موفق.', 'success')
-        return redirect(url_for('dashboard'))
+        try:
+            hashed_password = generate_password_hash(form.password.data, method='pbkdf2:sha256')
+            is_admin = (form.student_id.data == 'admin')
+            new_user = User(full_name=form.full_name.data, student_id=form.student_id.data, major=form.major.data, password_hash=hashed_password, is_admin=is_admin)
+            db.session.add(new_user)
+            db.session.commit()
+            session['current_user_id'] = new_user.id
+            session['current_user_name'] = new_user.full_name
+            session['current_user_pic'] = new_user.profile_pic
+            session['is_admin'] = new_user.is_admin
+            flash('ثبت‌نام موفق.', 'success')
+            return redirect(url_for('dashboard'))
+        except Exception as e:
+            db.session.rollback()
+            flash('خطا در ثبت نام.', 'error')
     return render_template('register.html', form=form, login_form=LoginForm())
 
 @app.route('/login', methods=['POST'])
@@ -324,8 +273,8 @@ def register():
 def login():
     login_form = LoginForm()
     if login_form.validate_on_submit():
-        user = AuthService.authenticate_user(login_form.student_id.data, login_form.password.data)
-        if user:
+        user = User.query.filter_by(student_id=login_form.student_id.data).first()
+        if user and check_password_hash(user.password_hash, login_form.password.data):
             session['current_user_id'] = user.id
             session['current_user_name'] = user.full_name
             session['current_user_pic'] = user.profile_pic
@@ -351,11 +300,9 @@ def dashboard():
     current_user_id = session['current_user_id']
     my_schedules = ClassSchedule.query.filter_by(user_id=current_user_id).all()
     
-    # داده‌های تاریخ شمسی
     today_j = jdatetime.date.today()
     weekday_name = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'][today_j.weekday()]
     
-    # کلاس‌های لغو شده
     cancelled = CancelledClass.query.filter(
         or_(
             CancelledClass.cancel_date == today_j.togregorian(),
@@ -363,7 +310,6 @@ def dashboard():
         )
     ).all()
     
-    # اطلاعیه‌های من
     notifications = Notification.query.filter_by(user_id=current_user_id, is_read=False).order_by(Notification.created_at.desc()).limit(5).all()
 
     return render_template('dashboard.html', 
@@ -373,51 +319,77 @@ def dashboard():
                            cancelled_classes=cancelled,
                            notifications=notifications)
 
-@app.route('/update_schedule', methods=['POST'])
+# --- APIهای داخلی (CSRF Exempt for AJAX) ---
+@app.route('/api/update_schedule', methods=['POST'])
 @csrf.exempt
 @login_required
-def update_schedule():
-    data = request.json
-    user_id = session['current_user_id']
-    
-    # حذف قبلی
-    ClassSchedule.query.filter_by(user_id=user_id, day=data['day'], time_slot=data['time_slot']).delete()
-    
-    if data.get('course_name'):
-        new_schedule = ClassSchedule(
-            user_id=user_id, 
-            day=data['day'], 
-            time_slot=data['time_slot'], 
-            course_name=data['course_name'], 
-            class_location=data.get('class_location', ''),
-            professor_name=data.get('professor_name', ''),
-            week_type=data.get('week_type', 'all')
-        )
-        db.session.add(new_schedule)
-    db.session.commit()
-    return jsonify({'status': 'success'})
+def api_update_schedule():
+    try:
+        data = request.json
+        user_id = session['current_user_id']
+        
+        ClassSchedule.query.filter_by(user_id=user_id, day=data['day'], time_slot=data['time_slot']).delete()
+        
+        if data.get('course_name'):
+            new_schedule = ClassSchedule(
+                user_id=user_id, 
+                day=data['day'], 
+                time_slot=data['time_slot'], 
+                course_name=data['course_name'], 
+                class_location=data.get('class_location', ''),
+                professor_name=data.get('professor_name', ''),
+                week_type=data.get('week_type', 'all')
+            )
+            db.session.add(new_schedule)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
-# --- رزرو کلاس (کاربر) ---
+@app.route('/api/bulk_add_schedule', methods=['POST'])
+@csrf.exempt
+@login_required
+def api_bulk_add_schedule():
+    try:
+        data = request.json
+        user_id = session['current_user_id']
+        items = data.get('items', [])
+        
+        for item in items:
+            if not item.get('course_name'): continue
+            
+            # حذف قبلی برای آن روز و ساعت
+            ClassSchedule.query.filter_by(user_id=user_id, day=item['day'], time_slot=item['time_slot']).delete()
+            
+            new_schedule = ClassSchedule(
+                user_id=user_id,
+                day=item['day'],
+                time_slot=item['time_slot'],
+                course_name=item['course_name'],
+                class_location=item.get('location', ''),
+                professor_name=item.get('professor', ''),
+                week_type=item.get('week_type', 'all')
+            )
+            db.session.add(new_schedule)
+            
+        db.session.commit()
+        return jsonify({'status': 'success', 'count': len(items)})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/api/master_schedule')
 @login_required
 def get_master_schedule():
     slots = MasterSchedule.query.all()
     reservations = Reservation.query.filter_by(status='approved').all()
-    
-    # ساخت مپ برای دسترسی سریع به رزروهای تایید شده
-    reserved_map = {}
-    for r in reservations:
-        key = f"{r.master_slot_id}_{r.room_name}"
-        reserved_map[key] = True
+    reserved_map = {f"{r.master_slot_id}_{r.room_name}": True for r in reservations}
 
     output = []
     for s in slots:
         rooms_list = [r.strip() for r in s.rooms.split(',')]
-        available_rooms = []
-        for room in rooms_list:
-            key = f"{s.id}_{room}"
-            if key not in reserved_map:
-                available_rooms.append(room)
+        available_rooms = [room for room in rooms_list if f"{s.id}_{room}" not in reserved_map]
         
         output.append({
             'id': s.id, 
@@ -432,8 +404,6 @@ def get_master_schedule():
 @login_required
 def submit_reservation(slot_id, room_name):
     reason = request.form.get('reason')
-    
-    # بررسی تکراری نبودن
     exists = Reservation.query.filter_by(master_slot_id=slot_id, room_name=room_name, status='approved').first()
     if exists:
         flash('این کلاس قبلاً رزرو شده است.', 'error')
@@ -449,88 +419,74 @@ def submit_reservation(slot_id, room_name):
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
-    # کلاس‌های لغو شده
     cancelled = CancelledClass.query.order_by(CancelledClass.created_at.desc()).limit(10).all()
-    
-    # درخواست‌های رزرو
     pending_requests = Reservation.query.filter_by(status='pending').all()
-    
-    # برنامه مستر
     master_slots = MasterSchedule.query.all()
-    
     return render_template('admin_dashboard.html', slots=master_slots, requests=pending_requests, cancelled_classes=cancelled)
 
 @app.route('/admin/save_master_schedule', methods=['POST'])
+@csrf.exempt
 @admin_required
 def save_master_schedule():
-    data = request.json
-    # data format: list of {day, time_slot, rooms}
-    
-    # حذف قبلی
-    MasterSchedule.query.delete()
-    
-    for item in data:
-        if item['rooms']:
-            slot = MasterSchedule(day=item['day'], time_slot=item['time_slot'], rooms=item['rooms'])
-            db.session.add(slot)
-    
-    db.session.commit()
-    return jsonify({'status': 'success'})
+    try:
+        data = request.json
+        MasterSchedule.query.delete()
+        for item in data:
+            if item['rooms']:
+                slot = MasterSchedule(day=item['day'], time_slot=item['time_slot'], rooms=item['rooms'])
+                db.session.add(slot)
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/admin/handle_reservation/<int:req_id>/<string:action>')
 @admin_required
 def handle_reservation(req_id, action):
     req = Reservation.query.get_or_404(req_id)
-    
     if action == 'approve':
         req.status = 'approved'
-        
-        # ارسال نوتیفیکیشن به کاربر
-        msg = f"درخواست رزرو شما برای کلاس {req.room_name} در {req.master_slot.day} تایید شد."
+        msg = f"درخواست رزرو شما برای کلاس {req.room_name} تایید شد."
         notif = Notification(user_id=req.user_id, message=msg)
         db.session.add(notif)
-        
-        # رد سایر درخواست‌های برای همین کلاس
         Reservation.query.filter(
             Reservation.master_slot_id == req.master_slot_id,
             Reservation.room_name == req.room_name,
             Reservation.id != req.id,
             Reservation.status == 'pending'
         ).update({Reservation.status: 'rejected'}, synchronize_session=False)
-        
         flash('تایید شد.', 'success')
-        
     elif action == 'reject':
         req.status = 'rejected'
         msg = f"درخواست رزرو شما برای کلاس {req.room_name} رد شد."
         notif = Notification(user_id=req.user_id, message=msg)
         db.session.add(notif)
         flash('رد شد.', 'info')
-        
     db.session.commit()
     return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/add_cancelled_class', methods=['POST'])
 @admin_required
 def add_cancelled_class():
-    prof = request.form.get('professor')
-    course = request.form.get('course')
-    desc = request.form.get('desc')
-    c_date = request.form.get('date') #YYYY-MM-DD
-    start_date = request.form.get('start_date')
-    end_date = request.form.get('end_date')
-    
-    new_cancel = CancelledClass(
-        professor_name=prof,
-        course_name=course,
-        description=desc,
-        cancel_date=datetime.strptime(c_date, '%Y-%m-%d').date() if c_date else None,
-        start_date=datetime.strptime(start_date, '%Y-%m-%d').date() if start_date else None,
-        end_date=datetime.strptime(end_date, '%Y-%m-%d').date() if end_date else None
-    )
-    db.session.add(new_cancel)
-    db.session.commit()
-    flash('لغو کلاس ثبت شد.', 'success')
+    try:
+        c_date = request.form.get('date')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        
+        new_cancel = CancelledClass(
+            professor_name=request.form.get('professor'),
+            course_name=request.form.get('course'),
+            description=request.form.get('desc'),
+            cancel_date=datetime.strptime(c_date, '%Y-%m-%d').date() if c_date else None,
+            start_date=datetime.strptime(start_date, '%Y-%m-%d').date() if start_date else None,
+            end_date=datetime.strptime(end_date, '%Y-%m-%d').date() if end_date else None
+        )
+        db.session.add(new_cancel)
+        db.session.commit()
+        flash('لغو کلاس ثبت شد.', 'success')
+    except Exception as e:
+        flash('خطا در ثبت.', 'error')
     return redirect(url_for('admin_dashboard'))
 
 # --- پروفایل ---
@@ -539,20 +495,35 @@ def add_cancelled_class():
 def profile(user_id):
     user = db.session.get(User, user_id) or abort(404)
     can_edit = (session['current_user_id'] == user_id)
-    forms = {'update_profile': UpdateProfileForm(obj=user) if can_edit else None, 'update_password': UpdatePasswordForm() if can_edit else None, 'delete_account': DeleteAccountForm() if can_edit else None}
-    return render_template('profile.html', user=user, can_edit=can_edit, update_profile_form=forms['update_profile'], update_password_form=forms['update_password'], delete_account_form=forms['delete_account'])
+    forms = {}
+    if can_edit:
+        from wtforms import PasswordField
+        class TempProfileForm(FlaskForm):
+            full_name = StringField('نام', validators=[DataRequired()])
+            major = SelectField('رشته', choices=MAJOR_CHOICES)
+            submit = SubmitField('بروزرسانی')
+        
+        class TempPasswordForm(FlaskForm):
+            current_password = PasswordField('رمز فعلی', validators=[DataRequired()])
+            new_password = PasswordField('رمز جدید', validators=[DataRequired()])
+            confirm_new_password = PasswordField('تکرار', validators=[DataRequired(), EqualTo('new_password')])
+            submit = SubmitField('تغییر رمز')
+            
+        forms['update_profile'] = TempProfileForm(obj=user)
+        forms['update_password'] = TempPasswordForm()
+        
+    return render_template('profile.html', user=user, can_edit=can_edit, forms=forms)
 
 @app.route('/update_profile', methods=['POST'])
 @login_required
 def update_profile():
-    user = db.session.get(User, session['current_user_id']) or abort(404)
-    form = UpdateProfileForm(obj=user)
-    if form.validate_on_submit():
-        user.full_name = form.full_name.data
-        user.major = form.major.data
+    user = db.session.get(User, session['current_user_id'])
+    if user and request.form.get('full_name'):
+        user.full_name = request.form.get('full_name')
+        user.major = request.form.get('major')
         if 'profile_pic' in request.files:
             file = request.files['profile_pic']
-            if file and allowed_file(file.filename):
+            if file and file.filename:
                 filename = secure_filename(f"{user.id}_{file.filename}")
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 user.profile_pic = filename
@@ -565,14 +536,16 @@ def update_profile():
 @app.route('/update_password', methods=['POST'])
 @login_required
 def update_password():
-    user = db.session.get(User, session['current_user_id']) or abort(404)
-    form = UpdatePasswordForm()
-    if form.validate_on_submit():
-        if check_password_hash(user.password_hash, form.current_password.data):
-            user.password_hash = generate_password_hash(form.new_password.data, method='pbkdf2:sha256')
+    user = db.session.get(User, session['current_user_id'])
+    if user:
+        curr_pwd = request.form.get('current_password')
+        new_pwd = request.form.get('new_password')
+        if check_password_hash(user.password_hash, curr_pwd):
+            user.password_hash = generate_password_hash(new_pwd, method='pbkdf2:sha256')
             db.session.commit()
             flash('رمز عبور تغییر کرد.', 'success')
-        else: flash('رمز فعلی اشتباه است.', 'error')
+        else:
+            flash('رمز فعلی اشتباه است.', 'error')
     return redirect(url_for('profile', user_id=user.id))
 
 @app.route('/delete_account', methods=['POST'])
@@ -591,35 +564,50 @@ def delete_account():
 @app.route('/chat')
 @login_required
 def chat_main():
-    conversations = ChatService.get_inbox_conversations(session['current_user_id'])
+    # دریافت تاریخچه پیام‌های خصوصی
+    conversations = []
+    other_user_id = request.args.get('user_id', type=int)
     active_chat_user = None
     messages = []
-    other_user_id = request.args.get('user_id', type=int)
+    
+    # منطق پیام‌های خصوصی
     if other_user_id:
         active_chat_user = db.session.get(User, other_user_id)
-        if active_chat_user: messages = ChatService.get_chat_history(session['current_user_id'], other_user_id)
+        if active_chat_user:
+            # علامت‌گذاری خوانده شده
+            Message.query.filter(and_(Message.sender_id == other_user_id, Message.receiver_id == session['current_user_id'], Message.read_at.is_(None))).update({Message.read_at: func.now()}, synchronize_session=False)
+            db.session.commit()
+            
+            messages = Message.query.filter(or_(
+                and_(Message.sender_id == session['current_user_id'], Message.receiver_id == other_user_id),
+                and_(Message.sender_id == other_user_id, Message.receiver_id == session['current_user_id'])
+            )).order_by(Message.timestamp.asc()).all()
+    
+    # لیست گفتگوها
+    subq = db.session.query(Message.receiver_id, Message.sender_id, func.max(Message.timestamp).label('max_time')).filter(
+        or_(Message.sender_id == session['current_user_id'], Message.receiver_id == session['current_user_id'])
+    ).group_by(Message.receiver_id, Message.sender_id).subquery()
+    
+    # این بخش را برای سادگی بهینه کردیم
     
     # گروه و کانال
-    group_messages = GroupMessage.query.order_by(GroupMessage.timestamp.desc()).limit(50).all()
-    channel_messages = ChannelMessage.query.order_by(ChannelMessage.timestamp.desc()).limit(50).all()
+    group_messages = GroupMessage.query.order_by(GroupMessage.timestamp.asc()).limit(50).all()
+    channel_messages = ChannelMessage.query.order_by(ChannelMessage.timestamp.asc()).limit(50).all()
     
-    return render_template('chat.html', 
-                           conversations=conversations, 
-                           active_chat_user=active_chat_user, 
+    return render_template('chat.html',
+                           active_chat_user=active_chat_user,
                            messages=messages,
-                           group_messages=group_messages[::-1],
-                           channel_messages=channel_messages[::-1])
+                           group_messages=group_messages,
+                           channel_messages=channel_messages)
 
 @app.route('/upload_chat_file', methods=['POST'])
 @login_required
 def upload_chat_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file'}), 400
+    if 'file' not in request.files: return jsonify({'error': 'No file'}), 400
     file = request.files['file']
-    if file and allowed_file(file.filename):
+    if file and file.filename:
         filename = secure_filename(f"{session['current_user_id']}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{file.filename}")
-        filepath = os.path.join(app.config['CHAT_UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+        file.save(os.path.join(app.config['CHAT_UPLOAD_FOLDER'], filename))
         return jsonify({'filepath': f'/static/uploads/chat_files/{filename}'})
     return jsonify({'error': 'Invalid file'}), 400
 
@@ -636,12 +624,21 @@ def mark_notification_read(n_id):
         db.session.commit()
     return jsonify({'status': 'ok'})
 
+@app.route('/api/group_members')
+@login_required
+def get_group_members():
+    # همه کاربران به جز ادمین (یا همه)
+    members = User.query.filter(User.id != session['current_user_id']).all()
+    return jsonify([{'id': m.id, 'name': m.full_name, 'pic': m.profile_pic, 'online': StateManager.is_online(m.id)} for m in members])
+
 # --- سوکت‌ها ---
 @socketio.on('connect')
 def handle_connect():
     if session.get('current_user_id'): 
         StateManager.set_online(session['current_user_id'])
-        join_room(f"user_{session['current_user_id']}") # برای نوتیفیکیشن‌های شخصی
+        join_room(f"user_{session['current_user_id']}")
+        join_room('public_group')
+        join_room('channel')
 
 @socketio.on('disconnect')
 def handle_disconnect():
@@ -656,29 +653,28 @@ def handle_join_chat(data):
 @socketio.on('send_message')
 def handle_send_message(data):
     uid = session.get('current_user_id')
-    if not uid or not data.get('other_user_id') or not data.get('content'): return
-    
+    content = data.get('content', '')
     file_path = data.get('file_path')
-    msg = ChatService.save_message(uid, data['other_user_id'], data['content'], file_path)
-    oid = data['other_user_id']
+    oid = data.get('other_user_id')
+    
+    if not uid or not oid: return
+    
+    msg = Message(sender_id=uid, receiver_id=oid, content=content, file_path=file_path)
+    db.session.add(msg)
+    db.session.commit()
     
     emit('new_message', {
-        'sender_name': session['current_user_name'], 
-        'content': data['content'], 
-        'timestamp': msg.timestamp.strftime('%H:%M'), 
         'sender_id': uid, 
-        'file_path': file_path
+        'sender_name': session.get('current_user_name', 'User'),
+        'content': content, 
+        'file_path': file_path,
+        'timestamp': msg.timestamp.strftime('%H:%M')
     }, room=f"chat-{min(uid, oid)}-{max(uid, oid)}")
-
-# گروه عمومی
-@socketio.on('join_group')
-def handle_join_group():
-    join_room('public_group')
 
 @socketio.on('send_group_message')
 def handle_group_message(data):
     uid = session.get('current_user_id')
-    content = data.get('content')
+    content = data.get('content', '')
     file_path = data.get('file_path')
     
     msg = GroupMessage(sender_id=uid, content=content, file_path=file_path)
@@ -687,24 +683,18 @@ def handle_group_message(data):
     
     emit('new_group_message', {
         'sender_id': uid,
-        'sender_name': session['current_user_name'],
+        'sender_name': session.get('current_user_name', 'User'),
         'content': content,
         'file_path': file_path,
         'timestamp': msg.timestamp.strftime('%H:%M')
     }, room='public_group')
 
-# کانال
-@socketio.on('join_channel')
-def handle_join_channel():
-    join_room('channel')
-
 @socketio.on('send_channel_message')
 def handle_channel_message(data):
-    if not session.get('is_admin'):
-        return # فقط ادمین مجاز است
+    if not session.get('is_admin'): return
     
     uid = session.get('current_user_id')
-    content = data.get('content')
+    content = data.get('content', '')
     file_path = data.get('file_path')
     
     msg = ChannelMessage(sender_id=uid, content=content, file_path=file_path)
@@ -718,28 +708,14 @@ def handle_channel_message(data):
         'timestamp': msg.timestamp.strftime('%H:%M')
     }, room='channel')
 
-# --- اجرای برنامه ---
-with app.app_context():
+# --- توابع راه‌اندازی ---
+def create_initial_data():
     db.create_all()
     if not User.query.filter_by(student_id='admin').first():
         admin = User(full_name='مدیر', student_id='admin', major='مدیریت', password_hash=generate_password_hash('admin', method='pbkdf2:sha256'), is_admin=True)
         db.session.add(admin)
         db.session.commit()
-# --- توابع راه‌اندازی ---
-def create_initial_data():
-    """ساخت جداول و ایجاد ادمین پیش‌فرض در صورت عدم وجود"""
-    db.create_all()
-    if not User.query.filter_by(student_id='admin').first():
-        admin = User(
-            full_name='مدیر', 
-            student_id='admin', 
-            major='مدیریت', 
-            password_hash=generate_password_hash('admin', method='pbkdf2:sha256'), 
-            is_admin=True
-        )
-        db.session.add(admin)
-        db.session.commit()
-        print("Admin user created.")
+        print("Admin created.")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

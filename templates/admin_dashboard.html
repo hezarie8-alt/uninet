@@ -4,240 +4,232 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <!-- Tab Navigation -->
-    <div class="form-card" style="margin-bottom: 2rem; padding: 0;">
-        <div class="dashboard-tabs">
-            <button class="dash-tab active" onclick="openAdminTab('master-schedule')">
-                <i class="material-icons">grid_on</i> تعریف کلاس‌های خالی
-            </button>
-            <button class="dash-tab" onclick="openAdminTab('requests')">
-                <i class="material-icons">list_alt</i> درخواست‌های رزرو
-            </button>
-            <button class="dash-tab" onclick="openAdminTab('cancelled')">
-                <i class="material-icons">event_busy</i> لغو کلاس‌ها
-            </button>
-        </div>
+    
+    <!-- Header -->
+    <div class="admin-header">
+        <h1><i class="material-icons">admin_panel_settings</i> پنل مدیریت سیستم</h1>
+        <p>مدیریت کلاس‌ها، درخواست‌ها و اطلاعیه‌ها</p>
     </div>
 
-    <!-- 1. Master Schedule Definition -->
-    <div id="master-schedule" class="tab-content active">
-        <div class="schedule-card">
-            <div class="card-header">
+    <!-- Tabs -->
+    <div class="dashboard-tabs">
+        <button class="dash-tab active" onclick="openAdminTab('tab-master')">
+            <i class="material-icons">grid_on</i> تعریف کلاس‌ها
+        </button>
+        <button class="dash-tab" onclick="openAdminTab('tab-requests')">
+            <i class="material-icons">list_alt</i> درخواست‌های رزرو
+        </button>
+        <button class="dash-tab" onclick="openAdminTab('tab-cancel')">
+            <i class="material-icons">event_busy</i> لغو کلاس
+        </button>
+    </div>
+
+    <!-- Section 1: Master Schedule -->
+    <div id="tab-master" class="tab-content active">
+        <div class="section-card">
+            <div class="section-header">
                 <h2>تعریف کلاس‌های خالی پایه</h2>
-                <button class="btn btn-custom" onclick="saveMasterSchedule()">
-                    <i class="material-icons">save</i> ذخیره تغییرات
+                <button class="btn btn-primary" onclick="saveMasterSchedule()">
+                    <i class="material-icons">save</i> ذخیره برنامه هفتگی
                 </button>
             </div>
-            <p style="color:var(--text-secondary); margin-bottom:1rem; font-size:0.9rem;">
-                روی خانه مورد نظر کلیک کنید و شماره کلاس‌های خالی را با کاما وارد کنید (مثال: 101,102).
-                <br>این برنامه تا پایان ترم معتبر است و هر هفته به صورت خودکار بازیابی می‌شود.
+            <p style="margin-bottom: 1rem; color:var(--text-secondary); font-size:0.9rem;">
+                روی خانه‌ها کلیک کنید و شماره کلاس‌های خالی را با کاما وارد کنید (مثال: 101,102). این برنامه هر هفته به صورت خودکار بازیابی می‌شود.
             </p>
 
-            <div class="schedule-grid" id="master-schedule-grid">
+            <div class="schedule-grid" id="master-grid">
                 <!-- Header -->
-                <div class="schedule-header"></div>
-                <div class="schedule-header">شنبه</div>
-                <div class="schedule-header">یکشنبه</div>
-                <div class="schedule-header">دوشنبه</div>
-                <div class="schedule-header">سه‌شنبه</div>
-                <div class="schedule-header">چهارشنبه</div>
+                <div class="grid-header"></div>
+                <div class="grid-header">شنبه</div>
+                <div class="grid-header">یکشنبه</div>
+                <div class="grid-header">دوشنبه</div>
+                <div class="grid-header">سه‌شنبه</div>
+                <div class="grid-header">چهارشنبه</div>
 
                 <!-- Rows -->
                 {% set times = ['8-10', '10-12', '12-14', '14-16', '16-18', '18-20'] %}
                 {% set time_labels = ['۸ - ۱۰', '۱۰ - ۱۲', '۱۲ - ۱۴', '۱۴ - ۱۶', '۱۶ - ۱۸', '۱۸ - ۲۰'] %}
                 
                 {% for i in range(6) %}
-                    <div class="schedule-time">{{ time_labels[i] }}</div>
+                    <div class="grid-time">{{ time_labels[i] }}</div>
                     {% for day in ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday'] %}
-                        <div class="schedule-cell master-cell" data-day="{{ day }}" data-time="{{ times[i] }}" onclick="editMasterSlot(this)">
-                            <!-- Populated by JS -->
-                        </div>
+                        <div class="grid-cell master-cell" data-day="{{ day }}" data-time="{{ times[i] }}" onclick="editMasterSlot(this)"></div>
                     {% endfor %}
                 {% endfor %}
             </div>
         </div>
     </div>
 
-    <!-- 2. Reservation Requests -->
-    <div id="requests" class="tab-content">
-        <div class="schedule-card">
-            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">
-                <i class="material-icons" style="vertical-align: middle;">pending_actions</i>
-                درخواست‌های در انتظار تایید
-            </h2>
-            
-            <div style="display: grid; gap: 1rem;">
+    <!-- Section 2: Reservation Requests -->
+    <div id="tab-requests" class="tab-content">
+        <div class="section-card">
+            <div class="section-header">
+                <h2>درخواست‌های در انتظار</h2>
+            </div>
+
+            <div class="request-list">
                 {% if requests %}
                     {% for req in requests %}
                         <div class="request-card">
-                            <div class="req-header">
-                                <div>
-                                    <strong style="font-size: 1.1rem;">{{ req.user.full_name }}</strong>
-                                    <span style="color: var(--text-secondary); font-size: 0.9rem; margin-right: 0.5rem;">
-                                        ({{ req.user.student_id }})
-                                    </span>
+                            <div class="req-info">
+                                <h4>{{ req.user.full_name }}</h4>
+                                <span>{{ req.user.student_id }}</span>
+                                <div class="req-details">
+                                    <span class="badge">{{ req.master_slot.day }} - {{ req.master_slot.time_slot }}</span>
+                                    <span class="badge primary">کلاس {{ req.room_name }}</span>
                                 </div>
-                                <div class="req-room-badge">
-                                    کلاس {{ req.room_name }}
-                                </div>
-                            </div>
-                            <div class="req-body">
-                                <div class="req-info">
-                                    <span><i class="material-icons">access_time</i> {{ req.master_slot.day }} - {{ req.master_slot.time_slot }}</span>
-                                    <span style="margin-top:0.5rem;"><i class="material-icons">description</i> {{ req.reason }}</span>
-                                </div>
+                                <p class="req-reason">{{ req.reason }}</p>
                             </div>
                             <div class="req-actions">
-                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='approve') }}" class="btn btn-custom btn-success">
+                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='approve') }}" class="btn btn-success btn-sm">
                                     <i class="material-icons">check</i> تایید
                                 </a>
-                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='reject') }}" class="btn btn-outline btn-danger">
+                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='reject') }}" class="btn btn-danger btn-sm">
                                     <i class="material-icons">close</i> رد
                                 </a>
                             </div>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <div class="empty-state">
+                    <div class="empty-state-box">
                         <i class="material-icons">check_circle</i>
-                        <p>هیچ درخواستی در انتظار نیست.</p>
+                        <h3>درخواستی نیست</h3>
                     </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- 3. Cancelled Classes -->
-    <div id="cancelled" class="tab-content">
-        <div class="schedule-card">
-            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">
-                <i class="material-icons" style="vertical-align: middle;">event_busy</i>
-                ثبت کلاس لغو شده
-            </h2>
-            
-            <form action="{{ url_for('add_cancelled_class') }}" method="POST" class="cancelled-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>نام استاد</label>
-                        <input type="text" name="professor" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>نام درس</label>
-                        <input type="text" name="course" class="form-control" required>
-                    </div>
-                </div>
+    <!-- Section 3: Cancelled Classes -->
+    <div id="tab-cancel" class="tab-content">
+        <div class="section-card">
+            <div class="section-header">
+                <h2>ثبت لغو کلاس</h2>
+            </div>
 
+            <form action="{{ url_for('add_cancelled_class') }}" method="POST" class="form-grid">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
                 <div class="form-group">
-                    <label>توضیحات (مثلاً: کلاس با جلسه تمرین جابجا شد)</label>
-                    <input type="text" name="desc" class="form-control">
+                    <label>نام استاد</label>
+                    <input type="text" name="professor" class="form-input" required>
                 </div>
-
+                <div class="form-group">
+                    <label>نام درس</label>
+                    <input type="text" name="course" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>توضیحات</label>
+                    <input type="text" name="desc" class="form-input" placeholder="مثال: جلسه برگزار نشد">
+                </div>
+                
                 <div class="form-row">
                     <div class="form-group">
                         <label>تاریخ دقیق لغو (اختیاری)</label>
-                        <input type="date" name="date" class="form-control">
+                        <input type="date" name="date" class="form-input">
                     </div>
                     <div class="form-group">
-                        <label>از تاریخ (برای بازه)</label>
-                        <input type="date" name="start_date" class="form-control">
+                        <label>از تاریخ (بازه)</label>
+                        <input type="date" name="start_date" class="form-input">
                     </div>
                     <div class="form-group">
-                        <label>تا تاریخ (برای بازه)</label>
-                        <input type="date" name="end_date" class="form-control">
+                        <label>تا تاریخ (بازه)</label>
+                        <input type="date" name="end_date" class="form-input">
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-custom">ثبت لغو کلاس</button>
+                <button type="submit" class="btn btn-primary">ثبت لغو کلاس</button>
             </form>
 
             <hr style="margin: 2rem 0; border-color: var(--border-color);">
 
             <h3>لیست لغوهای ثبت شده</h3>
-            <div class="cancelled-list">
+            <div class="cancelled-list-admin">
                 {% if cancelled_classes %}
                     {% for c in cancelled_classes %}
-                        <div class="cancelled-item">
+                        <div class="cancelled-item-admin">
                             <div>
-                                <strong>{{ c.course_name }}</strong> - استاد {{ c.professor_name }}
-                                <br>
-                                <small style="color:var(--text-secondary)">
-                                    {% if c.cancel_date %}
-                                        تاریخ: {{ c.cancel_date }}
-                                    {% elif c.start_date %}
-                                        بازه: {{ c.start_date }} تا {{ c.end_date }}
-                                    {% endif %}
-                                </small>
+                                <strong>{{ c.course_name }}</strong> - {{ c.professor_name }}
+                                <small style="display:block; color:var(--text-secondary);">{{ c.description }}</small>
                             </div>
+                            <span class="badge">
+                                {% if c.cancel_date %} {{ c.cancel_date }} {% else %} بازه زمانی {% endif %}
+                            </span>
                         </div>
                     {% endfor %}
-                {% else %}
-                    <p style="text-align:center; color:var(--text-secondary);">لیست خالی است.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal for Master Schedule Edit -->
-<div id="master-modal" class="modal-box">
-    <div class="form-card modal-content">
-        <h3>تعریف کلاس‌های خالی</h3>
-        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;" id="master-slot-info"></p>
-        
-        <div class="form-group">
-            <label class="form-label">شماره کلاس‌ها (با کاما جدا کنید)</label>
-            <input type="text" id="master-rooms-input" class="form-control" placeholder="مثال: 101, 102, آمفی">
+<!-- Modal for Master Schedule -->
+<div id="master-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>تعریف کلاس خالی</h3>
+            <button class="close-btn" onclick="closeModal('master-modal')">&times;</button>
         </div>
-        
-        <div class="modal-actions">
-            <button class="btn btn-custom" onclick="saveSlotData()">ذخیره</button>
-            <button class="btn btn-outline" onclick="closeModal('master-modal')">لغو</button>
+        <div class="modal-content">
+            <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;" id="master-info"></p>
+            <div class="form-group">
+                <label>شماره کلاس‌ها (با کاما جدا کنید)</label>
+                <input type="text" id="master-rooms-input" class="form-input" placeholder="101, 102">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="clearSlot()">خالی کردن</button>
+                <button class="btn btn-primary" onclick="saveSlotData()">ذخیره</button>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* Master Schedule Specifics */
-    .master-cell { cursor: pointer; transition: all 0.2s; min-height: 60px; }
-    .master-cell:hover { background-color: var(--primary-light); color: white; }
-    .master-cell.has-data { background-color: rgba(0, 131, 143, 0.1); border-right: 3px solid var(--primary-color); }
-    
-    /* Request Card */
-    .request-card {
-        border: 1px solid var(--border-color);
-        padding: 1rem;
-        border-radius: 8px;
-        background: var(--surface);
-        transition: box-shadow 0.3s;
-    }
-    .request-card:hover { box-shadow: var(--shadow-md); }
-    .req-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-    .req-room-badge { background: var(--primary-color); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; }
-    .req-body { margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; }
-    .req-info { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; }
-    .req-info span { display: flex; align-items: center; gap: 0.5rem; }
-    .req-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
-    
-    /* Buttons */
-    .btn-success { background-color: var(--success) !important; color: white !important; }
-    .btn-danger { color: var(--error) !important; border-color: var(--error) !important; }
+    /* Admin Specific Styles */
+    .admin-header { margin-bottom: 2rem; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem; }
+    .admin-header h1 { display: flex; align-items: center; gap: 0.5rem; color: var(--primary-color); }
 
-    /* Cancelled Form */
-    .cancelled-form { background: var(--background); padding: 1.5rem; border-radius: 8px; }
-    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
-    
-    .cancelled-list { margin-top: 1rem; }
-    .cancelled-item { padding: 0.75rem; border-right: 3px solid var(--error); background: rgba(183, 28, 28, 0.05); margin-bottom: 0.5rem; border-radius: 4px; }
+    .master-cell { cursor: pointer; transition: background 0.2s; min-height: 60px; vertical-align: top; font-size: 0.85rem; }
+    .master-cell:hover { background: rgba(0,131,143,0.1); }
+    .master-cell.has-data { background: rgba(0,131,143,0.05); border-right: 3px solid var(--primary-color); }
 
-    .empty-state { text-align: center; padding: 2rem; color: var(--text-secondary); }
-    .empty-state i { font-size: 3rem; margin-bottom: 0.5rem; color: var(--success); }
+    .request-card { background: var(--background); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm); }
+    .req-info h4 { margin: 0 0 0.25rem 0; }
+    .req-details { margin: 0.5rem 0; display: flex; gap: 0.5rem; }
+    .req-reason { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
+    
+    .badge { padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; background: var(--border-color); color: var(--text-primary); }
+    .badge.primary { background: var(--primary-light); color: white; }
+
+    .form-grid { display: grid; gap: 1rem; background: var(--background); padding: 1.5rem; border-radius: 8px; }
+    
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--error); color: white; }
+
+    .cancelled-item-admin { display: flex; justify-content: space-between; padding: 0.75rem; border-bottom: 1px solid var(--border-color); }
 </style>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // --- 1. Tab Logic ---
+    const masterData = {% if slots %}{{ slots | tojson }}{% else %}[]{% endif %};
+    let activeCell = null;
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', () => {
+        masterData.forEach(item => {
+            const cell = document.querySelector(`.master-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`);
+            if (cell) {
+                cell.innerHTML = `<span style="font-weight:bold; color:var(--primary-color);">${item.rooms}</span>`;
+                cell.classList.add('has-data');
+                cell.dataset.rooms = item.rooms;
+            }
+        });
+    });
+
+    // --- Tabs ---
     function openAdminTab(id) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
@@ -245,31 +237,11 @@
         event.target.closest('.dash-tab').classList.add('active');
     }
 
-    // --- 2. Master Schedule Logic ---
-    // Data from backend: list of {day, time_slot, rooms}
-    const masterData = {% if slots %}{{ slots | tojson }}{% else %}[]{% endif %};
-    
-    // Populate grid on load
-    document.addEventListener('DOMContentLoaded', () => {
-        masterData.forEach(item => {
-            const cell = document.querySelector(`.master-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`);
-            if (cell) {
-                cell.innerHTML = `<div style="font-size:0.8rem; font-weight:600; color:var(--primary-color);">${item.rooms}</div>`;
-                cell.classList.add('has-data');
-                cell.dataset.rooms = item.rooms;
-            }
-        });
-    });
-
-    let activeCell = null;
-
+    // --- Master Schedule Logic ---
     function editMasterSlot(cell) {
         activeCell = cell;
-        const day = cell.dataset.day;
-        const time = cell.dataset.time;
         const dayNames = {'saturday':'شنبه', 'sunday':'یکشنبه', 'monday':'دوشنبه', 'tuesday':'سه‌شنبه', 'wednesday':'چهارشنبه'};
-        
-        document.getElementById('master-slot-info').innerText = `${dayNames[day]} - ساعت ${time}`;
+        document.getElementById('master-info').innerText = `${dayNames[cell.dataset.day]} - ساعت ${cell.dataset.time}`;
         document.getElementById('master-rooms-input').value = cell.dataset.rooms || "";
         document.getElementById('master-modal').style.display = 'flex';
     }
@@ -279,7 +251,7 @@
         if (activeCell) {
             activeCell.dataset.rooms = rooms;
             if (rooms.trim()) {
-                activeCell.innerHTML = `<div style="font-size:0.8rem; font-weight:600; color:var(--primary-color);">${rooms}</div>`;
+                activeCell.innerHTML = `<span style="font-weight:bold; color:var(--primary-color);">${rooms}</span>`;
                 activeCell.classList.add('has-data');
             } else {
                 activeCell.innerHTML = '';
@@ -289,8 +261,12 @@
         closeModal('master-modal');
     }
 
+    function clearSlot() {
+        document.getElementById('master-rooms-input').value = '';
+        saveSlotData();
+    }
+
     function saveMasterSchedule() {
-        // Gather all data
         const payload = [];
         document.querySelectorAll('.master-cell').forEach(cell => {
             if (cell.dataset.rooms && cell.dataset.rooms.trim() !== "") {
@@ -310,17 +286,14 @@
         .then(res => res.json())
         .then(resp => {
             if (resp.status === 'success') {
-                alert('برنامه کلاس‌های خالی با موفقیت ذخیره شد.');
-                location.reload();
+                alert('برنامه با موفقیت ذخیره شد.');
+            } else {
+                alert('خطا در ذخیره سازی.');
             }
         });
     }
 
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    window.onclick = function(event) {
-        if (event.target.classList.contains('modal-box')) {
-            event.target.style.display = 'none';
-        }
-    }
+    window.onclick = e => { if (e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; }
 </script>
 {% endblock %}

@@ -4,157 +4,135 @@
 
 {% block content %}
 <div class="auth-container">
-    <div class="auth-header">
-        <h1 class="auth-title">به یونی نت خوش آمدید</h1>
-        <p class="auth-subtitle">پلتفرم یکپارچه دانشجویی</p>
-    </div>
-    
-    <div class="auth-tabs">
-        <div class="auth-tab active" onclick="switchTab('register')">ثبت‌نام</div>
-        <div class="auth-tab" onclick="switchTab('login')">ورود</div>
-    </div>
-    
-    <!-- Registration Form -->
-    <div id="register-tab" class="tab-content active">
-        <div class="form-card">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>خوش آمدید</h1>
+            <p>به جامعه دانشجویان یونی نت بپیوندید</p>
+        </div>
+        
+        <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchAuthTab('register')">ثبت‌نام</button>
+            <button class="auth-tab" onclick="switchAuthTab('login')">ورود</button>
+        </div>
+        
+        <!-- Registration Form -->
+        <div id="register-form" class="auth-form active">
             <form method="POST" action="{{ url_for('register') }}">
                 {{ form.hidden_tag() }}
                 
                 <div class="form-group">
-                    {{ form.full_name.label(class="form-label") }}
-                    {{ form.full_name(class="form-control", placeholder="نام و نام خانوادگی") }}
+                    <label class="form-label">نام و نام خانوادگی</label>
+                    {{ form.full_name(class="form-input", placeholder="نام کامل خود را وارد کنید") }}
                     {% if form.full_name.errors %}
-                        <div class="error-message">{{ form.full_name.errors[0] }}</div>
+                        <span class="error-text">{{ form.full_name.errors[0] }}</span>
                     {% endif %}
                 </div>
                 
                 <div class="form-group">
-                    {{ form.student_id.label(class="form-label") }}
-                    {{ form.student_id(class="form-control", placeholder="۱۰ رقم (بدون خط تیره)", maxlength="10") }}
+                    <label class="form-label">شماره دانشجویی</label>
+                    {{ form.student_id(class="form-input", placeholder="۱۰ رقم، بدون خط تیره", maxlength="10") }}
                     {% if form.student_id.errors %}
-                        <div class="error-message">{{ form.student_id.errors[0] }}</div>
+                        <span class="error-text">{{ form.student_id.errors[0] }}</span>
                     {% endif %}
                 </div>
                 
                 <div class="form-group">
-                    {{ form.major.label(class="form-label") }}
+                    <label class="form-label">رشته تحصیلی</label>
                     {{ form.major(class="form-select") }}
-                    {% if form.major.errors %}
-                        <div class="error-message">{{ form.major.errors[0] }}</div>
-                    {% endif %}
                 </div>
                 
                 <div class="form-group">
-                    {{ form.password.label(class="form-label") }}
-                    {{ form.password(class="form-control", placeholder="کد ملی (۱۰ رقم)", maxlength="10") }}
+                    <label class="form-label">کد ملی (رمز عبور)</label>
+                    {{ form.password(class="form-input", type="password", placeholder="کد ملی ۱۰ رقمی") }}
                     {% if form.password.errors %}
-                        <div class="error-message">{{ form.password.errors[0] }}</div>
+                        <span class="error-text">{{ form.password.errors[0] }}</span>
                     {% endif %}
                 </div>
                 
                 <div class="form-group">
-                    {{ form.confirm_password.label(class="form-label") }}
-                    {{ form.confirm_password(class="form-control", placeholder="تکرار کد ملی") }}
+                    <label class="form-label">تکرار کد ملی</label>
+                    {{ form.confirm_password(class="form-input", type="password", placeholder="تکرار کد ملی") }}
                 </div>
                 
-                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 1rem;">
-                    ایجاد حساب کاربری
-                </button>
+                <button type="submit" class="btn btn-primary btn-block">ثبت‌نام در سامانه</button>
             </form>
         </div>
-    </div>
-    
-    <!-- Login Form -->
-    <div id="login-tab" class="tab-content">
-        <div class="form-card">
+        
+        <!-- Login Form -->
+        <div id="login-form" class="auth-form">
             <form method="POST" action="{{ url_for('login') }}">
                 {{ login_form.hidden_tag() }}
                 
                 <div class="form-group">
-                    {{ login_form.student_id.label(class="form-label") }}
-                    {{ login_form.student_id(class="form-control", placeholder="شماره دانشجویی یا admin") }}
+                    <label class="form-label">شماره دانشجویی</label>
+                    {{ login_form.student_id(class="form-input", placeholder="شماره دانشجویی یا admin") }}
                 </div>
                 
                 <div class="form-group">
-                    {{ login_form.password.label(class="form-label") }}
-                    {{ login_form.password(class="form-control", placeholder="رمز عبور") }}
+                    <label class="form-label">رمز عبور</label>
+                    {{ login_form.password(class="form-input", type="password", placeholder="رمز عبور") }}
                 </div>
                 
-                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 1rem;">
-                    ورود به سامانه
-                </button>
+                <button type="submit" class="btn btn-primary btn-block">ورود به حساب</button>
             </form>
         </div>
     </div>
 </div>
 
 <style>
-    .auth-container {
-        max-width: 500px;
-        margin: 2rem auto;
-        padding: 0 1rem;
+    .auth-container { display: flex; justify-content: center; align-items: center; min-height: 80vh; padding: 2rem 0; }
+    .auth-card { 
+        width: 100%; 
+        max-width: 450px; 
+        background: var(--surface); 
+        border-radius: var(--radius-lg); 
+        box-shadow: var(--shadow-lg); 
+        overflow: hidden; 
     }
-    .auth-header { text-align: center; margin-bottom: 2rem; }
-    .auth-title { font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem; }
-    .auth-subtitle { color: var(--text-secondary); }
+    .auth-header { text-align: center; padding: 2rem 2rem 1rem; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; }
+    .auth-header h1 { margin: 0 0 0.5rem; font-size: 1.75rem; }
+    .auth-header p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
     
-    .auth-tabs {
-        display: flex;
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 5px;
-        margin-bottom: 1.5rem;
-        box-shadow: var(--shadow-sm);
+    .auth-tabs { display: flex; border-bottom: 1px solid var(--border-color); }
+    .auth-tab { 
+        flex: 1; 
+        background: none; 
+        border: none; 
+        padding: 1rem; 
+        font-family: inherit; 
+        font-weight: 600; 
+        color: var(--text-secondary); 
+        cursor: pointer; 
+        transition: all 0.2s;
+        border-bottom: 2px solid transparent; 
     }
-    .auth-tab {
-        flex: 1;
-        text-align: center;
-        padding: 0.75rem;
-        cursor: pointer;
-        border-radius: 8px;
-        font-weight: 500;
-        color: var(--text-secondary);
-        transition: all 0.3s;
-    }
-    .auth-tab.active {
-        background: var(--primary-color);
-        color: white;
-        box-shadow: var(--shadow-md);
-    }
+    .auth-tab.active { color: var(--primary-color); border-bottom-color: var(--primary-color); background: rgba(0,131,143,0.05); }
     
-    .form-card {
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: var(--shadow-md);
-    }
+    .auth-form { display: none; padding: 2rem; animation: fadeIn 0.3s; }
+    .auth-form.active { display: block; }
     
-    .tab-content { display: none; animation: fadeIn 0.3s ease; }
-    .tab-content.active { display: block; }
+    .btn-block { width: 100%; margin-top: 1rem; }
+    .error-text { color: var(--error); font-size: 0.8rem; display: block; margin-top: 0.25rem; }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
-        
-        document.getElementById(tabName + '-tab').classList.add('active');
+    function switchAuthTab(tab) {
+        // Toggle Tabs UI
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
         event.target.classList.add('active');
+        
+        // Toggle Forms
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        document.getElementById(tab + '-form').classList.add('active');
     }
-    
-    // Auto-switch if errors in login form
+
+    // Auto switch if login has errors
     {% if login_form.errors %}
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
-        document.getElementById('login-tab').classList.add('active');
-        document.querySelectorAll('.auth-tab')[1].classList.add('active');
+        document.querySelector('[onclick="switchAuthTab(\'login\')"]').click();
     {% endif %}
 </script>
 {% endblock %}

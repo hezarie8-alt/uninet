@@ -5,86 +5,112 @@
 {% block content %}
 <div class="dashboard-container">
     
-    <!-- Top Section: Date & Notifications -->
-    <div class="dashboard-header-row">
-        <div class="date-time-card">
-            <div class="dt-date">{{ today_j.strftime('%d %B %Y') }}</div>
-            <div class="dt-weekday">{{ weekday_name }}</div>
-            <div class="dt-time" id="live-clock">--:--:--</div>
+    <!-- Modern Date & Time Widget -->
+    <div class="dashboard-header-modern">
+        <div class="date-widget">
+            <div class="date-main">
+                <span class="date-day">{{ today_j.day }}</span>
+                <div class="date-details">
+                    <span class="date-month">{{ today_j.strftime('%B') }}</span>
+                    <span class="date-year">{{ today_j.year }}</span>
+                </div>
+            </div>
+            <div class="date-meta">
+                <div class="live-clock" id="live-clock">--:--:--</div>
+                <div class="weekday-badge">{{ weekday_name }}</div>
+            </div>
         </div>
         
-        <div class="notifications-card">
-            <h3><i class="material-icons">notifications_active</i> اطلاعیه‌ها</h3>
-            {% if notifications %}
-                <ul class="notif-list">
-                    {% for notif in notifications %}
-                        <li class="{% if not notif.is_read %}unread{% endif %}" onclick="markRead({{ notif.id }})">
-                            {{ notif.message }}
-                            <small>{{ notif.created_at.strftime('%H:%M') }}</small>
-                        </li>
+        <div class="notification-widget">
+            <h4><i class="material-icons">notifications_active</i> آخرین اطلاعیه‌ها</h4>
+            <div class="notif-list-modern">
+                {% if notifications %}
+                    {% for n in notifications %}
+                        <div class="notif-item" onclick="markRead({{ n.id }})">
+                            <span>{{ n.message }}</span>
+                            <small>{{ n.created_at.strftime('%H:%M') }}</small>
+                        </div>
                     {% endfor %}
-                </ul>
-            {% else %}
-                <p class="empty-state-small">اطلاعیه جدیدی نیست.</p>
-            {% endif %}
+                {% else %}
+                    <p style="text-align:center; opacity:0.7;">اطلاعیه جدیدی نیست.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
-
-    <!-- Cancelled Classes Alert -->
-    {% if cancelled_classes %}
-    <div class="cancelled-classes-alert">
-        <h4><i class="material-icons">warning</i> کلاس‌های لغو شده امروز</h4>
-        <ul>
-            {% for c in cancelled_classes %}
-                <li>
-                    <strong>{{ c.course_name }}</strong> - استاد {{ c.professor_name }}
-                    <span>({{ c.description }})</span>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
 
     <!-- Tab Navigation -->
-    <div class="form-card" style="margin-bottom: 2rem; padding: 0;">
-        <div class="dashboard-tabs">
-            <button class="dash-tab active" onclick="openTab('personal-schedule')">
-                <i class="material-icons">event_note</i> برنامه هفتگی من
-            </button>
-            <button class="dash-tab" onclick="openTab('reserve-room')">
-                <i class="material-icons">meeting_room</i> رزرو کلاس
-            </button>
-        </div>
+    <div class="dashboard-tabs">
+        <button class="dash-tab active" onclick="openTab('schedule-tab')">
+            <i class="material-icons">event_note</i> برنامه هفتگی
+        </button>
+        <button class="dash-tab" onclick="openTab('reserve-tab')">
+            <i class="material-icons">meeting_room</i> رزرو کلاس
+        </button>
+        <button class="dash-tab" onclick="openTab('cancelled-tab')">
+            <i class="material-icons">cancel</i> کلاس‌های لغو شده
+        </button>
     </div>
 
-    <!-- Section 1: Personal Schedule -->
-    <div id="personal-schedule" class="tab-content active">
-        <div class="schedule-card">
-            <div class="card-header">
-                <h2>برنامه کلاسی شخصی</h2>
-                <button class="btn btn-outline" onclick="printSchedule()">
-                    <i class="material-icons">print</i> چاپ
-                </button>
+    <!-- Content Sections -->
+    <div class="tab-content active" id="schedule-tab">
+        <div class="section-card">
+            <div class="section-header">
+                <h2>برنامه هفتگی من</h2>
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn btn-outline" onclick="openPasteModal()">
+                        <i class="material-icons">content_paste</i> ورود از اکسل
+                    </button>
+                    <button class="btn btn-outline" onclick="window.print()">
+                        <i class="material-icons">print</i> چاپ
+                    </button>
+                </div>
             </div>
 
             <div class="schedule-grid" id="schedule-table">
                 <!-- Header -->
-                <div class="schedule-header"></div>
-                <div class="schedule-header">شنبه</div>
-                <div class="schedule-header">یکشنبه</div>
-                <div class="schedule-header">دوشنبه</div>
-                <div class="schedule-header">سه‌شنبه</div>
-                <div class="schedule-header">چهارشنبه</div>
+                <div class="grid-header"></div>
+                <div class="grid-header">شنبه</div>
+                <div class="grid-header">یکشنبه</div>
+                <div class="grid-header">دوشنبه</div>
+                <div class="grid-header">سه‌شنبه</div>
+                <div class="grid-header">چهارشنبه</div>
 
                 <!-- Rows -->
                 {% set times = ['8-10', '10-12', '12-14', '14-16', '16-18', '18-20'] %}
                 {% set time_labels = ['۸ - ۱۰', '۱۰ - ۱۲', '۱۲ - ۱۴', '۱۴ - ۱۶', '۱۶ - ۱۸', '۱۸ - ۲۰'] %}
                 
                 {% for i in range(6) %}
-                    <div class="schedule-time">{{ time_labels[i] }}</div>
+                    <div class="grid-time">{{ time_labels[i] }}</div>
                     {% for day in ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday'] %}
-                        <div class="schedule-cell" data-day="{{ day }}" data-time="{{ times[i] }}" onclick="openEditModal(this)">
-                            <!-- Content will be injected by JS -->
+                        <div class="grid-cell" data-day="{{ day }}" data-time="{{ times[i] }}" onclick="openEditModal(this)"></div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="reserve-tab">
+        <div class="section-card">
+            <div class="section-header">
+                <h2>رزرو کلاس</h2>
+            </div>
+            <p class="section-desc">کلاس‌های خالی قابل رزرو را مشاهده کرده و روی شماره کلاس کلیک کنید.</p>
+
+            <div class="schedule-grid" id="reserve-table">
+                <!-- Header -->
+                <div class="grid-header"></div>
+                <div class="grid-header">شنبه</div>
+                <div class="grid-header">یکشنبه</div>
+                <div class="grid-header">دوشنبه</div>
+                <div class="grid-header">سه‌شنبه</div>
+                <div class="grid-header">چهارشنبه</div>
+                
+                <!-- Rows -->
+                {% for i in range(6) %}
+                    <div class="grid-time">{{ time_labels[i] }}</div>
+                    {% for day in ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday'] %}
+                        <div class="grid-cell reserve-cell" data-day="{{ day }}" data-time="{{ times[i] }}">
+                            <span style="color:var(--text-secondary); font-size:0.8rem;">-</span>
                         </div>
                     {% endfor %}
                 {% endfor %}
@@ -92,83 +118,91 @@
         </div>
     </div>
 
-    <!-- Section 2: Reservation System -->
-    <div id="reserve-room" class="tab-content">
-        <div class="schedule-card">
-            <div class="card-header">
-                <h2>وضعیت کلاس‌های خالی (رزرو)</h2>
+    <div class="tab-content" id="cancelled-tab">
+        <div class="section-card">
+            <div class="section-header">
+                <h2>لیست کلاس‌های لغو شده</h2>
             </div>
-            <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;">کلاس‌های موجود برای رزرو را مشاهده کرده و روی کلاس مورد نظر کلیک کنید.</p>
-
-            <div class="schedule-grid" id="reservation-table">
-                <!-- Header -->
-                <div class="schedule-header"></div>
-                <div class="schedule-header">شنبه</div>
-                <div class="schedule-header">یکشنبه</div>
-                <div class="schedule-header">دوشنبه</div>
-                <div class="schedule-header">سه‌شنبه</div>
-                <div class="schedule-header">چهارشنبه</div>
-                
-                <!-- Rows -->
-                {% for i in range(6) %}
-                    <div class="schedule-time">{{ time_labels[i] }}</div>
-                    {% for day in ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday'] %}
-                        <div class="schedule-cell reserve-cell" data-day="{{ day }}" data-time="{{ times[i] }}">
-                            <!-- Content injected by JS -->
+            
+            <div class="cancelled-list">
+                {% if cancelled_classes %}
+                    {% for c in cancelled_classes %}
+                        <div class="cancelled-item-card">
+                            <div class="cancelled-icon"><i class="material-icons">error_outline</i></div>
+                            <div class="cancelled-info">
+                                <h4>{{ c.course_name }} - استاد {{ c.professor_name }}</h4>
+                                <p>{{ c.description }}</p>
+                                <span class="cancelled-date">
+                                    {% if c.cancel_date %}
+                                        تاریخ: {{ jdatetime.date.fromgregorian(date=c.cancel_date).strftime('%Y/%m/%d') }}
+                                    {% elif c.start_date %}
+                                        بازه: {{ jdatetime.date.fromgregorian(date=c.start_date).strftime('%Y/%m/%d') }} تا {{ jdatetime.date.fromgregorian(date=c.end_date).strftime('%Y/%m/%d') }}
+                                    {% endif %}
+                                </span>
+                            </div>
                         </div>
                     {% endfor %}
-                {% endfor %}
+                {% else %}
+                    <div class="empty-state-box">
+                        <i class="material-icons">check_circle</i>
+                        <h3>کلاس لغو شده‌ای نیست</h3>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal for Personal Schedule Edit -->
-<div id="edit-modal" class="modal-box">
-    <div class="form-card modal-content">
-        <h3 style="margin-bottom: 1rem;" id="modal-title">افزودن کلاس</h3>
+<!-- Modal: Edit Schedule -->
+<div id="edit-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modal-title">افزودن درس</h3>
+            <button class="close-btn" onclick="closeModal('edit-modal')">&times;</button>
+        </div>
         <form id="schedule-form">
             <input type="hidden" id="day-input">
             <input type="hidden" id="time-input">
             
             <div class="form-group">
-                <label class="form-label">نام درس</label>
-                <input type="text" id="course-name" class="form-control" placeholder="مثال: ریاضی ۲">
+                <label>نام درس</label>
+                <input type="text" id="course-name" class="form-input" placeholder="مثال: ریاضی ۲">
             </div>
-            
-            <div class="form-group">
-                <label class="form-label">استاد درس</label>
-                <input type="text" id="professor-name" class="form-control" placeholder="مثال: دکتر محمدی">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>استاد</label>
+                    <input type="text" id="professor-name" class="form-input" placeholder="دکتر محمدی">
+                </div>
+                <div class="form-group">
+                    <label>مکان</label>
+                    <input type="text" id="class-location" class="form-input" placeholder="کلاس ۱۰۱">
+                </div>
             </div>
-
             <div class="form-group">
-                <label class="form-label">محل برگزاری</label>
-                <input type="text" id="class-location" class="form-control" placeholder="مثال: کلاس ۱۰۱">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">نوع هفته</label>
+                <label>نوع هفته</label>
                 <select id="week-type" class="form-select">
                     <option value="all">همیشه (هر هفته)</option>
                     <option value="odd">فرد</option>
                     <option value="even">زوج</option>
                 </select>
             </div>
-
+            
             <div class="modal-actions">
-                <button type="submit" class="btn btn-custom">ذخیره</button>
-                <button type="button" class="btn btn-outline" style="color:var(--error)" onclick="deleteClass()">حذف</button>
-                <button type="button" class="btn btn-outline" onclick="closeModal('edit-modal')">لغو</button>
+                <button type="button" class="btn btn-danger" onclick="deleteClass()">حذف</button>
+                <button type="submit" class="btn btn-primary">ذخیره</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Modal for Reservation Request -->
-<div id="reserve-modal" class="modal-box">
-    <div class="form-card modal-content">
-        <h3 style="margin-bottom: 1rem;">درخواست رزرو کلاس</h3>
-        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;" id="reserve-slot-info"></p>
+<!-- Modal: Reserve Request -->
+<div id="reserve-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>ثبت درخواست رزرو</h3>
+            <button class="close-btn" onclick="closeModal('reserve-modal')">&times;</button>
+        </div>
+        <p style="margin-bottom:1rem; color:var(--text-secondary);" id="reserve-info"></p>
         
         <form id="reserve-form" method="POST" action="">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -176,327 +210,328 @@
             <input type="hidden" id="reserve-room-name" name="room_name">
             
             <div class="form-group">
-                <label class="form-label">دلیل رزرو</label>
-                <textarea id="reserve-reason" name="reason" class="form-control" rows="3" required placeholder="مثال: جلسه انجمن علمی"></textarea>
+                <label>دلیل رزرو</label>
+                <textarea name="reason" class="form-input" rows="3" required placeholder="جلسه انجمن..."></textarea>
             </div>
             
             <div class="modal-actions">
-                <button type="submit" class="btn btn-custom">ارسال درخواست</button>
                 <button type="button" class="btn btn-outline" onclick="closeModal('reserve-modal')">لغو</button>
+                <button type="submit" class="btn btn-primary">ارسال</button>
             </div>
         </form>
     </div>
 </div>
 
-<style>
-    /* Header Row */
-    .dashboard-header-row {
-        display: grid;
-        grid-template-columns: 300px 1fr;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    @media (max-width: 768px) {
-        .dashboard-header-row { grid-template-columns: 1fr; }
-    }
+<!-- Modal: Paste from Excel -->
+<div id="paste-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width:600px;">
+        <div class="modal-header">
+            <h3>ورود سریع از اکسل</h3>
+            <button class="close-btn" onclick="closeModal('paste-modal')">&times;</button>
+        </div>
+        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;">
+            ستون‌های اکسل را به ترتیب زیر کپی و در کادر زیر پیست کنید: <br>
+            <code>روز | ساعت | نام درس | استاد | مکان | نوع (فرد/زوج)</code>
+            <br><small>مثال: شنبه | 8-10 | فیزیک | دکتر احمدی | آمفی | زوج</small>
+        </p>
+        <textarea id="paste-area" class="form-input" style="height:200px; font-family: monospace;" placeholder="اطلاعات را اینجا Paste کنید..."></textarea>
+        
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="processPaste()">ذخیره برنامه</button>
+        </div>
+    </div>
+</div>
 
-    .date-time-card {
+<style>
+    /* Header Widgets */
+    .dashboard-header-modern { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    @media (max-width: 900px) { .dashboard-header-modern { grid-template-columns: 1fr; } }
+
+    .date-widget {
         background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
         color: white;
         padding: 1.5rem;
-        border-radius: 12px;
+        border-radius: 16px;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
-        box-shadow: var(--shadow-md);
+        box-shadow: var(--shadow-lg);
     }
-    .dt-date { font-size: 1.2rem; font-weight: 500; }
-    .dt-weekday { font-size: 1.5rem; font-weight: 700; margin: 0.5rem 0; }
-    .dt-time { font-size: 2.5rem; font-weight: 300; font-family: monospace; }
+    .date-main { display: flex; align-items: center; gap: 1rem; }
+    .date-day { font-size: 3.5rem; font-weight: 700; line-height: 1; }
+    .date-details { display: flex; flex-direction: column; font-size: 1.2rem; }
+    .date-meta { text-align: left; }
+    .live-clock { font-size: 2rem; font-weight: 300; font-family: monospace; margin-bottom: 0.5rem; }
+    .weekday-badge { background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.9rem; }
 
-    .notifications-card {
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: var(--shadow-sm);
-    }
-    .notifications-card h3 { display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; margin-bottom: 1rem; color: var(--primary-color); }
-    .notif-list { list-style: none; max-height: 120px; overflow-y: auto; }
-    .notif-list li { padding: 0.5rem; border-radius: 6px; margin-bottom: 0.5rem; font-size: 0.9rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-    .notif-list li.unread { background: rgba(0, 131, 143, 0.1); font-weight: 600; }
-    .notif-list li small { font-size: 0.75rem; color: var(--text-secondary); }
+    .notification-widget { background: var(--surface); border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow-sm); }
+    .notification-widget h4 { display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem; color:var(--primary-color); }
+    .notif-list-modern { max-height: 100px; overflow-y: auto; }
+    .notif-item { padding: 0.5rem; font-size: 0.9rem; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item:hover { background: var(--background); }
 
-    /* Cancelled Alert */
-    .cancelled-classes-alert {
-        background-color: rgba(183, 28, 28, 0.1);
-        border-right: 4px solid var(--error);
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 2rem;
-    }
-    .cancelled-classes-alert h4 { display: flex; align-items: center; gap: 0.5rem; color: var(--error); margin-bottom: 0.5rem; }
-    .cancelled-classes-alert ul { margin: 0; padding-right: 1.5rem; font-size: 0.9rem; }
+    /* Tabs & Content */
+    .dashboard-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0; }
+    .dash-tab { background: none; border: none; padding: 1rem 1.5rem; font-family: inherit; font-size: 1rem; color: var(--text-secondary); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; }
+    .dash-tab.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: 600; }
+    
+    .section-card { background: var(--surface); border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow-sm); }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .section-header h2 { font-size: 1.25rem; margin: 0; }
+    .section-desc { color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem; }
 
-    /* Schedule Grid */
-    .schedule-card { background: var(--surface); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-sm); }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    /* Grid System */
+    .schedule-grid { display: grid; grid-template-columns: 60px repeat(5, 1fr); gap: 1px; background: var(--border-color); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
+    .grid-header, .grid-time { background: var(--background); padding: 0.75rem; text-align: center; font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); }
+    .grid-cell { background: var(--surface); min-height: 80px; padding: 0.5rem; cursor: pointer; transition: background 0.2s; position: relative; vertical-align: top; }
+    .grid-cell:hover { background: rgba(0, 131, 143, 0.05); }
     
-    .schedule-grid {
-        display: grid;
-        grid-template-columns: 60px repeat(5, 1fr);
-        gap: 1px;
-        background-color: var(--border-color);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        overflow: hidden;
-    }
+    /* Schedule Visuals */
+    .class-block { padding: 4px; border-radius: 4px; font-size: 0.8rem; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; }
+    .class-name { font-weight: 700; color: var(--primary-dark); margin-bottom: 2px; }
+    .class-info { font-size: 0.75rem; opacity: 0.8; }
     
-    .schedule-header, .schedule-time {
-        background-color: var(--background);
-        padding: 0.75rem;
-        text-align: center;
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-    }
-    
-    .schedule-cell {
-        background-color: var(--surface);
-        min-height: 80px;
-        padding: 0.5rem;
-        cursor: pointer;
-        transition: background 0.2s;
-        position: relative;
-    }
-    .schedule-cell:hover { background-color: var(--background); }
-    
-    /* Split Cell for Odd/Even */
-    .split-container {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        width: 100%;
-    }
-    .split-half {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        border-bottom: 1px dashed var(--border-color);
-        font-size: 0.8rem;
-    }
-    .split-half:last-child { border-bottom: none; }
-    
-    /* Colors */
-    .bg-odd { background-color: #e3f2fd; } /* Light Blue */
-    .bg-even { background-color: #e8f5e9; } /* Light Green */
-    .bg-all { background-color: rgba(0, 131, 143, 0.1); }
-    
-    .class-name { font-weight: 600; color: var(--primary-color); font-size: 0.85rem; }
-    .class-info { font-size: 0.75rem; color: var(--text-secondary); }
+    .split-cell { display: flex; flex-direction: column; height: 100%; gap: 1px; }
+    .split-half { flex: 1; padding: 2px; border-radius: 2px; overflow: hidden; }
+    .bg-all { background: rgba(0, 131, 143, 0.1); border-left: 3px solid var(--primary-color); }
+    .bg-odd { background: rgba(33, 150, 243, 0.15); border-left: 3px solid #2196F3; }
+    .bg-even { background: rgba(76, 175, 80, 0.15); border-left: 3px solid #4CAF50; }
 
-    /* Reservation Cell */
-    .room-pill {
-        display: inline-block;
-        background: var(--primary-color);
-        color: white;
-        padding: 0.25rem 0.5rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        margin: 2px;
-        cursor: pointer;
-        transition: transform 0.1s;
-    }
-    .room-pill:hover { transform: scale(1.05); }
-    
-    .modal-content { width: 400px; max-width: 90%; }
-    .modal-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    /* Reservation */
+    .room-pill { display: inline-block; background: var(--primary-color); color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; margin: 2px; cursor: pointer; transition: transform 0.1s; }
+    .room-pill:hover { transform: scale(1.05); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+    /* Cancelled List */
+    .cancelled-item-card { display: flex; gap: 1rem; padding: 1rem; background: rgba(244, 67, 54, 0.05); border-right: 4px solid var(--error); border-radius: 8px; margin-bottom: 1rem; }
+    .cancelled-icon { color: var(--error); font-size: 2rem; display: flex; align-items: center; }
+    .cancelled-info h4 { margin: 0 0 0.25rem 0; color: var(--error); }
+    .cancelled-info p { margin: 0; font-size: 0.9rem; color: var(--text-secondary); }
+    .cancelled-date { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-top: 0.5rem; }
+
+    .empty-state-box { text-align: center; padding: 3rem; color: var(--text-secondary); }
+    .empty-state-box i { font-size: 4rem; margin-bottom: 1rem; color: var(--success); }
+
+    /* Modals */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+    .modal-box { background: var(--surface); width: 100%; max-width: 450px; border-radius: 16px; box-shadow: var(--shadow-lg); overflow: hidden; animation: slideUp 0.3s ease; }
+    .modal-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { margin: 0; font-size: 1.1rem; }
+    .close-btn { background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); cursor: pointer; }
+    .modal-box form, .modal-box .modal-content { padding: 1.5rem; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
+
+    /* Forms */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
+    .form-input { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--background); font-family: inherit; color: var(--text-primary); }
+    .form-input:focus { outline: none; border-color: var(--primary-color); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 </style>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // --- 1. Live Clock ---
+    const mySchedules = {% if schedules %}{{ schedules | tojson }}{% else %}[]{% endif %};
+    const dayMap = {'saturday':'شنبه','sunday':'یکشنبه','monday':'دوشنبه','tuesday':'سه‌شنبه','wednesday':'چهارشنبه'};
+    
+    // --- Clock ---
     function updateClock() {
         const now = new Date();
-        const timeString = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        document.getElementById('live-clock').textContent = timeString;
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString('fa-IR');
     }
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- 2. Personal Schedule Logic (Odd/Even Support) ---
-    const dayMap = {'saturday':'شنبه','sunday':'یکشنبه','monday':'دوشنبه','tuesday':'سه‌شنبه','wednesday':'چهارشنبه'};
-    const mySchedules = {% if schedules %}{{ schedules | tojson }}{% else %}[]{% endif %};
-
-    function renderSchedule() {
-        // Clear cells first
-        document.querySelectorAll('#schedule-table .schedule-cell').forEach(cell => {
-            cell.innerHTML = '';
-            cell.classList.remove('has-class');
-        });
-
-        mySchedules.forEach(item => {
-            const cell = document.querySelector(`#schedule-table .schedule-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`);
-            if (!cell) return;
-
-            // Build HTML content
-            let content = '';
-            let className = '';
-            let info = `${item.class_location || ''} ${item.professor_name ? '- ' + item.professor_name : ''}`;
-
-            if (item.week_type === 'all') {
-                content = `<div class="bg-all" style="height:100%; padding:5px; border-radius:4px;">
-                    <div class="class-name">${item.course_name}</div>
-                    <div class="class-info">${info}</div>
-                </div>`;
-                cell.classList.add('has-class');
-            } else {
-                // Split Logic
-                let existingHtml = cell.innerHTML;
-                let splitHtml = `<div class="split-container">${existingHtml}</div>`;
-                
-                // Check if split container already exists, if not create it
-                if (!cell.querySelector('.split-container')) {
-                    cell.innerHTML = `<div class="split-container"><div class="split-half"></div><div class="split-half"></div></div>`;
-                }
-
-                const container = cell.querySelector('.split-container');
-                const oddDiv = container.children[0];
-                const evenDiv = container.children[1];
-
-                if (item.week_type === 'odd') {
-                    oddDiv.innerHTML = `<div class="class-name">${item.course_name}</div><div class="class-info">${info}</div>`;
-                    oddDiv.classList.add('bg-odd');
-                } else if (item.week_type === 'even') {
-                    evenDiv.innerHTML = `<div class="class-name">${item.course_name}</div><div class="class-info">${info}</div>`;
-                    evenDiv.classList.add('bg-even');
-                }
-                
-                cell.classList.add('has-class');
-                return; // Avoid overwriting with logic below
-            }
-            
-            // For 'all' type, just replace content
-            if (item.week_type === 'all') {
-                cell.innerHTML = content;
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', renderSchedule);
-
-    // Open Edit Modal
-    function openEditModal(cell) {
-        document.getElementById('day-input').value = cell.dataset.day;
-        document.getElementById('time-input').value = cell.dataset.time;
-        
-        const title = dayMap[cell.dataset.day] + ' - ساعت ' + cell.dataset.time;
-        document.getElementById('modal-title').innerText = title;
-        
-        // Reset form
-        document.getElementById('course-name').value = '';
-        document.getElementById('professor-name').value = '';
-        document.getElementById('class-location').value = '';
-        document.getElementById('week-type').value = 'all';
-
-        // Check if there is data to populate (simple logic for 'all', complex for split omitted for brevity in this step)
-        // You could add logic to pre-fill if clicking on an existing class.
-
-        document.getElementById('edit-modal').style.display = 'flex';
-    }
-
-    document.getElementById('schedule-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const data = {
-            day: document.getElementById('day-input').value,
-            time_slot: document.getElementById('time-input').value,
-            course_name: document.getElementById('course-name').value,
-            class_location: document.getElementById('class-location').value,
-            professor_name: document.getElementById('professor-name').value,
-            week_type: document.getElementById('week-type').value
-        };
-        
-        fetch('/update_schedule', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        }).then(res => res.json()).then(resp => {
-            if(resp.status === 'success') location.reload();
-        });
-    });
-
-    function deleteClass() {
-        // Send empty course name to delete
-        document.getElementById('course-name').value = '';
-        document.getElementById('schedule-form').dispatchEvent(new Event('submit'));
-    }
-
-    // --- 3. Reservation System Logic ---
-    function loadAvailableSlots() {
-        fetch('/api/master_schedule')
-            .then(res => res.json())
-            .then(slots => {
-                // Clear cells
-                document.querySelectorAll('#reservation-table .schedule-cell').forEach(cell => {
-                    cell.innerHTML = '<span style="color:var(--text-secondary); font-size:0.8rem;">-</span>';
-                });
-
-                slots.forEach(slot => {
-                    const cell = document.querySelector(`#reservation-table .schedule-cell[data-day="${slot.day}"][data-time="${slot.time_slot}"]`);
-                    if (cell && slot.available_rooms.length > 0) {
-                        let html = '';
-                        slot.available_rooms.forEach(room => {
-                            html += `<span class="room-pill" onclick="openReserveModal(${slot.id}, '${room}', '${slot.day}', '${slot.time_slot}')">${room}</span>`;
-                        });
-                        cell.innerHTML = html;
-                    } else if (cell && slot.all_rooms.length > 0) {
-                         cell.innerHTML = '<span style="color:var(--error); font-size:0.8rem;">رزرو شده</span>';
-                    }
-                });
-            });
-    }
-
-    // Load reservations when tab opens
-    // Using MutationObserver or simple click handler
-    document.querySelectorAll('.dash-tab')[1].addEventListener('click', loadAvailableSlots);
-    // Also load if it's active on page load (unlikely here as first tab is default)
-    
-    function openReserveModal(slotId, room, day, time) {
-        document.getElementById('reserve-slot-id').value = slotId;
-        document.getElementById('reserve-room-name').value = room;
-        document.getElementById('reserve-slot-info').innerText = `رزرو کلاس ${room} در ${dayMap[day]} ساعت ${time}`;
-        
-        const form = document.getElementById('reserve-form');
-        form.action = `/submit_reservation/${slotId}/${room}`;
-        
-        document.getElementById('reserve-modal').style.display = 'flex';
-    }
-
-    // --- Utilities ---
+    // --- Tab Logic ---
     function openTab(id) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         event.target.closest('.dash-tab').classList.add('active');
+
+        if (id === 'reserve-tab') loadReservations();
     }
 
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    // --- Schedule Rendering ---
+    function renderSchedule() {
+        // Clear
+        document.querySelectorAll('#schedule-table .grid-cell').forEach(c => c.innerHTML = '');
 
+        mySchedules.forEach(item => {
+            const cell = document.querySelector(`#schedule-table .grid-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`);
+            if (!cell) return;
+
+            const info = `${item.class_location || ''} ${item.professor_name ? '- ' + item.professor_name : ''}`;
+            
+            if (item.week_type === 'all') {
+                cell.innerHTML = `<div class="class-block bg-all"><div class="class-name">${item.course_name}</div><div class="class-info">${info}</div></div>`;
+            } else {
+                // Split Logic
+                let container = cell.querySelector('.split-cell');
+                if (!container) {
+                    cell.innerHTML = `<div class="split-cell"><div class="split-half" onclick="event.stopPropagation(); openEditModal(this.parentElement.parentElement, 'odd')"></div><div class="split-half" onclick="event.stopPropagation(); openEditModal(this.parentElement.parentElement, 'even')"></div></div>`;
+                    container = cell.querySelector('.split-cell');
+                }
+                
+                const targetDiv = item.week_type === 'odd' ? container.children[0] : container.children[1];
+                targetDiv.innerHTML = `<div class="class-block bg-${item.week_type}" style="height:100%"><div class="class-name">${item.course_name}</div><div class="class-info">${info}</div></div>`;
+            }
+        });
+    }
+    renderSchedule();
+
+    // --- Schedule Modal Logic ---
+    function openEditModal(cell, forceType=null) {
+        const day = cell.dataset.day;
+        const time = cell.dataset.time;
+        document.getElementById('day-input').value = day;
+        document.getElementById('time-input').value = time;
+        document.getElementById('modal-title').innerText = `${dayMap[day]} - ${time}`;
+
+        // Reset
+        document.getElementById('course-name').value = '';
+        document.getElementById('professor-name').value = '';
+        document.getElementById('class-location').value = '';
+        document.getElementById('week-type').value = 'all';
+
+        // Check if existing
+        // Note: For simplicity, we just open empty modal. User can re-type. 
+        // Advanced logic to pre-fill split cells omitted for stability.
+
+        document.getElementById('edit-modal').style.display = 'flex';
+    }
+
+    document.getElementById('schedule-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            day: document.getElementById('day-input').value,
+            time_slot: document.getElementById('time-input').value,
+            course_name: document.getElementById('course-name').value,
+            professor_name: document.getElementById('professor-name').value,
+            class_location: document.getElementById('class-location').value,
+            week_type: document.getElementById('week-type').value
+        };
+
+        fetch('/api/update_schedule', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.status === 'success') {
+                // Optimistic UI Update
+                mySchedules.push(data); // Simple push, need to handle duplicates in ideal case
+                location.reload(); 
+            } else {
+                alert('خطا در ذخیره: ' + resp.message);
+            }
+        });
+    });
+
+    function deleteClass() {
+        document.getElementById('course-name').value = '';
+        document.getElementById('schedule-form').dispatchEvent(new Event('submit'));
+    }
+
+    // --- Reservation Logic ---
+    function loadReservations() {
+        fetch('/api/master_schedule')
+            .then(res => res.json())
+            .then(data => {
+                document.querySelectorAll('#reserve-table .grid-cell').forEach(c => c.innerHTML = '-');
+                
+                data.forEach(slot => {
+                    const cell = document.querySelector(`#reserve-table .grid-cell[data-day="${slot.day}"][data-time="${slot.time_slot}"]`);
+                    if (cell && slot.available_rooms.length > 0) {
+                        let html = '';
+                        slot.available_rooms.forEach(r => {
+                            html += `<span class="room-pill" onclick="event.stopPropagation(); openReserveModal(${slot.id}, '${r}', '${slot.day}', '${slot.time_slot}')">${r}</span>`;
+                        });
+                        cell.innerHTML = html;
+                    }
+                });
+            });
+    }
+
+    function openReserveModal(id, room, day, time) {
+        document.getElementById('reserve-slot-id').value = id;
+        document.getElementById('reserve-room-name').value = room;
+        document.getElementById('reserve-info').innerText = `درخواست رزرو کلاس ${room} در ${dayMap[day]} (${time})`;
+        document.getElementById('reserve-form').action = `/submit_reservation/${id}/${room}`;
+        document.getElementById('reserve-modal').style.display = 'flex';
+    }
+
+    // --- Paste from Excel Logic ---
+    function openPasteModal() {
+        document.getElementById('paste-area').value = '';
+        document.getElementById('paste-modal').style.display = 'flex';
+    }
+
+    function processPaste() {
+        const text = document.getElementById('paste-area').value;
+        const lines = text.split('\n');
+        const items = [];
+
+        lines.forEach(line => {
+            if (!line.trim()) return;
+            // Split by Tab or |
+            const parts = line.includes('|') ? line.split('|') : line.split('\t');
+            if (parts.length >= 3) {
+                // Map Persian day names to keys
+                const dayMapReverse = {'شنبه': 'saturday', 'یکشنبه': 'sunday', 'دوشنبه': 'monday', 'سه شنبه': 'tuesday', 'سه‌شنبه': 'tuesday', 'چهارشنبه': 'wednesday'};
+                
+                let dayKey = parts[0].trim();
+                if (dayMapReverse[dayKey]) dayKey = dayMapReverse[dayKey];
+
+                // Normalize time format (8-10)
+                let time = parts[1].trim().replace(' ', '');
+
+                items.push({
+                    day: dayKey,
+                    time_slot: time,
+                    course_name: parts[2].trim(),
+                    professor: parts[3] ? parts[3].trim() : '',
+                    location: parts[4] ? parts[4].trim() : '',
+                    week_type: parts[5] ? parts[5].trim().includes('زوج') ? 'even' : (parts[5].trim().includes('فرد') ? 'odd' : 'all') : 'all'
+                });
+            }
+        });
+
+        if (items.length === 0) {
+            alert('داده‌ای یافت نشد. فرمت ورودی را بررسی کنید.');
+            return;
+        }
+
+        fetch('/api/bulk_add_schedule', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({items: items})
+        })
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.status === 'success') {
+                alert(`${resp.count} درس با موفقیت اضافه شد.`);
+                location.reload();
+            } else {
+                alert('خطا: ' + resp.message);
+            }
+        });
+    }
+
+    // --- Utilities ---
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function markRead(id) { fetch(`/mark_notification_read/${id}`); event.target.style.opacity = 0.5; }
+
+    // Close modal on outside click
     window.onclick = function(event) {
-        if (event.target.classList.contains('modal-box')) {
+        if (event.target.classList.contains('modal-overlay')) {
             event.target.style.display = 'none';
         }
-    }
-
-    function markRead(notifId) {
-        fetch(`/mark_notification_read/${notifId}`);
-        event.target.style.fontWeight = 'normal';
     }
 </script>
 {% endblock %}
