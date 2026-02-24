@@ -28,6 +28,15 @@
             <h2 style="margin-bottom: 0.25rem;">{{ user.full_name }}</h2>
             <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">شماره دانشجویی: {{ user.student_id }}</p>
             <span class="badge" style="background-color: var(--primary-light); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem;">{{ user.major }}</span>
+            
+            {% if not can_edit %}
+                <div style="margin-top: 1.5rem;">
+                    <a href="{{ url_for('chat_main', user_id=user.id) }}" class="btn btn-custom">
+                        <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">chat</i>
+                        ارسال پیام
+                    </a>
+                </div>
+            {% endif %}
         </form>
     </div>
 
@@ -89,7 +98,7 @@
                 <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
                     با حذف حساب کاربری، تمام اطلاعات شما شامل پیام‌ها و برنامه کلاسی به طور کامل پاک خواهد شد.
                 </p>
-                <form method="POST" action="{{ url_for('delete_account') }}" onsubmit="return confirm('آیا مطمئن هستید؟');">
+                <form method="POST" action="{{ url_for('delete_account') }}" onsubmit="return confirm('آیا مطمئن هستید؟ این عملیات غیرقابل بازگشت است.');">
                     {{ delete_account_form.hidden_tag() }}
                     <button type="submit" class="btn" style="background-color: var(--error); color: white;">حذف حساب من</button>
                 </form>

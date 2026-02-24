@@ -7,32 +7,34 @@
     <!-- Tab Navigation -->
     <div class="form-card" style="margin-bottom: 2rem; padding: 0;">
         <div class="dashboard-tabs">
-            <button class="dash-tab active" onclick="openTab('personal-schedule')">
-                <i class="material-icons">event_note</i> برنامه هفتگی من
+            <button class="dash-tab active" onclick="openAdminTab('master-schedule')">
+                <i class="material-icons">grid_on</i> تعریف کلاس‌های خالی
             </button>
-            <button class="dash-tab" onclick="openTab('manage-slots')">
-                <i class="material-icons">meeting_room</i> مدیریت کلاس‌ها
-            </button>
-            <button class="dash-tab" onclick="openTab('manage-requests')">
+            <button class="dash-tab" onclick="openAdminTab('requests')">
                 <i class="material-icons">list_alt</i> درخواست‌های رزرو
+            </button>
+            <button class="dash-tab" onclick="openAdminTab('cancelled')">
+                <i class="material-icons">event_busy</i> لغو کلاس‌ها
             </button>
         </div>
     </div>
 
-    <!-- Section 1: Personal Schedule -->
-    <div id="personal-schedule" class="tab-content active">
+    <!-- 1. Master Schedule Definition -->
+    <div id="master-schedule" class="tab-content active">
         <div class="schedule-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2 style="font-size: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-                    برنامه کلاسی شخصی (مدیر)
-                </h2>
-                <button class="btn btn-outline" onclick="printSchedule()">
-                    <i class="material-icons">print</i> چاپ
+            <div class="card-header">
+                <h2>تعریف کلاس‌های خالی پایه</h2>
+                <button class="btn btn-custom" onclick="saveMasterSchedule()">
+                    <i class="material-icons">save</i> ذخیره تغییرات
                 </button>
             </div>
+            <p style="color:var(--text-secondary); margin-bottom:1rem; font-size:0.9rem;">
+                روی خانه مورد نظر کلیک کنید و شماره کلاس‌های خالی را با کاما وارد کنید (مثال: 101,102).
+                <br>این برنامه تا پایان ترم معتبر است و هر هفته به صورت خودکار بازیابی می‌شود.
+            </p>
 
-            <div class="schedule-grid" id="schedule-table">
-                <!-- Header Row -->
+            <div class="schedule-grid" id="master-schedule-grid">
+                <!-- Header -->
                 <div class="schedule-header"></div>
                 <div class="schedule-header">شنبه</div>
                 <div class="schedule-header">یکشنبه</div>
@@ -40,116 +42,24 @@
                 <div class="schedule-header">سه‌شنبه</div>
                 <div class="schedule-header">چهارشنبه</div>
 
-                <!-- Time Rows -->
-                <div class="schedule-time">۸ - ۱۰</div>
-                <div class="schedule-cell" data-day="saturday" data-time="8-10" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="sunday" data-time="8-10" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="monday" data-time="8-10" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="tuesday" data-time="8-10" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="wednesday" data-time="8-10" onclick="openEditModal(this)"></div>
-
-                <div class="schedule-time">۱۰ - ۱۲</div>
-                <div class="schedule-cell" data-day="saturday" data-time="10-12" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="sunday" data-time="10-12" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="monday" data-time="10-12" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="tuesday" data-time="10-12" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="wednesday" data-time="10-12" onclick="openEditModal(this)"></div>
-
-                <div class="schedule-time">۱۲ - ۱۴</div>
-                <div class="schedule-cell" data-day="saturday" data-time="12-14" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="sunday" data-time="12-14" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="monday" data-time="12-14" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="tuesday" data-time="12-14" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="wednesday" data-time="12-14" onclick="openEditModal(this)"></div>
-
-                <div class="schedule-time">۱۴ - ۱۶</div>
-                <div class="schedule-cell" data-day="saturday" data-time="14-16" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="sunday" data-time="14-16" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="monday" data-time="14-16" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="tuesday" data-time="14-16" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="wednesday" data-time="14-16" onclick="openEditModal(this)"></div>
-
-                <div class="schedule-time">۱۶ - ۱۸</div>
-                <div class="schedule-cell" data-day="saturday" data-time="16-18" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="sunday" data-time="16-18" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="monday" data-time="16-18" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="tuesday" data-time="16-18" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="wednesday" data-time="16-18" onclick="openEditModal(this)"></div>
-
-                <div class="schedule-time">۱۸ - ۲۰</div>
-                <div class="schedule-cell" data-day="saturday" data-time="18-20" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="sunday" data-time="18-20" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="monday" data-time="18-20" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="tuesday" data-time="18-20" onclick="openEditModal(this)"></div>
-                <div class="schedule-cell" data-day="wednesday" data-time="18-20" onclick="openEditModal(this)"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Section 2: Manage Empty Slots -->
-    <div id="manage-slots" class="tab-content">
-        <div class="schedule-card">
-            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">
-                <i class="material-icons" style="vertical-align: middle;">add_circle</i>
-                افزودن کلاس خالی جدید
-            </h2>
-            <form action="{{ url_for('admin_add_slot') }}" method="POST" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 1rem; margin-bottom: 2rem; align-items: end;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">روز</label>
-                    <select name="day" class="form-select" required>
-                        <option value="saturday">شنبه</option>
-                        <option value="sunday">یکشنبه</option>
-                        <option value="monday">دوشنبه</option>
-                        <option value="tuesday">سه‌شنبه</option>
-                        <option value="wednesday">چهارشنبه</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">ساعت</label>
-                    <select name="time_slot" class="form-select" required>
-                        <option value="8-10">۸ - ۱۰</option>
-                        <option value="10-12">۱۰ - ۱۲</option>
-                        <option value="12-14">۱۲ - ۱۴</option>
-                        <option value="14-16">۱۴ - ۱۶</option>
-                        <option value="16-18">۱۶ - ۱۸</option>
-                        <option value="18-20">۱۸ - ۲۰</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label">محل (کلاس)</label>
-                    <input type="text" name="location" class="form-control" placeholder="مثال: کلاس ۱۰۱" required>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <button type="submit" class="btn btn-custom" style="width: 100%;">افزودن</button>
-                </div>
-            </form>
-
-            <hr style="margin: 2rem 0; border-color: var(--border-color);">
-
-            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">لیست کلاس‌های خالی موجود</h3>
-            <div style="display: grid; gap: 0.5rem;">
-                {% if slots %}
-                    {% for slot in slots %}
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--background); border-radius: 8px;">
-                            <div>
-                                <strong style="color: var(--primary-color);">{{ slot.day }}</strong> - {{ slot.time_slot }}
-                                <span style="margin-right: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">({{ slot.location }})</span>
-                            </div>
-                            <a href="{{ url_for('admin_delete_slot', slot_id=slot.id) }}" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem; color: var(--error); border-color: var(--error);" onclick="return confirm('آیا از حذف این کلاس مطمئن هستید؟')">
-                                <i class="material-icons" style="font-size: 1rem;">delete</i> حذف
-                            </a>
+                <!-- Rows -->
+                {% set times = ['8-10', '10-12', '12-14', '14-16', '16-18', '18-20'] %}
+                {% set time_labels = ['۸ - ۱۰', '۱۰ - ۱۲', '۱۲ - ۱۴', '۱۴ - ۱۶', '۱۶ - ۱۸', '۱۸ - ۲۰'] %}
+                
+                {% for i in range(6) %}
+                    <div class="schedule-time">{{ time_labels[i] }}</div>
+                    {% for day in ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday'] %}
+                        <div class="schedule-cell master-cell" data-day="{{ day }}" data-time="{{ times[i] }}" onclick="editMasterSlot(this)">
+                            <!-- Populated by JS -->
                         </div>
                     {% endfor %}
-                {% else %}
-                    <p style="text-align: center; color: var(--text-secondary);">هیچ کلاس خالی تعریف نشده است.</p>
-                {% endif %}
+                {% endfor %}
             </div>
         </div>
     </div>
 
-    <!-- Section 3: Manage Reservation Requests -->
-    <div id="manage-requests" class="tab-content">
+    <!-- 2. Reservation Requests -->
+    <div id="requests" class="tab-content">
         <div class="schedule-card">
             <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">
                 <i class="material-icons" style="vertical-align: middle;">pending_actions</i>
@@ -159,145 +69,254 @@
             <div style="display: grid; gap: 1rem;">
                 {% if requests %}
                     {% for req in requests %}
-                        <div style="border: 1px solid var(--border-color); padding: 1rem; border-radius: 8px; background: var(--surface);">
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <div class="request-card">
+                            <div class="req-header">
                                 <div>
                                     <strong style="font-size: 1.1rem;">{{ req.user.full_name }}</strong>
-                                    <span style="color: var(--text-secondary); font-size: 0.9rem; margin-right: 0.5rem;">(شماره دانشجویی: {{ req.user.student_id }})</span>
+                                    <span style="color: var(--text-secondary); font-size: 0.9rem; margin-right: 0.5rem;">
+                                        ({{ req.user.student_id }})
+                                    </span>
                                 </div>
-                                <div style="background: var(--primary-light); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;">
-                                    {{ req.slot.day }} - {{ req.slot.time_slot }} <br>
-                                    <span style="font-size: 0.75rem; opacity: 0.9;">{{ req.slot.location }}</span>
+                                <div class="req-room-badge">
+                                    کلاس {{ req.room_name }}
                                 </div>
                             </div>
-                            <div style="margin-bottom: 1rem; padding: 0.75rem; background: var(--background); border-radius: 6px; font-size: 0.95rem;">
-                                <span style="font-weight: 500; color: var(--secondary-color);">دلیل:</span> {{ req.reason }}
+                            <div class="req-body">
+                                <div class="req-info">
+                                    <span><i class="material-icons">access_time</i> {{ req.master_slot.day }} - {{ req.master_slot.time_slot }}</span>
+                                    <span style="margin-top:0.5rem;"><i class="material-icons">description</i> {{ req.reason }}</span>
+                                </div>
                             </div>
-                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='approve') }}" class="btn btn-custom" style="background-color: var(--success);">
-                                    <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">check</i> تایید و رزرو
+                            <div class="req-actions">
+                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='approve') }}" class="btn btn-custom btn-success">
+                                    <i class="material-icons">check</i> تایید
                                 </a>
-                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='reject') }}" class="btn btn-outline" style="color: var(--error); border-color: var(--error);">
-                                    <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">close</i> رد درخواست
+                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='reject') }}" class="btn btn-outline btn-danger">
+                                    <i class="material-icons">close</i> رد
                                 </a>
                             </div>
                         </div>
                     {% endfor %}
                 {% else %}
-                    <div class="text-center" style="padding: 2rem; color: var(--text-secondary);">
-                        <i class="material-icons" style="font-size: 3rem;">check_circle</i>
+                    <div class="empty-state">
+                        <i class="material-icons">check_circle</i>
                         <p>هیچ درخواستی در انتظار نیست.</p>
                     </div>
                 {% endif %}
             </div>
         </div>
     </div>
+
+    <!-- 3. Cancelled Classes -->
+    <div id="cancelled" class="tab-content">
+        <div class="schedule-card">
+            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">
+                <i class="material-icons" style="vertical-align: middle;">event_busy</i>
+                ثبت کلاس لغو شده
+            </h2>
+            
+            <form action="{{ url_for('add_cancelled_class') }}" method="POST" class="cancelled-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>نام استاد</label>
+                        <input type="text" name="professor" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>نام درس</label>
+                        <input type="text" name="course" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>توضیحات (مثلاً: کلاس با جلسه تمرین جابجا شد)</label>
+                    <input type="text" name="desc" class="form-control">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>تاریخ دقیق لغو (اختیاری)</label>
+                        <input type="date" name="date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>از تاریخ (برای بازه)</label>
+                        <input type="date" name="start_date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>تا تاریخ (برای بازه)</label>
+                        <input type="date" name="end_date" class="form-control">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-custom">ثبت لغو کلاس</button>
+            </form>
+
+            <hr style="margin: 2rem 0; border-color: var(--border-color);">
+
+            <h3>لیست لغوهای ثبت شده</h3>
+            <div class="cancelled-list">
+                {% if cancelled_classes %}
+                    {% for c in cancelled_classes %}
+                        <div class="cancelled-item">
+                            <div>
+                                <strong>{{ c.course_name }}</strong> - استاد {{ c.professor_name }}
+                                <br>
+                                <small style="color:var(--text-secondary)">
+                                    {% if c.cancel_date %}
+                                        تاریخ: {{ c.cancel_date }}
+                                    {% elif c.start_date %}
+                                        بازه: {{ c.start_date }} تا {{ c.end_date }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align:center; color:var(--text-secondary);">لیست خالی است.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Modal for Personal Schedule Edit -->
-<div id="edit-modal" class="modal-box">
-    <div class="form-card" style="width: 400px; max-width: 90%;">
-        <h3 style="margin-bottom: 1rem;" id="modal-title">افزودن کلاس</h3>
-        <form id="schedule-form">
-            <input type="hidden" id="day-input">
-            <input type="hidden" id="time-input">
-            <div class="form-group">
-                <label class="form-label">نام درس</label>
-                <input type="text" id="course-name" class="form-control" placeholder="مثال: جلسه هماهنگی">
-            </div>
-            <div class="form-group">
-                <label class="form-label">محل برگزاری</label>
-                <input type="text" id="class-location" class="form-control" placeholder="مثال: اتاق مدیریت">
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button type="submit" class="btn btn-custom" style="flex:1">ذخیره</button>
-                <button type="button" class="btn btn-outline" style="color:var(--error)" onclick="deleteClass()">حذف</button>
-                <button type="button" class="btn btn-outline" onclick="closeModal('edit-modal')">لغو</button>
-            </div>
-        </form>
+<!-- Modal for Master Schedule Edit -->
+<div id="master-modal" class="modal-box">
+    <div class="form-card modal-content">
+        <h3>تعریف کلاس‌های خالی</h3>
+        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;" id="master-slot-info"></p>
+        
+        <div class="form-group">
+            <label class="form-label">شماره کلاس‌ها (با کاما جدا کنید)</label>
+            <input type="text" id="master-rooms-input" class="form-control" placeholder="مثال: 101, 102, آمفی">
+        </div>
+        
+        <div class="modal-actions">
+            <button class="btn btn-custom" onclick="saveSlotData()">ذخیره</button>
+            <button class="btn btn-outline" onclick="closeModal('master-modal')">لغو</button>
+        </div>
     </div>
 </div>
 
 <style>
-    .dashboard-tabs { display: flex; border-bottom: 1px solid var(--border-color); background: var(--surface); }
-    .dash-tab { flex: 1; padding: 1rem; border: none; background: none; cursor: pointer; font-size: 1rem; font-family: inherit; color: var(--text-secondary); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-    .dash-tab:hover { background: var(--background); }
-    .dash-tab.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); font-weight: 600; }
+    /* Master Schedule Specifics */
+    .master-cell { cursor: pointer; transition: all 0.2s; min-height: 60px; }
+    .master-cell:hover { background-color: var(--primary-light); color: white; }
+    .master-cell.has-data { background-color: rgba(0, 131, 143, 0.1); border-right: 3px solid var(--primary-color); }
     
-    .tab-content { display: none; animation: fadeIn 0.3s; }
-    .tab-content.active { display: block; }
+    /* Request Card */
+    .request-card {
+        border: 1px solid var(--border-color);
+        padding: 1rem;
+        border-radius: 8px;
+        background: var(--surface);
+        transition: box-shadow 0.3s;
+    }
+    .request-card:hover { box-shadow: var(--shadow-md); }
+    .req-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .req-room-badge { background: var(--primary-color); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; }
+    .req-body { margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; }
+    .req-info { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; }
+    .req-info span { display: flex; align-items: center; gap: 0.5rem; }
+    .req-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+    
+    /* Buttons */
+    .btn-success { background-color: var(--success) !important; color: white !important; }
+    .btn-danger { color: var(--error) !important; border-color: var(--error) !important; }
 
-    .modal-box { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+    /* Cancelled Form */
+    .cancelled-form { background: var(--background); padding: 1.5rem; border-radius: 8px; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+    
+    .cancelled-list { margin-top: 1rem; }
+    .cancelled-item { padding: 0.75rem; border-right: 3px solid var(--error); background: rgba(183, 28, 28, 0.05); margin-bottom: 0.5rem; border-radius: 4px; }
+
+    .empty-state { text-align: center; padding: 2rem; color: var(--text-secondary); }
+    .empty-state i { font-size: 3rem; margin-bottom: 0.5rem; color: var(--success); }
 </style>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // --- 1. Tab Switching ---
-    function openTab(id) {
+    // --- 1. Tab Logic ---
+    function openAdminTab(id) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         event.target.closest('.dash-tab').classList.add('active');
     }
 
-    // --- 2. Personal Schedule Logic (Admin) ---
-    const dayMap = {'saturday':'شنبه','sunday':'یکشنبه','monday':'دوشنبه','tuesday':'سه‌شنبه','wednesday':'چهارشنبه'};
-    // اطمینان از اینکه متغیر schedules تعریف شده است (حتی اگر خالی باشد)
-    const mySchedules = {% if schedules %}{{ schedules | tojson }}{% else %}[]{% endif %};
+    // --- 2. Master Schedule Logic ---
+    // Data from backend: list of {day, time_slot, rooms}
+    const masterData = {% if slots %}{{ slots | tojson }}{% else %}[]{% endif %};
     
+    // Populate grid on load
     document.addEventListener('DOMContentLoaded', () => {
-        mySchedules.forEach(item => {
-            const cell = document.querySelector(`.schedule-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`);
+        masterData.forEach(item => {
+            const cell = document.querySelector(`.master-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`);
             if (cell) {
-                cell.innerHTML = `<div class="class-name">${item.course_name}</div><div class="class-location">${item.class_location}</div>`;
-                cell.classList.add('has-class');
+                cell.innerHTML = `<div style="font-size:0.8rem; font-weight:600; color:var(--primary-color);">${item.rooms}</div>`;
+                cell.classList.add('has-data');
+                cell.dataset.rooms = item.rooms;
             }
         });
     });
 
-    function openEditModal(cell) {
-        document.getElementById('day-input').value = cell.dataset.day;
-        document.getElementById('time-input').value = cell.dataset.time;
-        const title = dayMap[cell.dataset.day] + ' - ساعت ' + cell.dataset.time;
-        document.getElementById('modal-title').innerText = title;
+    let activeCell = null;
+
+    function editMasterSlot(cell) {
+        activeCell = cell;
+        const day = cell.dataset.day;
+        const time = cell.dataset.time;
+        const dayNames = {'saturday':'شنبه', 'sunday':'یکشنبه', 'monday':'دوشنبه', 'tuesday':'سه‌شنبه', 'wednesday':'چهارشنبه'};
         
-        const name = cell.querySelector('.class-name') ? cell.querySelector('.class-name').innerText : '';
-        const loc = cell.querySelector('.class-location') ? cell.querySelector('.class-location').innerText : '';
-        document.getElementById('course-name').value = name;
-        document.getElementById('class-location').value = loc;
-        
-        document.getElementById('edit-modal').style.display = 'flex';
+        document.getElementById('master-slot-info').innerText = `${dayNames[day]} - ساعت ${time}`;
+        document.getElementById('master-rooms-input').value = cell.dataset.rooms || "";
+        document.getElementById('master-modal').style.display = 'flex';
     }
 
-    document.getElementById('schedule-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const data = {
-            day: document.getElementById('day-input').value,
-            time_slot: document.getElementById('time-input').value,
-            course_name: document.getElementById('course-name').value,
-            class_location: document.getElementById('class-location').value
-        };
-        
-        fetch('/update_schedule', {
+    function saveSlotData() {
+        const rooms = document.getElementById('master-rooms-input').value;
+        if (activeCell) {
+            activeCell.dataset.rooms = rooms;
+            if (rooms.trim()) {
+                activeCell.innerHTML = `<div style="font-size:0.8rem; font-weight:600; color:var(--primary-color);">${rooms}</div>`;
+                activeCell.classList.add('has-data');
+            } else {
+                activeCell.innerHTML = '';
+                activeCell.classList.remove('has-data');
+            }
+        }
+        closeModal('master-modal');
+    }
+
+    function saveMasterSchedule() {
+        // Gather all data
+        const payload = [];
+        document.querySelectorAll('.master-cell').forEach(cell => {
+            if (cell.dataset.rooms && cell.dataset.rooms.trim() !== "") {
+                payload.push({
+                    day: cell.dataset.day,
+                    time_slot: cell.dataset.time,
+                    rooms: cell.dataset.rooms.trim()
+                });
+            }
+        });
+
+        fetch('/admin/save_master_schedule', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
         })
         .then(res => res.json())
         .then(resp => {
-            if(resp.status === 'success') location.reload();
+            if (resp.status === 'success') {
+                alert('برنامه کلاس‌های خالی با موفقیت ذخیره شد.');
+                location.reload();
+            }
         });
-    });
-
-    function deleteClass() {
-        document.getElementById('course-name').value = '';
-        document.getElementById('class-location').value = '';
-        document.getElementById('schedule-form').dispatchEvent(new Event('submit'));
     }
 
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
     window.onclick = function(event) {
         if (event.target.classList.contains('modal-box')) {
             event.target.style.display = 'none';
