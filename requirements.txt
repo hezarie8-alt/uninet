@@ -1,13 +1,13 @@
 Flask
 Flask-SQLAlchemy
 Flask-Migrate
-Flask-WTF
-WTForms
 Flask-SocketIO
+Flask-WTF
 Flask-Limiter
 eventlet
 gunicorn
+jdatetime
 psycopg2-binary
-psycogreen
-werkzeug
 email_validator
+WTForms
+SQLAlchemy

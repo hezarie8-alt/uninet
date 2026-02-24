@@ -733,6 +733,22 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
 
+def create_initial_data():
+    """ساخت جداول و ایجاد ادمین پیش‌فرض در صورت عدم وجود"""
+    db.create_all()
+    if not User.query.filter_by(student_id='admin').first():
+        admin = User(
+            full_name='مدیر', 
+            student_id='admin', 
+            major='مدیریت', 
+            password_hash=generate_password_hash('admin', method='pbkdf2:sha256'), 
+            is_admin=True
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print("Admin user created.")
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, host='0.0.0.0', port=port)
