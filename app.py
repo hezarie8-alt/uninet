@@ -3,7 +3,7 @@ eventlet.monkey_patch()
 
 import os
 import jdatetime
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta  # اطمینان از ایمپورت صحیح
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, abort, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -90,7 +90,7 @@ class Message(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    file_path = db.Column(db.String(255), nullable=True) # New
+    file_path = db.Column(db.String(255), nullable=True)
     timestamp = db.Column(db.DateTime, server_default=func.now(), index=True)
     read_at = db.Column(db.DateTime, nullable=True)
     __table_args__ = (Index('idx_sender_receiver_timestamp', 'sender_id', 'receiver_id', 'timestamp'),)
@@ -103,42 +103,38 @@ class ClassSchedule(db.Model):
     time_slot = db.Column(db.String(20), nullable=False)
     course_name = db.Column(db.String(100))
     class_location = db.Column(db.String(100))
-    professor_name = db.Column(db.String(100), nullable=True) # New
-    week_type = db.Column(db.String(10), default='all') # New: 'all', 'even', 'odd'
+    professor_name = db.Column(db.String(100), nullable=True)
+    week_type = db.Column(db.String(10), default='all')
 
 class MasterSchedule(db.Model):
-    """برنامه کلاس‌های خالی که ادمین تعریف می‌کند"""
     __tablename__ = 'master_schedule'
     id = db.Column(db.Integer, primary_key=True)
     day = db.Column(db.String(10), nullable=False)
     time_slot = db.Column(db.String(20), nullable=False)
-    rooms = db.Column(db.Text, nullable=False) # کاما جدا شده: 101,102
+    rooms = db.Column(db.Text, nullable=False)
 
 class Reservation(db.Model):
-    """درخواست‌های رزرو"""
     __tablename__ = 'reservation'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     master_slot_id = db.Column(db.Integer, db.ForeignKey('master_schedule.id'), nullable=False)
-    room_name = db.Column(db.String(50), nullable=False) # کلاس خاصی که رزرو شده
+    room_name = db.Column(db.String(50), nullable=False)
     reason = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(20), default='pending') # pending, approved, rejected
+    status = db.Column(db.String(20), default='pending')
     created_at = db.Column(db.DateTime, server_default=func.now())
 
 class CancelledClass(db.Model):
-    """کلاس‌های لغو شده"""
     __tablename__ = 'cancelled_class'
     id = db.Column(db.Integer, primary_key=True)
     professor_name = db.Column(db.String(100), nullable=True)
     course_name = db.Column(db.String(100), nullable=True)
-    cancel_date = db.Column(db.Date, nullable=True) # تاریخ دقیق لغو
-    start_date = db.Column(db.Date, nullable=True) # شروع بازه لغو
-    end_date = db.Column(db.Date, nullable=True) # پایان بازه لغو
+    cancel_date = db.Column(db.Date, nullable=True)
+    start_date = db.Column(db.Date, nullable=True)
+    end_date = db.Column(db.Date, nullable=True)
     description = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, server_default=func.now())
 
 class GroupMessage(db.Model):
-    """پیام‌های گروه عمومی"""
     __tablename__ = 'group_message'
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -147,7 +143,6 @@ class GroupMessage(db.Model):
     timestamp = db.Column(db.DateTime, server_default=func.now())
 
 class ChannelMessage(db.Model):
-    """پیام‌های کانال (فقط ادمین)"""
     __tablename__ = 'channel_message'
     id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -156,7 +151,6 @@ class ChannelMessage(db.Model):
     timestamp = db.Column(db.DateTime, server_default=func.now())
 
 class Notification(db.Model):
-    """اطلاعیه‌های سیستمی برای کاربر"""
     __tablename__ = 'notification'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -165,7 +159,6 @@ class Notification(db.Model):
     created_at = db.Column(db.DateTime, server_default=func.now())
 
 class SystemSetting(db.Model):
-    """تنظیمات سیستم مثل آخرین بروزرسانی هفته"""
     __tablename__ = 'system_setting'
     key = db.Column(db.String(50), primary_key=True)
     value = db.Column(db.String(100), nullable=True)
@@ -277,9 +270,9 @@ def inject_user():
 
 # --- منطق ریست هفتگی ---
 def get_week_number():
-    # محاسبه شماره هفته در ترم یا سال
-    today = jdatetime.date.today()
-    return today.week # 0-51 aprox
+    # استفاده از تاریخ میلادی برای محاسبه شماره هفته (استاندارد ISO)
+    # این تابع عددی بین 1 تا 52/53 برمی‌گرداند که هر دوشنبه تغییر می‌کند
+    return datetime.now().isocalendar()[1]
 
 def check_weekly_reset():
     """چک میکند اگر هفته تغییر کرده، رزروها را پاک میکند"""
@@ -294,14 +287,14 @@ def check_weekly_reset():
     
     if setting.value != current_week:
         # هفته جدید رسیده -> ریست
-        Reservation.query.delete() # تمام رزروهای موقت حذف میشوند
+        Reservation.query.delete()
         setting.value = current_week
         db.session.commit()
 
 # --- روت‌های اصلی ---
 @app.route('/')
 def index():
-    check_weekly_reset() # چک کردن ریست در هر بار لود
+    check_weekly_reset()
     return render_template('index.html')
 
 @app.route('/about')
@@ -732,7 +725,7 @@ with app.app_context():
         admin = User(full_name='مدیر', student_id='admin', major='مدیریت', password_hash=generate_password_hash('admin', method='pbkdf2:sha256'), is_admin=True)
         db.session.add(admin)
         db.session.commit()
-
+# --- توابع راه‌اندازی ---
 def create_initial_data():
     """ساخت جداول و ایجاد ادمین پیش‌فرض در صورت عدم وجود"""
     db.create_all()
@@ -747,7 +740,6 @@ def create_initial_data():
         db.session.add(admin)
         db.session.commit()
         print("Admin user created.")
-
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
