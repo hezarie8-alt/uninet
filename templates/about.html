@@ -1,98 +1,119 @@
 {% extends "base.html" %}
 
-{% block title %}درباره ما | یونی نت{% endblock %}
+{% block title %}درباره من | یونی نت{% endblock %}
 
 {% block content %}
-<div class="about-container">
-    <!-- Hero Section -->
-    <section class="about-hero">
-        <div class="hero-content">
-            <h1>احسان هزاری</h1>
-            <p>توسعه‌دهنده فول‌استک و طراح تجربه کاربری</p>
-            <div class="social-links">
-                <a href="mailto:hzarie8@gmail.com" class="btn btn-primary"><i class="material-icons">email</i> تماس</a>
-                <a href="https://t.me/EhsanHezari" target="_blank" class="btn btn-outline"><i class="material-icons">send</i> تلگرام</a>
+<!-- Hero Section -->
+<section class="hero" style="min-height: 50vh; display: flex; align-items: center;">
+    <div class="container">
+        <div class="hero-content" style="text-align: center; justify-content: center;">
+            <div class="hero-text" style="padding: 0; animation: fadeInUp 1s ease;">
+                <h1 class="hero-title">احسان هزاری</h1>
+                <p class="hero-subtitle">توسعه‌دهنده فول‌استک و طراح تجربه کاربری</p>
+                <div style="margin-top: 2rem;">
+                    <a href="mailto:hzarie8@gmail.com" class="btn btn-primary" style="border-radius: 50px;">
+                        <i class="material-icons" style="margin-left: 8px;">email</i>
+                        تماس با من
+                    </a>
+                </div>
             </div>
         </div>
-        <div class="hero-image">
-            <div class="code-icon"><i class="material-icons">code</i></div>
-        </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Skills Section -->
-    <section class="about-section">
-        <h2>درباره من</h2>
-        <p style="line-height: 1.8;">
-            سلام! من احسان هزاری هستم، دانشجوی مهندسی کامپیوتر و علاقه‌مند به دنیای تکنولوژی و برنامه‌نویسی. "یونی نت" پروژه‌ای است که با هدف ایجاد یک محیط دیجیتال یکپارچه برای دانشجویان طراحی و کدنویسی شده است.
-            من در زمینه‌های مختلفی از طراحی فرانت‌اند با فریم‌ورک‌های مدرن تا توسعه بک‌اند با پایتون و فلاسک فعالیت دارم.
-        </p>
-    </section>
-
-    <!-- Tech Stack -->
-    <section class="about-section">
-        <h2>تکنولوژی‌های استفاده شده در یونی نت</h2>
-        <div class="tech-grid">
-            <div class="tech-card">
-                <div class="tech-icon"><i class="material-icons">web</i></div>
-                <h3>Frontend</h3>
-                <p>HTML5, CSS3, JavaScript, Jinja2</p>
+<!-- About Me Section -->
+<section class="section" style="background-color: var(--surface); padding: 4rem 0;">
+    <div class="container">
+        <div class="mission-content" style="flex-wrap: wrap;">
+            <div class="mission-text" style="flex: 2; min-width: 300px;">
+                <h2 class="section-title" style="text-align: right;">درباره من</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.8;">
+                    سلام! من احسان هزاری هستم، دانشجوی مهندسی کامپیوتر و علاقه‌مند به دنیای تکنولوژی و برنامه‌نویسی. "یونی نت" پروژه‌ای است که با هدف ایجاد یک محیط دیجیتال یکپارچه برای دانشجویان طراحی و کدنویسی شده است.
+                </p>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.8;">
+                    من در زمینه‌های مختلفی از طراحی فرانت‌اند با فریم‌ورک‌های مدرن تا توسعه بک‌اند با پایتون و فلاسک فعالیت دارم. هدف من ایجاد محصولاتی است که هم کاربردی باشند و هم تجربه کاربری جذاب ارائه دهند.
+                </p>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem;">
+                    <a href="https://t.me/EhsanHezari" target="_blank" class="btn btn-outline" style="border-color: var(--text-secondary); color: var(--text-primary);">
+                        <i class="material-icons" style="font-size: 1.2rem;">send</i> تلگرام
+                    </a>
+                    <a href="https://www.instagram.com/ehsan.he82" target="_blank" class="btn btn-outline" style="border-color: var(--text-secondary); color: var(--text-primary);">
+                        <i class="material-icons" style="font-size: 1.2rem;">camera_alt</i> اینستاگرام
+                    </a>
+                </div>
             </div>
-            <div class="tech-card">
-                <div class="tech-icon"><i class="material-icons">dns</i></div>
-                <h3>Backend</h3>
-                <p>Python, Flask, SocketIO, SQLAlchemy</p>
-            </div>
-            <div class="tech-card">
-                <div class="tech-icon"><i class="material-icons">storage</i></div>
-                <h3>Database</h3>
-                <p>PostgreSQL, SQLite</p>
+            <div class="mission-image" style="flex: 1; min-width: 300px; text-align: center;">
+                <div style="width: 200px; height: 200px; border-radius: 50%; background: var(--gradient-primary); margin: 0 auto; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg);">
+                    <i class="material-icons" style="font-size: 5rem; color: white;">code</i>
+                </div>
             </div>
         </div>
-    </section>
-</div>
+    </div>
+</section>
 
-<style>
-    .about-container { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
-    
-    .about-hero { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        margin-bottom: 4rem; 
-        padding: 2rem 0; 
-        border-bottom: 1px solid var(--border-color); 
-        flex-wrap: wrap; gap: 2rem;
-    }
-    .hero-content { flex: 1; min-width: 300px; }
-    .hero-content h1 { font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--primary-color); }
-    .hero-content p { font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 1.5rem; }
-    .social-links { display: flex; gap: 1rem; }
-    
-    .hero-image { flex: 0 0 200px; display: flex; justify-content: center; }
-    .code-icon { 
-        width: 150px; height: 150px; 
-        background: var(--primary-color); border-radius: 50%; 
-        display: flex; align-items: center; justify-content: center; 
-        color: white; font-size: 4rem; 
-        box-shadow: var(--shadow-lg); 
-    }
+<!-- Skills Section -->
+<section class="section" style="background-color: var(--background);">
+    <div class="container">
+        <h2 class="section-title">مهارت‌های من</h2>
+        <p class="section-subtitle">ابزارها و زبان‌هایی که در پروژه‌ها استفاده می‌کنم</p>
+        
+        <div class="features-grid">
+            <div class="feature-card" style="text-align: right;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <i class="material-icons" style="font-size: 2.5rem; color: var(--primary-color);">web</i>
+                    <h3 style="margin: 0;">طراحی وب</h3>
+                </div>
+                <p style="color: var(--text-secondary);">HTML5, CSS3, JavaScript, React.js, Vue.js</p>
+            </div>
+            
+            <div class="feature-card" style="text-align: right;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <i class="material-icons" style="font-size: 2.5rem; color: var(--primary-color);">dns</i>
+                    <h3 style="margin: 0;">توسعه سرور</h3>
+                </div>
+                <p style="color: var(--text-secondary);">Python, Flask, Django, SQL, REST APIs</p>
+            </div>
+            
+            <div class="feature-card" style="text-align: right;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <i class="material-icons" style="font-size: 2.5rem; color: var(--primary-color);">brush</i>
+                    <h3 style="margin: 0;">طراحی UI/UX</h3>
+                </div>
+                <p style="color: var(--text-secondary);">Figma, Adobe XD, User Research</p>
+            </div>
+        </div>
+    </div>
+</section>
 
-    .about-section { margin-bottom: 3rem; }
-    .about-section h2 { margin-bottom: 1rem; border-right: 4px solid var(--primary-color); padding-right: 1rem; }
+<!-- CTA Section -->
+<section class="cta">
+    <div class="container">
+        <h2 class="cta-title">پروژه‌ای در ذهن دارید؟</h2>
+        <p class="cta-subtitle">آماده همکاری در پروژه‌های نوآورانه هستم</p>
+        <a href="mailto:hzarie8@gmail.com" class="btn btn-primary" style="background: white; color: var(--primary-color);">
+            ارسال ایمیل
+        </a>
+    </div>
+</section>
+{% endblock %}
 
-    .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
-    .tech-card { 
-        background: var(--surface); padding: 1.5rem; border-radius: var(--radius-md); 
-        text-align: center; border: 1px solid var(--border-color); transition: all 0.2s;
-    }
-    .tech-card:hover { border-color: var(--primary-color); transform: translateY(-2px); }
-    .tech-icon { color: var(--primary-color); font-size: 2rem; margin-bottom: 0.5rem; }
-    .tech-card h3 { margin-bottom: 0.5rem; font-size: 1.1rem; }
-    .tech-card p { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
+{% block scripts %}
+<script>
+    // Animation on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
 
-    @media (max-width: 600px) {
-        .about-hero { text-align: center; justify-content: center; }
-        .hero-image { order: -1; } /* Image on top */
-    }
-</style>
+    document.querySelectorAll('.feature-card, .mission-text').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'all 0.6s ease';
+        observer.observe(el);
+    });
+</script>
 {% endblock %}

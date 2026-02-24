@@ -5,17 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}یونی نت{% endblock %}</title>
     
-    <!-- Fonts & Icons -->
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <!-- Dark Mode Init -->
+    <!-- Dark Mode Script -->
     <script>
-        const theme = localStorage.getItem('theme');
-        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark' || (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
     </script>
@@ -23,16 +23,27 @@
 <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="container nav-container">
-            <a href="{{ url_for('index') }}" class="nav-brand">یونی نت</a>
+        <div class="container">
+            <a href="{{ url_for('index') }}" class="navbar-brand">یونی نت</a>
             
-            <ul class="nav-menu">
+            <ul class="navbar-nav">
                 {% if current_user %}
                     <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="material-icons">dashboard</i> داشبورد</a></li>
-                    <li><a href="{{ url_for('chat_main') }}" class="nav-link"><i class="material-icons">chat</i> پیام‌رسان</a></li>
                     
+                    <!-- Chat Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="chatDropdown" role="button" onclick="toggleDropdown('chat-menu')">
+                            <i class="material-icons">chat</i> پیام‌رسان
+                        </a>
+                        <div class="dropdown-menu-nav" id="chat-menu">
+                            <a class="dropdown-item" href="{{ url_for('chat_main') }}"><i class="material-icons">forum</i> پیام‌های خصوصی</a>
+                            <a class="dropdown-item" href="{{ url_for('chat_main') }}#group" onclick="localStorage.setItem('loadChat', 'group')"><i class="material-icons">groups</i> گروه عمومی</a>
+                            <a class="dropdown-item" href="{{ url_for('chat_main') }}#channel" onclick="localStorage.setItem('loadChat', 'channel')"><i class="material-icons">campaign</i> کانال</a>
+                        </div>
+                    </li>
+
                     {% if is_admin %}
-                        <li><a href="{{ url_for('admin_dashboard') }}" class="nav-link admin-link"><i class="material-icons">security</i> مدیریت</a></li>
+                        <li><a href="{{ url_for('admin_dashboard') }}" class="nav-link" style="color: #ffeb3b;"><i class="material-icons">admin_panel_settings</i> مدیریت</a></li>
                     {% endif %}
                 {% else %}
                     <li><a href="{{ url_for('index') }}" class="nav-link">صفحه اصلی</a></li>
@@ -41,24 +52,36 @@
                 {% endif %}
             </ul>
             
-            <div class="nav-actions">
-                <!-- Theme Toggle -->
-                <button id="theme-toggle" class="icon-btn" title="تغییر تم">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Dark Mode Toggle -->
+                <button id="theme-toggle" class="nav-link" style="background: none; border: none; cursor: pointer;">
                     <i class="material-icons" id="theme-icon">light_mode</i>
                 </button>
 
                 {% if current_user %}
-                    <!-- User Menu -->
-                    <div class="dropdown">
-                        <button class="user-btn">
-                            <img src="{% if current_user.pic != 'default.jpg' %}{{ url_for('static', filename='uploads/profile_pics/' + current_user.pic) }}{% else %}https://ui-avatars.com/api/?name={{ current_user.name }}&background=random{% endif %}" class="user-avatar-xs">
-                            <span>{{ current_user.name }}</span>
-                            <i class="material-icons">expand_more</i>
-                        </button>
-                        <div class="dropdown-content">
-                            <a href="{{ url_for('profile', user_id=current_user.id) }}"><i class="material-icons">person</i> پروفایل من</a>
-                            <div class="dropdown-divider"></div>
-                            <a href="{{ url_for('logout') }}" class="text-danger"><i class="material-icons">logout</i> خروج</a>
+                    <!-- User Dropdown Menu -->
+                    <div class="user-dropdown">
+                        <div class="user-info">
+                            <div class="user-avatar-nav">
+                                {% if current_user.pic and current_user.pic != 'default.jpg' %}
+                                    <img src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.pic) }}" alt="Avatar">
+                                {% else %}
+                                    {{ current_user.name[0] }}
+                                {% endif %}
+                            </div>
+                            <span style="font-weight: 500;">{{ current_user.name }}</span>
+                            <i class="material-icons" style="font-size: 1rem;">arrow_drop_down</i>
+                        </div>
+                        
+                        <div class="dropdown-menu">
+                            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item">
+                                <i class="material-icons">person</i>
+                                پروفایل من
+                            </a>
+                            <a href="{{ url_for('logout') }}" class="dropdown-item danger">
+                                <i class="material-icons">exit_to_app</i>
+                                خروج
+                            </a>
                         </div>
                     </div>
                 {% endif %}
@@ -71,12 +94,9 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        <i class="material-icons">
-                            {% if category == 'success' %} check_circle {% elif category == 'error' %} error {% else %} info {% endif %}
-                        </i>
-                        <span>{{ message }}</span>
-                        <button class="close-alert" onclick="this.parentElement.remove()">&times;</button>
+                    <div class="alert alert-{{ category }}" style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; {% if category == 'success' %}background-color: rgba(46, 125, 50, 0.1); color: var(--success);{% elif category == 'error' %}background-color: rgba(183, 28, 28, 0.1); color: var(--error);{% else %}background-color: rgba(2, 136, 209, 0.1); color: var(--info);{% endif %}">
+                        <i class="material-icons">{% if category == 'success' %}check_circle{% elif category == 'error' %}error{% else %}info{% endif %}</i>
+                        {{ message }}
                     </div>
                 {% endfor %}
             {% endif %}
@@ -90,49 +110,73 @@
     
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div>
-                    <h4>یونی نت</h4>
-                    <p style="font-size:0.9rem; color:#aaa;">پلتفرم یکپارچه مدیریت دانشجویی.</p>
-                </div>
-                <div>
-                    <h4>دسترسی سریع</h4>
-                    <ul>
-                        <li><a href="{{ url_for('about') }}">درباره ما</a></li>
-                        <li><a href="mailto:hzarie8@gmail.com">تماس</a></li>
-                    </ul>
-                </div>
+        <div class="container" style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+            <div class="footer-section">
+                <h3 class="footer-title">درباره ما</h3>
+                <ul class="footer-links">
+                    <li><a href="{{ url_for('about') }}">معرفی اپلیکیشن</a></li>
+                    <li><a href="#">قوانین و مقررات</a></li>
+                </ul>
             </div>
-            <div class="footer-bottom">
-                <p>© 2025 یونی نت - طراحی شده توسط احسان هزاری</p>
+            <div class="footer-section">
+                <h3 class="footer-title">ارتباط با ما</h3>
+                <ul class="footer-links">
+                    <li><a href="mailto:hzarie8@gmail.com">ایمیل</a></li>
+                    <li><a href="https://t.me/EhsanHezari" target="_blank">تلگرام</a></li>
+                </ul>
             </div>
+        </div>
+        <div class="copyright">
+            <p>© 2025 یونی نت. تمام حقوق محفوظ است.</p>
         </div>
     </footer>
 
     <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-        // Theme Toggle Logic
+        // Theme Toggler
         const toggleBtn = document.getElementById('theme-toggle');
-        const html = document.documentElement;
-        const icon = document.getElementById('theme-icon');
+        const htmlElement = document.documentElement;
+        const themeIcon = document.getElementById('theme-icon');
 
         function updateIcon() {
-            icon.textContent = html.getAttribute('data-theme') === 'dark' ? 'dark_mode' : 'light_mode';
+            if (htmlElement.getAttribute('data-theme') === 'dark') {
+                themeIcon.textContent = 'dark_mode';
+            } else {
+                themeIcon.textContent = 'light_mode';
+            }
         }
         updateIcon();
 
-        if(toggleBtn) {
-            toggleBtn.addEventListener('click', () => {
-                if (html.getAttribute('data-theme') === 'dark') {
-                    html.removeAttribute('data-theme');
-                    localStorage.setItem('theme', 'light');
-                } else {
-                    html.setAttribute('data-theme', 'dark');
-                    localStorage.setItem('theme', 'dark');
-                }
-                updateIcon();
-            });
+        toggleBtn.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                htmlElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateIcon();
+        });
+
+        // Dropdown Toggler for Navbar
+        function toggleDropdown(id) {
+            const menu = document.getElementById(id);
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+            } else {
+                menu.style.display = 'block';
+            }
+        }
+
+        // Close dropdown if clicked outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropdown-toggle')) {
+                document.querySelectorAll('.dropdown-menu-nav').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
         }
     </script>
     {% block scripts %}{% endblock %}
@@ -140,49 +184,30 @@
 </html>
 
 <style>
-    /* Base Navbar Styles */
-    .navbar { background: var(--surface); box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
-    .nav-container { display: flex; justify-content: space-between; align-items: center; height: 60px; }
-    .nav-brand { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); text-decoration: none; }
-    .nav-menu { display: flex; list-style: none; gap: 0.5rem; margin: 0; padding: 0; }
-    .nav-link { display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 8px; transition: all 0.2s; }
-    .nav-link:hover { background: var(--background); color: var(--primary-color); }
-    .nav-link i { font-size: 1.2rem; }
-    .admin-link { color: var(--error) !important; font-weight: 600; }
-
-    .nav-actions { display: flex; align-items: center; gap: 0.5rem; }
-    .icon-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; color: var(--text-secondary); border-radius: 50%; }
-    .icon-btn:hover { background: var(--background); }
-
-    /* User Dropdown */
-    .dropdown { position: relative; }
-    .user-btn { display: flex; align-items: center; gap: 0.5rem; background: none; border: 1px solid var(--border-color); padding: 0.25rem 0.5rem 0.25rem 1rem; border-radius: 24px; cursor: pointer; font-family: inherit; color: var(--text-primary); }
-    .user-avatar-xs { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); }
-    .dropdown-content { display: none; position: absolute; top: 100%; left: 0; background: var(--surface); min-width: 180px; box-shadow: var(--shadow-lg); border-radius: 8px; border: 1px solid var(--border-color); margin-top: 0.5rem; z-index: 101; overflow: hidden; }
-    .dropdown:hover .dropdown-content { display: block; }
-    .dropdown-content a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; color: var(--text-primary); text-decoration: none; }
-    .dropdown-content a:hover { background: var(--background); }
-    .dropdown-divider { height: 1px; background: var(--border-color); margin: 0.25rem 0; }
-    .text-danger { color: var(--error) !important; }
-
-    /* Alerts */
-    .alert { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; font-size: 0.95rem; }
-    .alert-success { background: rgba(46, 125, 50, 0.1); color: var(--success); border: 1px solid var(--success); }
-    .alert-error { background: rgba(211, 47, 47, 0.1); color: var(--error); border: 1px solid var(--error); }
-    .alert-info { background: rgba(2, 136, 209, 0.1); color: var(--info); border: 1px solid var(--info); }
-    .close-alert { margin-right: auto; background: none; border: none; color: inherit; cursor: pointer; font-size: 1.2rem; opacity: 0.7; }
-
-    /* Footer */
-    .footer { background: var(--surface); border-top: 1px solid var(--border-color); margin-top: 4rem; padding: 2rem 0; }
-    .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; }
-    .footer h4 { margin-bottom: 1rem; color: var(--primary-color); }
-    .footer ul { list-style: none; padding: 0; }
-    .footer ul li { margin-bottom: 0.5rem; }
-    .footer ul a { color: var(--text-secondary); text-decoration: none; }
-    .footer-bottom { text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.9rem; }
-
-    @media (max-width: 768px) {
-        .nav-menu { display: none; } /* Mobile menu requires hamburger logic which is omitted for simplicity in this base */
-        .user-btn span { display: none; } /* Hide name on mobile */
+    /* Navbar Dropdown Styling */
+    .nav-item { position: relative; }
+    .dropdown-menu-nav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: var(--surface);
+        min-width: 200px;
+        box-shadow: var(--shadow-lg);
+        border-radius: 8px;
+        z-index: 1000;
+        border: 1px solid var(--border-color);
+        padding: 0.5rem 0;
+    }
+    .dropdown-menu-nav .dropdown-item {
+        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-primary);
+        transition: background 0.2s;
+    }
+    .dropdown-menu-nav .dropdown-item:hover {
+        background-color: var(--background);
     }
 </style>
