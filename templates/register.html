@@ -4,157 +4,470 @@
 
 {% block content %}
 <div class="auth-container">
+
     <div class="auth-header">
+        <div class="auth-logo">
+            <i class="material-icons">school</i>
+        </div>
         <h1 class="auth-title">به یونی نت خوش آمدید</h1>
         <p class="auth-subtitle">پلتفرم یکپارچه دانشجویی</p>
     </div>
-    
+
+    <!-- نمایش پیام‌های flash (موفقیت یا خطا) -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="auth-alert auth-alert-{{ category }}">
+                <i class="material-icons">
+                    {% if category == 'success' %}check_circle
+                    {% elif category == 'error' %}error
+                    {% else %}info{% endif %}
+                </i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- تب‌های انتخاب فرم -->
+    <!-- مشکل قبلی: event.target به عنوان متغیر global استفاده می‌شد.
+         اگر کاربر روی متن داخل تب کلیک می‌کرد، event.target به جای div، یک
+         text node می‌شد و active اعمال نمی‌شد. راه‌حل: پاس دادن this به عنوان آرگومان -->
     <div class="auth-tabs">
-        <div class="auth-tab active" onclick="switchTab('register')">ثبت‌نام</div>
-        <div class="auth-tab" onclick="switchTab('login')">ورود</div>
+        <div class="auth-tab active" id="tab-btn-register"
+             onclick="switchTab('register', this)">
+            <i class="material-icons">person_add</i>
+            <span>ثبت‌نام</span>
+        </div>
+        <div class="auth-tab" id="tab-btn-login"
+             onclick="switchTab('login', this)">
+            <i class="material-icons">login</i>
+            <span>ورود</span>
+        </div>
     </div>
-    
-    <!-- Registration Form -->
-    <div id="register-tab" class="tab-content active">
-        <div class="form-card">
-            <form method="POST" action="{{ url_for('register') }}">
+
+    <!-- ===== فرم ثبت‌نام ===== -->
+    <div id="register-tab" class="auth-tab-content active">
+        <div class="auth-form-card">
+            <h2 class="form-section-title">
+                <i class="material-icons">how_to_reg</i>
+                ایجاد حساب کاربری
+            </h2>
+
+            <form method="POST" action="{{ url_for('register') }}" novalidate>
+                <!-- hidden_tag از Flask-WTF فیلد csrf_token را خودکار رندر می‌کند -->
                 {{ form.hidden_tag() }}
-                
+
                 <div class="form-group">
                     {{ form.full_name.label(class="form-label") }}
-                    {{ form.full_name(class="form-control", placeholder="نام و نام خانوادگی") }}
+                    {{ form.full_name(
+                        class="form-control" + (" input-error" if form.full_name.errors else ""),
+                        placeholder="نام و نام خانوادگی"
+                    ) }}
                     {% if form.full_name.errors %}
-                        <div class="error-message">{{ form.full_name.errors[0] }}</div>
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ form.full_name.errors[0] }}
+                        </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.student_id.label(class="form-label") }}
-                    {{ form.student_id(class="form-control", placeholder="۱۰ رقم (بدون خط تیره)", maxlength="10") }}
+                    {{ form.student_id(
+                        class="form-control" + (" input-error" if form.student_id.errors else ""),
+                        placeholder="۱۰ رقم (بدون خط تیره)",
+                        maxlength="10",
+                        inputmode="numeric"
+                    ) }}
                     {% if form.student_id.errors %}
-                        <div class="error-message">{{ form.student_id.errors[0] }}</div>
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ form.student_id.errors[0] }}
+                        </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.major.label(class="form-label") }}
-                    {{ form.major(class="form-select") }}
+                    {{ form.major(
+                        class="form-select" + (" input-error" if form.major.errors else "")
+                    ) }}
                     {% if form.major.errors %}
-                        <div class="error-message">{{ form.major.errors[0] }}</div>
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ form.major.errors[0] }}
+                        </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.password.label(class="form-label") }}
-                    {{ form.password(class="form-control", placeholder="کد ملی (۱۰ رقم)", maxlength="10") }}
+                    <div class="input-with-toggle">
+                        {{ form.password(
+                            class="form-control" + (" input-error" if form.password.errors else ""),
+                            placeholder="کد ملی (۱۰ رقم)",
+                            maxlength="10",
+                            inputmode="numeric",
+                            id="reg-password"
+                        ) }}
+                        <button type="button" class="toggle-password-btn"
+                                onclick="togglePassword('reg-password', this)"
+                                tabindex="-1">
+                            <i class="material-icons">visibility</i>
+                        </button>
+                    </div>
                     {% if form.password.errors %}
-                        <div class="error-message">{{ form.password.errors[0] }}</div>
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ form.password.errors[0] }}
+                        </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="form-group">
                     {{ form.confirm_password.label(class="form-label") }}
-                    {{ form.confirm_password(class="form-control", placeholder="تکرار کد ملی") }}
+                    <div class="input-with-toggle">
+                        {{ form.confirm_password(
+                            class="form-control" + (" input-error" if form.confirm_password.errors else ""),
+                            placeholder="تکرار کد ملی",
+                            maxlength="10",
+                            inputmode="numeric",
+                            id="reg-confirm-password"
+                        ) }}
+                        <button type="button" class="toggle-password-btn"
+                                onclick="togglePassword('reg-confirm-password', this)"
+                                tabindex="-1">
+                            <i class="material-icons">visibility</i>
+                        </button>
+                    </div>
+                    {% if form.confirm_password.errors %}
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ form.confirm_password.errors[0] }}
+                        </div>
+                    {% endif %}
                 </div>
-                
-                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 1rem;">
+
+                <button type="submit" class="btn btn-custom auth-submit-btn">
+                    <i class="material-icons">person_add</i>
                     ایجاد حساب کاربری
                 </button>
             </form>
+
+            <p class="auth-switch-hint">
+                قبلاً ثبت‌نام کرده‌اید؟
+                <a href="#" onclick="switchTab('login', document.getElementById('tab-btn-login')); return false;">
+                    وارد شوید
+                </a>
+            </p>
         </div>
     </div>
-    
-    <!-- Login Form -->
-    <div id="login-tab" class="tab-content">
-        <div class="form-card">
-            <form method="POST" action="{{ url_for('login') }}">
+
+    <!-- ===== فرم ورود ===== -->
+    <div id="login-tab" class="auth-tab-content">
+        <div class="auth-form-card">
+            <h2 class="form-section-title">
+                <i class="material-icons">login</i>
+                ورود به سامانه
+            </h2>
+
+            <form method="POST" action="{{ url_for('login') }}" novalidate>
                 {{ login_form.hidden_tag() }}
-                
+
                 <div class="form-group">
                     {{ login_form.student_id.label(class="form-label") }}
-                    {{ login_form.student_id(class="form-control", placeholder="شماره دانشجویی یا admin") }}
+                    {{ login_form.student_id(
+                        class="form-control" + (" input-error" if login_form.student_id.errors else ""),
+                        placeholder="شماره دانشجویی یا admin"
+                    ) }}
+                    {% if login_form.student_id.errors %}
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ login_form.student_id.errors[0] }}
+                        </div>
+                    {% endif %}
                 </div>
-                
+
                 <div class="form-group">
                     {{ login_form.password.label(class="form-label") }}
-                    {{ login_form.password(class="form-control", placeholder="رمز عبور") }}
+                    <div class="input-with-toggle">
+                        {{ login_form.password(
+                            class="form-control" + (" input-error" if login_form.password.errors else ""),
+                            placeholder="رمز عبور",
+                            id="login-password"
+                        ) }}
+                        <button type="button" class="toggle-password-btn"
+                                onclick="togglePassword('login-password', this)"
+                                tabindex="-1">
+                            <i class="material-icons">visibility</i>
+                        </button>
+                    </div>
+                    {% if login_form.password.errors %}
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ login_form.password.errors[0] }}
+                        </div>
+                    {% endif %}
                 </div>
-                
-                <button type="submit" class="btn btn-custom" style="width: 100%; margin-top: 1rem;">
+
+                <button type="submit" class="btn btn-custom auth-submit-btn">
+                    <i class="material-icons">login</i>
                     ورود به سامانه
                 </button>
             </form>
+
+            <p class="auth-switch-hint">
+                حساب کاربری ندارید؟
+                <a href="#" onclick="switchTab('register', document.getElementById('tab-btn-register')); return false;">
+                    ثبت‌نام کنید
+                </a>
+            </p>
         </div>
     </div>
-</div>
+
+</div><!-- /auth-container -->
 
 <style>
-    .auth-container {
-        max-width: 500px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-    }
-    .auth-header { text-align: center; margin-bottom: 2rem; }
-    .auth-title { font-size: 2rem; color: var(--primary-color); margin-bottom: 0.5rem; }
-    .auth-subtitle { color: var(--text-secondary); }
-    
-    .auth-tabs {
-        display: flex;
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 5px;
-        margin-bottom: 1.5rem;
-        box-shadow: var(--shadow-sm);
-    }
-    .auth-tab {
-        flex: 1;
-        text-align: center;
-        padding: 0.75rem;
-        cursor: pointer;
-        border-radius: 8px;
-        font-weight: 500;
-        color: var(--text-secondary);
-        transition: all 0.3s;
-    }
-    .auth-tab.active {
-        background: var(--primary-color);
-        color: white;
-        box-shadow: var(--shadow-md);
-    }
-    
-    .form-card {
-        background: var(--surface);
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: var(--shadow-md);
-    }
-    
-    .tab-content { display: none; animation: fadeIn 0.3s ease; }
-    .tab-content.active { display: block; }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+/* ==========================================
+   Auth Container
+========================================== */
+.auth-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 0 1rem 3rem;
+}
+
+/* ==========================================
+   Header
+========================================== */
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.auth-logo {
+    width: 70px; height: 70px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    box-shadow: 0 8px 24px rgba(0,131,143,.3);
+}
+.auth-logo i { font-size: 2.2rem; color: white; }
+.auth-title {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: .4rem;
+}
+.auth-subtitle { color: var(--text-secondary); font-size: .95rem; }
+
+/* ==========================================
+   Flash Alert
+========================================== */
+.auth-alert {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .85rem 1.1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: .9rem; font-weight: 500;
+}
+.auth-alert i { font-size: 1.1rem; flex-shrink: 0; }
+.auth-alert-success {
+    background: rgba(46,125,50,.1);
+    border: 1px solid rgba(46,125,50,.25);
+    color: var(--success);
+}
+.auth-alert-error {
+    background: rgba(183,28,28,.08);
+    border: 1px solid rgba(183,28,28,.2);
+    color: var(--error);
+}
+.auth-alert-info {
+    background: rgba(2,136,209,.08);
+    border: 1px solid rgba(2,136,209,.2);
+    color: var(--info);
+}
+
+/* ==========================================
+   Tabs
+========================================== */
+.auth-tabs {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 5px;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    gap: 4px;
+}
+.auth-tab {
+    flex: 1;
+    text-align: center;
+    padding: .7rem .5rem;
+    cursor: pointer;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: .9rem;
+    color: var(--text-secondary);
+    transition: all .25s;
+    display: flex; align-items: center; justify-content: center; gap: .35rem;
+    /* جلوگیری از انتخاب متن هنگام کلیک سریع */
+    user-select: none;
+}
+.auth-tab:hover {
+    background: var(--background);
+    color: var(--primary-color);
+}
+.auth-tab.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,131,143,.3);
+}
+
+/* ==========================================
+   Tab Content
+========================================== */
+.auth-tab-content { display: none; animation: authFadeIn .3s ease; }
+.auth-tab-content.active { display: block; }
+@keyframes authFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   Form Card
+========================================== */
+.auth-form-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+}
+.form-section-title {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: 1.1rem; font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    padding-bottom: .85rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.form-section-title i { font-size: 1.2rem; }
+
+/* ==========================================
+   Input با دکمه نمایش رمز
+========================================== */
+.input-with-toggle {
+    position: relative;
+    display: flex; align-items: center;
+}
+.input-with-toggle .form-control {
+    padding-left: 2.75rem; /* فضا برای دکمه در سمت چپ (LTR: right) */
+    width: 100%;
+}
+.toggle-password-btn {
+    position: absolute;
+    left: .6rem;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-secondary); padding: .25rem;
+    display: flex; align-items: center;
+    border-radius: 50%;
+    transition: color .2s;
+    line-height: 1;
+}
+.toggle-password-btn:hover { color: var(--primary-color); }
+.toggle-password-btn i { font-size: 1.15rem; }
+
+/* خطای فیلد */
+.input-error { border-color: var(--error) !important; }
+.field-error {
+    display: flex; align-items: center; gap: .3rem;
+    color: var(--error); font-size: .82rem;
+    margin-top: .35rem;
+}
+.field-error i { font-size: .9rem; }
+
+/* دکمه ارسال */
+.auth-submit-btn {
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: .85rem;
+    font-size: 1rem; font-weight: 600;
+    border-radius: 10px;
+    justify-content: center;
+}
+
+/* لینک تغییر تب */
+.auth-switch-hint {
+    text-align: center;
+    margin-top: 1.25rem;
+    font-size: .88rem;
+    color: var(--text-secondary);
+}
+.auth-switch-hint a {
+    color: var(--primary-color);
+    font-weight: 600;
+    text-decoration: none;
+}
+.auth-switch-hint a:hover { text-decoration: underline; }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    function switchTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
-        
-        document.getElementById(tabName + '-tab').classList.add('active');
-        event.target.classList.add('active');
+// ==========================================
+// switchTab — رفع باگ event.target global
+// ==========================================
+// مشکل قبلی: تابع از متغیر global browser به نام event استفاده می‌کرد.
+// وقتی کاربر روی آیکون <i> داخل تب کلیک می‌کرد، event.target آن آیکون بود
+// نه div تب، و بنابراین active به درستی اعمال نمی‌شد.
+// راه‌حل: پاس دادن خود المان تب به عنوان آرگومان (this در HTML).
+function switchTab(tabName, tabBtn) {
+    // پاک کردن حالت active از همه تب‌ها و محتواها
+    document.querySelectorAll('.auth-tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.auth-tab').forEach(el => el.classList.remove('active'));
+
+    // فعال‌سازی محتوا و دکمه مربوطه
+    const content = document.getElementById(tabName + '-tab');
+    if (content) content.classList.add('active');
+
+    // tabBtn دقیقاً همان div.auth-tab است که کاربر روی آن کلیک کرده
+    if (tabBtn) tabBtn.classList.add('active');
+}
+
+// ==========================================
+// نمایش/مخفی کردن رمز عبور
+// ==========================================
+function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.textContent = 'visibility_off';
+    } else {
+        input.type = 'password';
+        if (icon) icon.textContent = 'visibility';
     }
-    
-    // Auto-switch if errors in login form
-    {% if login_form.errors %}
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
-        document.getElementById('login-tab').classList.add('active');
-        document.querySelectorAll('.auth-tab')[1].classList.add('active');
-    {% endif %}
+}
+
+// ==========================================
+// تغییر خودکار تب هنگام برگشت از سرور با خطا
+// ==========================================
+// اگر فرم ورود خطا داشت (مثلاً رمز اشتباه)، تب ورود را فعال کن
+{% if login_form.errors %}
+    document.addEventListener('DOMContentLoaded', function() {
+        switchTab('login', document.getElementById('tab-btn-login'));
+    });
+{% endif %}
+
+// اگر فرم ثبت‌نام خطا داشت، تب ثبت‌نام را فعال نگه‌دار (حالت پیش‌فرض)
+{% if form.errors %}
+    document.addEventListener('DOMContentLoaded', function() {
+        switchTab('register', document.getElementById('tab-btn-register'));
+    });
+{% endif %}
 </script>
 {% endblock %}

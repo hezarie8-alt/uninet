@@ -4,323 +4,931 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <!-- Tab Navigation -->
-    <div class="form-card" style="margin-bottom: 2rem; padding: 0;">
-        <div class="dashboard-tabs">
-            <button class="dash-tab active" onclick="openAdminTab('master-schedule')">
-                <i class="material-icons">grid_on</i> تعریف کلاس‌های خالی
-            </button>
-            <button class="dash-tab" onclick="openAdminTab('requests')">
-                <i class="material-icons">list_alt</i> درخواست‌های رزرو
-            </button>
-            <button class="dash-tab" onclick="openAdminTab('cancelled')">
-                <i class="material-icons">event_busy</i> لغو کلاس‌ها
-            </button>
-        </div>
+
+    <!-- ===== Tab Navigation ===== -->
+    <div class="admin-tabs-bar">
+        <button class="dash-tab active" id="tab-btn-master"
+                onclick="openAdminTab('master-schedule', this)">
+            <i class="material-icons">grid_on</i>
+            <span>تعریف کلاس‌های خالی</span>
+        </button>
+        <button class="dash-tab" id="tab-btn-requests"
+                onclick="openAdminTab('requests', this)">
+            <i class="material-icons">list_alt</i>
+            <span>درخواست‌های رزرو</span>
+            {% if requests %}
+                <span class="tab-badge">{{ requests|length }}</span>
+            {% endif %}
+        </button>
+        <button class="dash-tab" id="tab-btn-cancelled"
+                onclick="openAdminTab('cancelled', this)">
+            <i class="material-icons">event_busy</i>
+            <span>لغو کلاس‌ها</span>
+        </button>
     </div>
 
-    <!-- 1. Master Schedule Definition -->
+    <!-- ===== 1. Master Schedule ===== -->
     <div id="master-schedule" class="tab-content active">
-        <div class="schedule-card">
-            <div class="card-header">
-                <h2>تعریف کلاس‌های خالی پایه</h2>
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title">
+                    <i class="material-icons">grid_on</i>
+                    <h2>تعریف کلاس‌های خالی پایه</h2>
+                </div>
                 <button class="btn btn-custom" onclick="saveMasterSchedule()">
-                    <i class="material-icons">save</i> ذخیره تغییرات
+                    <i class="material-icons">save</i>
+                    <span>ذخیره تغییرات</span>
                 </button>
             </div>
-            <p style="color:var(--text-secondary); margin-bottom:1rem; font-size:0.9rem;">
-                روی خانه مورد نظر کلیک کنید و شماره کلاس‌های خالی را با کاما وارد کنید (مثال: 101,102).
-                <br>این برنامه تا پایان ترم معتبر است و هر هفته به صورت خودکار بازیابی می‌شود.
+
+            <p class="section-hint">
+                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">info_outline</i>
+                روی هر خانه کلیک کنید و شماره کلاس‌های خالی را با کاما وارد کنید
+                (مثال: <code>101, 102, آمفی</code>). این برنامه تا پایان ترم معتبر است.
             </p>
 
-            <div class="schedule-grid" id="master-schedule-grid">
-                <!-- Header -->
-                <div class="schedule-header"></div>
-                <div class="schedule-header">شنبه</div>
-                <div class="schedule-header">یکشنبه</div>
-                <div class="schedule-header">دوشنبه</div>
-                <div class="schedule-header">سه‌شنبه</div>
-                <div class="schedule-header">چهارشنبه</div>
+            <div class="schedule-wrapper">
+                <div class="schedule-grid" id="master-schedule-grid">
+                    <div class="schedule-header corner-cell"></div>
+                    <div class="schedule-header">شنبه</div>
+                    <div class="schedule-header">یکشنبه</div>
+                    <div class="schedule-header">دوشنبه</div>
+                    <div class="schedule-header">سه‌شنبه</div>
+                    <div class="schedule-header">چهارشنبه</div>
 
-                <!-- Rows -->
-                {% set times = ['8-10', '10-12', '12-14', '14-16', '16-18', '18-20'] %}
-                {% set time_labels = ['۸ - ۱۰', '۱۰ - ۱۲', '۱۲ - ۱۴', '۱۴ - ۱۶', '۱۶ - ۱۸', '۱۸ - ۲۰'] %}
-                
-                {% for i in range(6) %}
-                    <div class="schedule-time">{{ time_labels[i] }}</div>
-                    {% for day in ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday'] %}
-                        <div class="schedule-cell master-cell" data-day="{{ day }}" data-time="{{ times[i] }}" onclick="editMasterSlot(this)">
-                            <!-- Populated by JS -->
-                        </div>
+                    {% set times = ['8-10', '10-12', '12-14', '14-16', '16-18', '18-20'] %}
+                    {% set time_labels = ['۸ - ۱۰', '۱۰ - ۱۲', '۱۲ - ۱۴', '۱۴ - ۱۶', '۱۶ - ۱۸', '۱۸ - ۲۰'] %}
+
+                    {% for i in range(6) %}
+                        <div class="schedule-time">{{ time_labels[i] }}</div>
+                        {% for day in ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday'] %}
+                            <div class="schedule-cell master-cell clickable-cell"
+                                 data-day="{{ day }}"
+                                 data-time="{{ times[i] }}"
+                                 data-rooms=""
+                                 onclick="editMasterSlot(this)">
+                            </div>
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
+                </div>
+            </div>
+
+            <!-- راهنمای رنگ -->
+            <div class="legend-row">
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:var(--primary-color);"></span>
+                    <span>کلاس تعریف‌شده</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot" style="background:var(--border-color);"></span>
+                    <span>خالی (تعریف نشده)</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 2. Reservation Requests -->
+    <!-- ===== 2. Reservation Requests ===== -->
     <div id="requests" class="tab-content">
-        <div class="schedule-card">
-            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">
-                <i class="material-icons" style="vertical-align: middle;">pending_actions</i>
-                درخواست‌های در انتظار تایید
-            </h2>
-            
-            <div style="display: grid; gap: 1rem;">
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title">
+                    <i class="material-icons">pending_actions</i>
+                    <h2>درخواست‌های در انتظار تأیید</h2>
+                </div>
+                {% if requests %}
+                    <span class="requests-count-badge">{{ requests|length }} درخواست</span>
+                {% endif %}
+            </div>
+
+            <div class="requests-grid">
                 {% if requests %}
                     {% for req in requests %}
-                        <div class="request-card">
-                            <div class="req-header">
-                                <div>
-                                    <strong style="font-size: 1.1rem;">{{ req.user.full_name }}</strong>
-                                    <span style="color: var(--text-secondary); font-size: 0.9rem; margin-right: 0.5rem;">
-                                        ({{ req.user.student_id }})
-                                    </span>
-                                </div>
-                                <div class="req-room-badge">
-                                    کلاس {{ req.room_name }}
+                    <div class="request-card" id="req-card-{{ req.id }}">
+                        <div class="req-card-header">
+                            <div class="req-user-info">
+                                <div class="req-user-avatar">{{ req.user.full_name[0] }}</div>
+                                <div class="req-user-details">
+                                    <strong class="req-user-name">{{ req.user.full_name }}</strong>
+                                    <span class="req-student-id">{{ req.user.student_id }}</span>
                                 </div>
                             </div>
-                            <div class="req-body">
-                                <div class="req-info">
-                                    <span><i class="material-icons">access_time</i> {{ req.master_slot.day }} - {{ req.master_slot.time_slot }}</span>
-                                    <span style="margin-top:0.5rem;"><i class="material-icons">description</i> {{ req.reason }}</span>
-                                </div>
-                            </div>
-                            <div class="req-actions">
-                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='approve') }}" class="btn btn-custom btn-success">
-                                    <i class="material-icons">check</i> تایید
-                                </a>
-                                <a href="{{ url_for('handle_reservation', req_id=req.id, action='reject') }}" class="btn btn-outline btn-danger">
-                                    <i class="material-icons">close</i> رد
-                                </a>
+                            <div class="req-room-badge">
+                                <i class="material-icons" style="font-size:.9rem;">meeting_room</i>
+                                کلاس {{ req.room_name }}
                             </div>
                         </div>
+
+                        <div class="req-card-body">
+                            <div class="req-meta">
+                                <span class="req-meta-item">
+                                    <i class="material-icons">access_time</i>
+                                    {% set day_names = {
+                                        'saturday': 'شنبه', 'sunday': 'یکشنبه',
+                                        'monday': 'دوشنبه', 'tuesday': 'سه‌شنبه',
+                                        'wednesday': 'چهارشنبه'
+                                    } %}
+                                    {{ day_names.get(req.master_slot.day, req.master_slot.day) }}
+                                    — ساعت {{ req.master_slot.time_slot.replace('-', ' تا ') }}
+                                </span>
+                                <span class="req-meta-item">
+                                    <i class="material-icons">calendar_today</i>
+                                    {{ req.created_at.strftime('%Y/%m/%d — %H:%M') }}
+                                </span>
+                            </div>
+                            <div class="req-reason">
+                                <i class="material-icons">notes</i>
+                                <span>{{ req.reason }}</span>
+                            </div>
+                        </div>
+
+                        <div class="req-card-actions">
+                            <a href="{{ url_for('handle_reservation', req_id=req.id, action='approve') }}"
+                               class="btn btn-approve"
+                               onclick="return confirm('آیا این درخواست تأیید شود؟')">
+                                <i class="material-icons">check_circle</i>
+                                تأیید
+                            </a>
+                            <a href="{{ url_for('handle_reservation', req_id=req.id, action='reject') }}"
+                               class="btn btn-reject"
+                               onclick="return confirm('آیا این درخواست رد شود؟')">
+                                <i class="material-icons">cancel</i>
+                                رد
+                            </a>
+                        </div>
+                    </div>
                     {% endfor %}
                 {% else %}
-                    <div class="empty-state">
+                    <div class="empty-state-full">
                         <i class="material-icons">check_circle</i>
-                        <p>هیچ درخواستی در انتظار نیست.</p>
+                        <h3>هیچ درخواستی در انتظار نیست</h3>
+                        <p>تمام درخواست‌های رزرو پردازش شده‌اند.</p>
                     </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- 3. Cancelled Classes -->
+    <!-- ===== 3. Cancelled Classes ===== -->
     <div id="cancelled" class="tab-content">
-        <div class="schedule-card">
-            <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">
-                <i class="material-icons" style="vertical-align: middle;">event_busy</i>
-                ثبت کلاس لغو شده
-            </h2>
-            
+        <div class="section-card">
+            <div class="section-card-header">
+                <div class="section-card-title">
+                    <i class="material-icons">event_busy</i>
+                    <h2>ثبت کلاس لغو شده</h2>
+                </div>
+            </div>
+
+            <!-- فرم ثبت لغو -->
             <form action="{{ url_for('add_cancelled_class') }}" method="POST" class="cancelled-form">
-                <div class="form-row">
+                <!-- CSRF Token ضروری برای جلوگیری از خطای 400/500 -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-two-col">
                     <div class="form-group">
-                        <label>نام استاد</label>
-                        <input type="text" name="professor" class="form-control" required>
+                        <label class="form-label">
+                            <i class="material-icons form-label-icon">person</i>
+                            نام استاد
+                        </label>
+                        <input type="text" name="professor" class="form-control"
+                               placeholder="مثال: دکتر محمدی" required>
                     </div>
                     <div class="form-group">
-                        <label>نام درس</label>
-                        <input type="text" name="course" class="form-control" required>
+                        <label class="form-label">
+                            <i class="material-icons form-label-icon">menu_book</i>
+                            نام درس
+                        </label>
+                        <input type="text" name="course" class="form-control"
+                               placeholder="مثال: ریاضی مهندسی" required>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>توضیحات (مثلاً: کلاس با جلسه تمرین جابجا شد)</label>
-                    <input type="text" name="desc" class="form-control">
+                    <label class="form-label">
+                        <i class="material-icons form-label-icon">notes</i>
+                        توضیحات
+                    </label>
+                    <input type="text" name="desc" class="form-control"
+                           placeholder="مثال: کلاس با جلسه تمرین جابجا شد">
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>تاریخ دقیق لغو (اختیاری)</label>
-                        <input type="date" name="date" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>از تاریخ (برای بازه)</label>
-                        <input type="date" name="start_date" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>تا تاریخ (برای بازه)</label>
-                        <input type="date" name="end_date" class="form-control">
+                <div class="cancel-date-section">
+                    <p class="cancel-date-hint">
+                        <i class="material-icons">help_outline</i>
+                        یا یک تاریخ دقیق یا یک بازه زمانی وارد کنید:
+                    </p>
+                    <div class="form-three-col">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="material-icons form-label-icon">event</i>
+                                تاریخ دقیق لغو
+                            </label>
+                            <input type="date" name="date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="material-icons form-label-icon">date_range</i>
+                                از تاریخ
+                            </label>
+                            <input type="date" name="start_date" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="material-icons form-label-icon">date_range</i>
+                                تا تاریخ
+                            </label>
+                            <input type="date" name="end_date" class="form-control">
+                        </div>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-custom">ثبت لغو کلاس</button>
+                <div style="margin-top:1.25rem;">
+                    <button type="submit" class="btn btn-custom">
+                        <i class="material-icons">add_circle_outline</i>
+                        ثبت لغو کلاس
+                    </button>
+                </div>
             </form>
 
-            <hr style="margin: 2rem 0; border-color: var(--border-color);">
+            <!-- لیست لغوهای ثبت‌شده -->
+            <div class="cancelled-list-section">
+                <h3 class="cancelled-list-title">
+                    <i class="material-icons">list</i>
+                    لغوهای ثبت‌شده
+                    {% if cancelled_classes %}
+                        <span class="list-count">{{ cancelled_classes|length }}</span>
+                    {% endif %}
+                </h3>
 
-            <h3>لیست لغوهای ثبت شده</h3>
-            <div class="cancelled-list">
                 {% if cancelled_classes %}
+                <div class="cancelled-items-grid">
                     {% for c in cancelled_classes %}
-                        <div class="cancelled-item">
-                            <div>
-                                <strong>{{ c.course_name }}</strong> - استاد {{ c.professor_name }}
-                                <br>
-                                <small style="color:var(--text-secondary)">
+                    <div class="cancelled-item-card" id="cancel-card-{{ c.id }}">
+                        <div class="cancelled-item-header">
+                            <div class="cancelled-item-info">
+                                <span class="cancelled-course">{{ c.course_name or 'بدون نام' }}</span>
+                                <span class="cancelled-prof">
+                                    <i class="material-icons" style="font-size:.85rem;">person</i>
+                                    {{ c.professor_name or 'نامشخص' }}
+                                </span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:.5rem;">
+                                <span class="cancelled-date-badge">
                                     {% if c.cancel_date %}
-                                        تاریخ: {{ c.cancel_date }}
+                                        <i class="material-icons" style="font-size:.85rem;">event</i>
+                                        {{ c.cancel_date.strftime('%Y/%m/%d') }}
                                     {% elif c.start_date %}
-                                        بازه: {{ c.start_date }} تا {{ c.end_date }}
+                                        <i class="material-icons" style="font-size:.85rem;">date_range</i>
+                                        {{ c.start_date.strftime('%Y/%m/%d') }} تا
+                                        {{ c.end_date.strftime('%Y/%m/%d') if c.end_date else '؟' }}
+                                    {% else %}
+                                        نامشخص
                                     {% endif %}
-                                </small>
+                                </span>
+                                <!-- دکمه حذف -->
+                                <button class="delete-cancel-btn"
+                                        onclick="deleteCancelledClass({{ c.id }}, this)"
+                                        title="حذف">
+                                    <i class="material-icons">delete_outline</i>
+                                </button>
                             </div>
                         </div>
+                        {% if c.description %}
+                        <div class="cancelled-item-desc">
+                            <i class="material-icons" style="font-size:.85rem;">notes</i>
+                            {{ c.description }}
+                        </div>
+                        {% endif %}
+                    </div>
                     {% endfor %}
+                </div>
                 {% else %}
-                    <p style="text-align:center; color:var(--text-secondary);">لیست خالی است.</p>
+                <div class="empty-state-full">
+                    <i class="material-icons" style="color:var(--success);">event_available</i>
+                    <h3>لیست خالی است</h3>
+                    <p>هیچ کلاسی لغو نشده است.</p>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal for Master Schedule Edit -->
-<div id="master-modal" class="modal-box">
-    <div class="form-card modal-content">
-        <h3>تعریف کلاس‌های خالی</h3>
-        <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;" id="master-slot-info"></p>
-        
-        <div class="form-group">
-            <label class="form-label">شماره کلاس‌ها (با کاما جدا کنید)</label>
-            <input type="text" id="master-rooms-input" class="form-control" placeholder="مثال: 101, 102, آمفی">
+</div><!-- /dashboard-container -->
+
+<div id="master-modal" class="modal-overlay" onclick="handleOverlayClick(event,'master-modal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-card-header">
+            <h3>
+                <i class="material-icons" style="vertical-align:middle; font-size:1.2rem;">meeting_room</i>
+                تعریف کلاس‌های خالی
+            </h3>
+            <button class="modal-close-btn" onclick="closeModal('master-modal')">
+                <i class="material-icons">close</i>
+            </button>
         </div>
-        
+
+        <div class="slot-info-display" id="master-slot-info-display">
+            <i class="material-icons">schedule</i>
+            <span id="master-slot-info-text">—</span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">
+                <i class="material-icons form-label-icon">meeting_room</i>
+                شماره کلاس‌ها (با کاما جدا کنید)
+            </label>
+            <input type="text" id="master-rooms-input" class="form-control"
+                   placeholder="مثال: 101, 102, آمفی"
+                   onkeydown="if(event.key==='Enter') saveSlotData()">
+        </div>
+        <p style="font-size:.8rem; color:var(--text-secondary); margin-top:-.5rem; margin-bottom:1rem;">
+            برای پاک کردن، فیلد را خالی بگذارید و ذخیره کنید.
+        </p>
+
         <div class="modal-actions">
-            <button class="btn btn-custom" onclick="saveSlotData()">ذخیره</button>
-            <button class="btn btn-outline" onclick="closeModal('master-modal')">لغو</button>
+            <button class="btn btn-custom" onclick="saveSlotData()">
+                <i class="material-icons">save</i> ذخیره
+            </button>
+            <button class="btn btn-outline" onclick="closeModal('master-modal')">انصراف</button>
         </div>
     </div>
 </div>
 
 <style>
-    /* Master Schedule Specifics */
-    .master-cell { cursor: pointer; transition: all 0.2s; min-height: 60px; }
-    .master-cell:hover { background-color: var(--primary-light); color: white; }
-    .master-cell.has-data { background-color: rgba(0, 131, 143, 0.1); border-right: 3px solid var(--primary-color); }
-    
-    /* Request Card */
-    .request-card {
-        border: 1px solid var(--border-color);
-        padding: 1rem;
-        border-radius: 8px;
-        background: var(--surface);
-        transition: box-shadow 0.3s;
-    }
-    .request-card:hover { box-shadow: var(--shadow-md); }
-    .req-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-    .req-room-badge { background: var(--primary-color); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; }
-    .req-body { margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; }
-    .req-info { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; }
-    .req-info span { display: flex; align-items: center; gap: 0.5rem; }
-    .req-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
-    
-    /* Buttons */
-    .btn-success { background-color: var(--success) !important; color: white !important; }
-    .btn-danger { color: var(--error) !important; border-color: var(--error) !important; }
 
-    /* Cancelled Form */
-    .cancelled-form { background: var(--background); padding: 1.5rem; border-radius: 8px; }
-    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
-    
-    .cancelled-list { margin-top: 1rem; }
-    .cancelled-item { padding: 0.75rem; border-right: 3px solid var(--error); background: rgba(183, 28, 28, 0.05); margin-bottom: 0.5rem; border-radius: 4px; }
+.admin-tabs-bar {
+    display: flex; gap: .5rem;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 14px; padding: .5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+.dash-tab {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem;
+    padding: .75rem 1rem;
+    border: none; background: transparent;
+    border-radius: 10px; cursor: pointer;
+    font-family: inherit; font-size: .9rem; font-weight: 500;
+    color: var(--text-secondary); transition: all .25s;
+    position: relative;
+}
+.dash-tab:hover { background: var(--background); color: var(--primary-color); }
+.dash-tab.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0,131,143,.3);
+}
+.tab-badge {
+    background: var(--error); color: white;
+    border-radius: 20px; padding: .05rem .5rem;
+    font-size: .72rem; font-weight: 700;
+}
+.dash-tab.active .tab-badge { background: rgba(255,255,255,.3); }
+@media (max-width:600px) {
+    .dash-tab span { display: none; }
+    .dash-tab { padding: .75rem; }
+}
 
-    .empty-state { text-align: center; padding: 2rem; color: var(--text-secondary); }
-    .empty-state i { font-size: 3rem; margin-bottom: 0.5rem; color: var(--success); }
+.tab-content { display: none; animation: fadeInTab .3s ease; }
+.tab-content.active { display: block; }
+@keyframes fadeInTab { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+.section-card {
+    background: var(--surface);
+    border-radius: 16px; padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+.section-card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem; flex-wrap: wrap; gap: .75rem;
+}
+.section-card-title {
+    display: flex; align-items: center; gap: .5rem;
+    color: var(--primary-color);
+}
+.section-card-title h2 { font-size: 1.15rem; font-weight: 700; margin: 0; }
+.section-card-title i { font-size: 1.4rem; }
+
+.section-hint {
+    font-size: .85rem; color: var(--text-secondary);
+    background: var(--background); border-radius: 8px;
+    padding: .5rem .85rem; margin-bottom: 1.25rem;
+}
+.section-hint code {
+    background: rgba(0,0,0,.07); padding: .1rem .3rem;
+    border-radius: 4px; font-size: .85em;
+}
+
+.schedule-wrapper { overflow-x: auto; }
+.schedule-grid {
+    display: grid;
+    grid-template-columns: 70px repeat(5, 1fr);
+    gap: 1px;
+    background: var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: 10px; overflow: hidden;
+    min-width: 560px;
+}
+.schedule-header {
+    background: var(--background);
+    padding: .75rem .5rem; text-align: center;
+    font-weight: 700; font-size: .85rem; color: var(--text-secondary);
+}
+.corner-cell { background: var(--background); }
+.schedule-time {
+    background: var(--background);
+    padding: .75rem .25rem; text-align: center;
+    font-size: .8rem; font-weight: 600; color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+}
+.schedule-cell {
+    background: var(--surface);
+    min-height: 70px; padding: .4rem;
+    position: relative; vertical-align: top;
+}
+.clickable-cell { cursor: pointer; transition: background .18s; }
+.clickable-cell:hover { background: rgba(0,131,143,.06); }
+.clickable-cell:hover::after {
+    content: '+';
+    position: absolute; top:50%; left:50%;
+    transform: translate(-50%,-50%);
+    font-size: 1.6rem; color: var(--primary-color);
+    opacity: .3; font-weight: 300; pointer-events: none;
+}
+.master-cell.has-data:hover::after { display: none; }
+.master-cell.has-data {
+    background: rgba(0,131,143,.1);
+    border-right: 3px solid var(--primary-color);
+}
+.master-cell-content {
+    font-size: .8rem; font-weight: 600;
+    color: var(--primary-color);
+    line-height: 1.4;
+}
+.master-cell-room-pill {
+    display: inline-block;
+    background: rgba(0,131,143,.15);
+    color: var(--primary-dark);
+    padding: .15rem .45rem;
+    border-radius: 20px;
+    font-size: .72rem;
+    margin: 1px;
+}
+
+.legend-row {
+    display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-secondary); }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+.requests-count-badge {
+    background: rgba(183,28,28,.1); color: var(--error);
+    padding: .3rem .85rem; border-radius: 20px;
+    font-size: .82rem; font-weight: 700;
+    border: 1px solid rgba(183,28,28,.2);
+}
+.requests-grid { display: grid; gap: 1rem; }
+
+.request-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px; overflow: hidden;
+    background: var(--surface);
+    transition: box-shadow .2s, border-color .2s;
+}
+.request-card:hover { box-shadow: var(--shadow-md); border-color: rgba(0,131,143,.3); }
+
+.req-card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .85rem 1rem;
+    background: var(--background);
+    border-bottom: 1px solid var(--border-color);
+    gap: .75rem; flex-wrap: wrap;
+}
+.req-user-info { display: flex; align-items: center; gap: .7rem; }
+.req-user-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1rem;
+    flex-shrink: 0;
+}
+.req-user-details { display: flex; flex-direction: column; gap: .1rem; }
+.req-user-name { font-weight: 700; font-size: .95rem; }
+.req-student-id { font-size: .78rem; color: var(--text-secondary); }
+
+.req-room-badge {
+    display: flex; align-items: center; gap: .3rem;
+    background: var(--primary-color); color: white;
+    padding: .3rem .85rem; border-radius: 20px;
+    font-size: .85rem; font-weight: 600;
+}
+
+.req-card-body {
+    padding: .85rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.req-meta { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.req-meta-item {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .83rem; color: var(--text-secondary);
+}
+.req-meta-item i { font-size: .95rem; }
+.req-reason {
+    display: flex; align-items: flex-start; gap: .4rem;
+    font-size: .88rem; color: var(--text-primary);
+}
+.req-reason i { font-size: .95rem; color: var(--primary-color); flex-shrink: 0; margin-top: 2px; }
+
+.req-card-actions {
+    display: flex; gap: .6rem; justify-content: flex-end;
+    padding: .75rem 1rem;
+}
+.btn-approve {
+    display: inline-flex; align-items: center; gap: .3rem;
+    background: var(--success); color: white;
+    padding: .55rem 1.2rem; border-radius: 8px;
+    text-decoration: none; font-size: .88rem; font-weight: 600;
+    transition: opacity .2s, transform .15s;
+    border: none; cursor: pointer; font-family: inherit;
+}
+.btn-approve:hover { opacity: .9; transform: translateY(-1px); }
+.btn-reject {
+    display: inline-flex; align-items: center; gap: .3rem;
+    background: transparent; color: var(--error);
+    padding: .55rem 1.2rem; border-radius: 8px;
+    border: 1.5px solid var(--error);
+    text-decoration: none; font-size: .88rem; font-weight: 600;
+    transition: background .2s, transform .15s;
+    cursor: pointer; font-family: inherit;
+}
+.btn-reject:hover { background: rgba(183,28,28,.07); transform: translateY(-1px); }
+
+.cancelled-form {
+    background: var(--background);
+    border-radius: 12px; padding: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+.form-two-col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; margin-bottom: 1rem;
+}
+.form-three-col {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+}
+.cancel-date-section {
+    background: rgba(0,131,143,.04);
+    border: 1px dashed rgba(0,131,143,.2);
+    border-radius: 8px; padding: 1rem;
+    margin-top: .75rem;
+}
+.cancel-date-hint {
+    display: flex; align-items: center; gap: .35rem;
+    font-size: .82rem; color: var(--text-secondary);
+    margin-bottom: .75rem;
+}
+.cancel-date-hint i { font-size: .95rem; }
+.form-label { display: flex; align-items: center; gap: .3rem; font-weight: 600; font-size: .88rem; margin-bottom: .4rem; }
+.form-label-icon { font-size: .95rem; color: var(--primary-color); }
+
+.cancelled-list-section { margin-top: 2rem; }
+.cancelled-list-title {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: 1rem; color: var(--text-primary);
+    margin-bottom: 1rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.cancelled-list-title i { color: var(--primary-color); }
+.list-count {
+    background: var(--primary-color); color: white;
+    border-radius: 20px; padding: .1rem .55rem;
+    font-size: .75rem; font-weight: 700;
+}
+.cancelled-items-grid { display: grid; gap: .75rem; }
+
+.cancelled-item-card {
+    border: 1px solid var(--border-color);
+    border-right: 4px solid var(--error);
+    border-radius: 10px; padding: .85rem 1rem;
+    background: rgba(183,28,28,.02);
+    transition: box-shadow .2s;
+}
+.cancelled-item-card:hover { box-shadow: var(--shadow-sm); }
+
+.cancelled-item-header {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: .75rem; flex-wrap: wrap;
+}
+.cancelled-item-info { display: flex; flex-direction: column; gap: .2rem; }
+.cancelled-course { font-weight: 700; font-size: .95rem; }
+.cancelled-prof {
+    display: flex; align-items: center; gap: .25rem;
+    font-size: .82rem; color: var(--text-secondary);
+}
+.cancelled-date-badge {
+    display: flex; align-items: center; gap: .25rem;
+    font-size: .8rem; color: var(--error);
+    background: rgba(183,28,28,.08);
+    padding: .2rem .65rem; border-radius: 20px;
+    white-space: nowrap;
+}
+.cancelled-item-desc {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .82rem; color: var(--text-secondary);
+    margin-top: .5rem;
+    padding-top: .5rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.delete-cancel-btn {
+    background: transparent; border: 1px solid var(--border-color);
+    color: var(--text-secondary); cursor: pointer;
+    border-radius: 8px; padding: .3rem .5rem;
+    display: flex; align-items: center;
+    transition: color .2s, border-color .2s, background .2s;
+    font-size: .9rem;
+}
+.delete-cancel-btn:hover {
+    color: var(--error); border-color: var(--error);
+    background: rgba(183,28,28,.07);
+}
+
+.empty-state-full {
+    text-align: center; padding: 3rem 1rem;
+    color: var(--text-secondary);
+}
+.empty-state-full i { font-size: 3.5rem; margin-bottom: .75rem; display: block; }
+.empty-state-full h3 { margin-bottom: .5rem; color: var(--text-primary); }
+
+.modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.4); backdrop-filter: blur(3px);
+    z-index: 2000;
+    align-items: center; justify-content: center;
+    padding: 1rem;
+}
+.modal-overlay.open { display: flex; animation: fadeInTab .2s ease; }
+
+.modal-card {
+    background: var(--surface);
+    border-radius: 16px; padding: 1.5rem;
+    width: 100%; max-width: 440px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    max-height: 90vh; overflow-y: auto;
+}
+.modal-card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.25rem;
+}
+.modal-card-header h3 { font-size: 1.1rem; color: var(--text-primary); margin: 0; }
+.modal-close-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-secondary); padding: .25rem;
+    border-radius: 50%; display: flex; align-items: center;
+    transition: background .2s;
+}
+.modal-close-btn:hover { background: var(--background); color: var(--text-primary); }
+
+.slot-info-display {
+    display: flex; align-items: center; gap: .5rem;
+    background: rgba(0,131,143,.07);
+    border: 1px solid rgba(0,131,143,.2);
+    border-radius: 10px; padding: .7rem 1rem;
+    margin-bottom: 1.25rem;
+    font-weight: 600; color: var(--primary-color);
+    font-size: .9rem;
+}
+.slot-info-display i { font-size: 1.1rem; }
+
+.modal-actions { display: flex; gap: .6rem; margin-top: 1.25rem; }
 </style>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // --- 1. Tab Logic ---
-    function openAdminTab(id) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        event.target.closest('.dash-tab').classList.add('active');
-    }
+function openAdminTab(id, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) btn.classList.add('active');
+}
 
-    // --- 2. Master Schedule Logic ---
-    // Data from backend: list of {day, time_slot, rooms}
-    const masterData = {% if slots %}{{ slots | tojson }}{% else %}[]{% endif %};
-    
-    // Populate grid on load
-    document.addEventListener('DOMContentLoaded', () => {
-        masterData.forEach(item => {
-            const cell = document.querySelector(`.master-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`);
-            if (cell) {
-                cell.innerHTML = `<div style="font-size:0.8rem; font-weight:600; color:var(--primary-color);">${item.rooms}</div>`;
-                cell.classList.add('has-data');
-                cell.dataset.rooms = item.rooms;
-            }
-        });
+const masterData = [
+    {% for item in slots %}
+    {
+        day: {{ item.day | tojson }},
+        time_slot: {{ item.time_slot | tojson }},
+        rooms: {{ item.rooms | tojson }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+    masterData.forEach(function(item) {
+        const cell = document.querySelector(
+            `.master-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`
+        );
+        if (!cell) return;
+        cell.dataset.rooms = item.rooms;
+        renderMasterCell(cell, item.rooms);
+    });
+});
+
+function renderMasterCell(cell, rooms) {
+    if (!rooms || !rooms.trim()) {
+        cell.innerHTML = '';
+        cell.classList.remove('has-data');
+        return;
+    }
+    const roomList = rooms.split(',').map(r => r.trim()).filter(r => r);
+    let html = '<div class="master-cell-content">';
+    roomList.forEach(function(room) {
+        html += `<span class="master-cell-room-pill">${room}</span>`;
+    });
+    html += '</div>';
+    cell.innerHTML = html;
+    cell.classList.add('has-data');
+}
+
+let activeCell = null;
+
+function editMasterSlot(cell) {
+    activeCell = cell;
+    const day = cell.dataset.day;
+    const time = cell.dataset.time;
+    const dayNames = {
+        'saturday': 'شنبه', 'sunday': 'یکشنبه',
+        'monday': 'دوشنبه', 'tuesday': 'سه‌شنبه', 'wednesday': 'چهارشنبه'
+    };
+    document.getElementById('master-slot-info-text').textContent =
+        (dayNames[day] || day) + ' — ساعت ' + time.replace('-', ' تا ');
+    document.getElementById('master-rooms-input').value = cell.dataset.rooms || '';
+
+    openModal('master-modal');
+    setTimeout(() => document.getElementById('master-rooms-input').focus(), 150);
+}
+
+function saveSlotData() {
+    const rooms = document.getElementById('master-rooms-input').value.trim();
+    if (activeCell) {
+        activeCell.dataset.rooms = rooms;
+        renderMasterCell(activeCell, rooms);
+    }
+    closeModal('master-modal');
+}
+
+function saveMasterSchedule() {
+    const payload = [];
+    document.querySelectorAll('.master-cell').forEach(function(cell) {
+        if (cell.dataset.rooms && cell.dataset.rooms.trim()) {
+            payload.push({
+                day: cell.dataset.day,
+                time_slot: cell.dataset.time,
+                rooms: cell.dataset.rooms.trim()
+            });
+        }
     });
 
-    let activeCell = null;
+    const saveBtn = document.querySelector('[onclick="saveMasterSchedule()"]');
+    const originalHTML = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="material-icons" style="animation:spin 1s linear infinite;display:inline-block;">sync</i> در حال ذخیره...';
 
-    function editMasterSlot(cell) {
-        activeCell = cell;
-        const day = cell.dataset.day;
-        const time = cell.dataset.time;
-        const dayNames = {'saturday':'شنبه', 'sunday':'یکشنبه', 'monday':'دوشنبه', 'tuesday':'سه‌شنبه', 'wednesday':'چهارشنبه'};
-        
-        document.getElementById('master-slot-info').innerText = `${dayNames[day]} - ساعت ${time}`;
-        document.getElementById('master-rooms-input').value = cell.dataset.rooms || "";
-        document.getElementById('master-modal').style.display = 'flex';
-    }
-
-    function saveSlotData() {
-        const rooms = document.getElementById('master-rooms-input').value;
-        if (activeCell) {
-            activeCell.dataset.rooms = rooms;
-            if (rooms.trim()) {
-                activeCell.innerHTML = `<div style="font-size:0.8rem; font-weight:600; color:var(--primary-color);">${rooms}</div>`;
-                activeCell.classList.add('has-data');
-            } else {
-                activeCell.innerHTML = '';
-                activeCell.classList.remove('has-data');
-            }
+    fetch('/admin/save_master_schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(function(res) {
+        if (!res.ok) {
+            return res.json().then(function(errData) {
+                throw new Error(errData.message || 'خطای سرور ' + res.status);
+            });
         }
-        closeModal('master-modal');
-    }
-
-    function saveMasterSchedule() {
-        // Gather all data
-        const payload = [];
-        document.querySelectorAll('.master-cell').forEach(cell => {
-            if (cell.dataset.rooms && cell.dataset.rooms.trim() !== "") {
-                payload.push({
-                    day: cell.dataset.day,
-                    time_slot: cell.dataset.time,
-                    rooms: cell.dataset.rooms.trim()
-                });
-            }
-        });
-
-        fetch('/admin/save_master_schedule', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        })
-        .then(res => res.json())
-        .then(resp => {
-            if (resp.status === 'success') {
-                alert('برنامه کلاس‌های خالی با موفقیت ذخیره شد.');
-                location.reload();
-            }
-        });
-    }
-
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    window.onclick = function(event) {
-        if (event.target.classList.contains('modal-box')) {
-            event.target.style.display = 'none';
+        return res.json();
+    })
+    .then(function(resp) {
+        if (resp.status === 'success') {
+            showToast('برنامه کلاس‌های خالی با موفقیت ذخیره شد ✓', 'success');
+        } else {
+            throw new Error(resp.message || 'خطای ناشناخته');
         }
+    })
+    .catch(function(err) {
+        showToast('خطا در ذخیره‌سازی: ' + err.message, 'error');
+        console.error('saveMasterSchedule error:', err);
+    })
+    .finally(function() {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalHTML;
+    });
+}
+
+function deleteCancelledClass(classId, btn) {
+    if (!confirm('آیا این لغو کلاس حذف شود؟')) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="material-icons" style="animation:spin 1s linear infinite;display:inline-block;font-size:.9rem;">sync</i>';
+
+    fetch('/admin/delete_cancelled_class/' + classId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(function(res) {
+        if (!res.ok) return res.json().then(function(d) { throw new Error(d.message || 'خطا'); });
+        return res.json();
+    })
+    .then(function(resp) {
+        if (resp.status === 'success') {
+            const card = document.getElementById('cancel-card-' + classId);
+            if (card) {
+                card.style.transition = 'opacity .3s, transform .3s';
+                card.style.opacity = '0';
+                card.style.transform = 'translateX(-10px)';
+                setTimeout(function() { card.remove(); }, 300);
+            }
+            showToast('لغو کلاس با موفقیت حذف شد', 'success');
+        } else {
+            throw new Error(resp.message || 'خطا در حذف');
+        }
+    })
+    .catch(function(err) {
+        showToast('خطا: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="material-icons">delete_outline</i>';
+    });
+}
+
+function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.classList.add('open');
+        document.body.style.overflow = 'hidden';
     }
+}
+
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+function handleOverlayClick(event, id) {
+    if (event.target.id === id) closeModal(id);
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal('master-modal');
+});
+
+function showToast(message, type) {
+    const existing = document.getElementById('admin-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'admin-toast';
+    const bgColor = type === 'success'
+        ? 'linear-gradient(135deg, var(--success), #1b5e20)'
+        : 'linear-gradient(135deg, var(--error), #b71c1c)';
+
+    toast.style.cssText = `
+        position: fixed; bottom: 1.5rem; left: 50%;
+        transform: translateX(-50%);
+        background: ${bgColor};
+        color: white; padding: .8rem 1.75rem;
+        border-radius: 24px;
+        font-size: .9rem; font-weight: 600;
+        z-index: 9999;
+        box-shadow: 0 6px 20px rgba(0,0,0,.25);
+        display: flex; align-items: center; gap: .5rem;
+        animation: fadeInTab .25s ease;
+        font-family: inherit;
+    `;
+    const icon = type === 'success' ? 'check_circle' : 'error';
+    toast.innerHTML = `<i class="material-icons" style="font-size:1.1rem;">${icon}</i>${message}`;
+    document.body.appendChild(toast);
+    setTimeout(function() {
+        toast.style.transition = 'opacity .3s';
+        toast.style.opacity = '0';
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 3500);
+}
+
+const spinStyle = document.createElement('style');
+spinStyle.textContent = `@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`;
+document.head.appendChild(spinStyle);
 </script>
 {% endblock %}

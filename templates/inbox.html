@@ -3,97 +3,297 @@
 {% block title %}صندوق پیام | یونی نت{% endblock %}
 
 {% block content %}
-<!-- Inbox Header -->
-<div class="form-card" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-    <h1 class="section-title" style="text-align: right; font-size: 1.5rem; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-        <i class="material-icons">inbox</i>
-        صندوق پیام
-    </h1>
-    
-    <div>
-        <a href="{{ url_for('match') }}" class="btn btn-custom" style="font-size: 0.9rem;">
-            <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">person_add</i>
-            یافتن کاربران جدید
-        </a>
-    </div>
-</div>
+<div class="inbox-container">
 
-<!-- Conversations List -->
-<div class="form-card" style="padding: 0; overflow: hidden;">
-    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--background);">
-        <h2 style="font-size: 1.1rem; font-weight: 600;">گفتگوها</h2>
-        <div style="color: var(--text-secondary); font-size: 0.9rem;">
-            {% if conversations %}
-                {{ conversations|length }} گفتگو
-            {% else %}
-                هیچ گفتگویی
-            {% endif %}
+    <!-- هدر صفحه -->
+    <div class="inbox-header-card">
+        <div class="inbox-title-row">
+            <div class="inbox-title">
+                <i class="material-icons">inbox</i>
+                <h1>صندوق پیام</h1>
+            </div>
+            <!-- لینک به صفحه چت اصلی که در app.py با نام chat_main تعریف شده -->
+            <a href="{{ url_for('chat_main') }}" class="btn btn-custom">
+                <i class="material-icons">forum</i>
+                <span>رفتن به پیام‌رسان</span>
+            </a>
         </div>
     </div>
-    
-    <div style="max-height: 600px; overflow-y: auto;">
-        {% if conversations %}
-            {% for conversation in conversations %}
-                {# Fixed: Changed 'chat' to 'chat_main' and 'other_user_id' to 'user_id' to match app.py route #}
-                <a href="{{ url_for('chat_main', user_id=conversation.other_user_id) }}" class="conversation-item" style="display: flex; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background 0.2s; {% if conversation.has_unread %}background-color: rgba(0, 131, 143, 0.05);{% endif %}">
-                    <div class="conversation-avatar" style="position: relative; width: 48px; height: 48px; border-radius: 50%; background-color: var(--primary-light); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
-                        {{ conversation.other_user_name[0] }}
+
+    <!-- لیست گفتگوها -->
+    <div class="inbox-card">
+        <div class="inbox-card-header">
+            <h2>گفتگوها</h2>
+            <span class="convo-count-badge">
+                {% if conversations %}
+                    {{ conversations|length }} گفتگو
+                {% else %}
+                    بدون گفتگو
+                {% endif %}
+            </span>
+        </div>
+
+        <div class="conversations-wrapper">
+            {% if conversations %}
+                {% for conversation in conversations %}
+                <!-- لینک به chat_main با پارامتر user_id که در app.py تعریف شده -->
+                <a href="{{ url_for('chat_main', user_id=conversation.other_user_id) }}"
+                   class="conversation-item {% if conversation.has_unread %}has-unread{% endif %}">
+
+                    <!-- آواتار -->
+                    <div class="conv-avatar">
+                        {% if conversation.other_user_pic and conversation.other_user_pic != 'default.jpg' %}
+                            <img src="{{ url_for('static', filename='uploads/profile_pics/' + conversation.other_user_pic) }}"
+                                 alt="{{ conversation.other_user_name }}">
+                        {% else %}
+                            <span class="conv-avatar-initial">{{ conversation.other_user_name[0] }}</span>
+                        {% endif %}
                         {% if conversation.is_online %}
-                            <span class="online-indicator" style="position: absolute; bottom: 0; left: 0; width: 12px; height: 12px; background-color: var(--success); border: 2px solid var(--surface); border-radius: 50%;"></span>
+                            <span class="conv-online-dot"></span>
                         {% endif %}
                     </div>
-                    
-                    <div style="flex: 1; overflow: hidden; margin-right: 1rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <span style="font-weight: 600;">{{ conversation.other_user_name }}</span>
-                            </div>
-                            <span style="font-size: 0.8rem; color: var(--text-secondary);">
+
+                    <!-- اطلاعات گفتگو -->
+                    <div class="conv-info">
+                        <div class="conv-top-row">
+                            <span class="conv-name">{{ conversation.other_user_name }}</span>
+                            <span class="conv-time">
                                 {{ conversation.last_message_timestamp.strftime('%H:%M') if conversation.last_message_timestamp else '' }}
                             </span>
                         </div>
-                        
-                        <div style="font-size: 0.9rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            {{ conversation.last_message_content }}
+                        <div class="conv-bottom-row">
+                            <span class="conv-last-msg">
+                                {{ conversation.last_message_content[:50] }}{% if conversation.last_message_content and conversation.last_message_content|length > 50 %}...{% endif %}
+                            </span>
+                            {% if conversation.has_unread %}
+                                <span class="conv-unread-dot"></span>
+                            {% endif %}
                         </div>
                     </div>
-                    
-                    {% if conversation.has_unread %}
-                        <div style="width: 20px; height: 20px; border-radius: 50%; background-color: var(--primary-color); color: white; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; margin-right: 0.5rem;">
-                            New
-                        </div>
-                    {% endif %}
                 </a>
-            {% endfor %}
-        {% else %}
-            <div class="text-center" style="padding: 3rem 1rem;">
-                <i class="material-icons" style="font-size: 4rem; color: var(--text-secondary); margin-bottom: 1rem;">chat_bubble_outline</i>
-                <h3 style="margin-bottom: 0.5rem;">هیچ گفتگویی ندارید</h3>
-                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">برای شروع گفتگو، کاربران جدیدی را پیدا کنید</p>
-                <a href="{{ url_for('match') }}" class="btn btn-custom">
-                    <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">search</i>
-                    جستجوی کاربران
-                </a>
-            </div>
-        {% endif %}
+                {% endfor %}
+
+            {% else %}
+                <!-- حالت خالی -->
+                <div class="inbox-empty-state">
+                    <div class="empty-icon-wrap">
+                        <i class="material-icons">chat_bubble_outline</i>
+                    </div>
+                    <h3>هیچ گفتگویی ندارید</h3>
+                    <p>از طریق پیام‌رسان می‌توانید با سایر دانشجویان گفتگو کنید</p>
+                    <!-- لینک به chat_main که در app.py وجود دارد -->
+                    <a href="{{ url_for('chat_main') }}" class="btn btn-custom">
+                        <i class="material-icons">forum</i>
+                        رفتن به پیام‌رسان
+                    </a>
+                </div>
+            {% endif %}
+        </div>
     </div>
+
 </div>
+
+<style>
+/* ==========================================
+   Inbox Container
+========================================== */
+.inbox-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+/* ==========================================
+   Header Card
+========================================== */
+.inbox-header-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+.inbox-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+.inbox-title {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    color: var(--primary-color);
+}
+.inbox-title h1 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0;
+}
+.inbox-title i { font-size: 1.5rem; }
+
+/* ==========================================
+   Conversations Card
+========================================== */
+.inbox-card {
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+.inbox-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--background);
+}
+.inbox-card-header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+}
+.convo-count-badge {
+    font-size: .8rem;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    padding: .2rem .7rem;
+    border-radius: 20px;
+}
+
+.conversations-wrapper {
+    max-height: 600px;
+    overflow-y: auto;
+}
+.conversations-wrapper::-webkit-scrollbar { width: 4px; }
+.conversations-wrapper::-webkit-scrollbar-track { background: transparent; }
+.conversations-wrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+/* ==========================================
+   هر ردیف گفتگو
+========================================== */
+.conversation-item {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .9rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: background .2s;
+    opacity: 0; /* مقدار اولیه برای انیمیشن */
+    transform: translateY(8px);
+}
+.conversation-item:last-child { border-bottom: none; }
+.conversation-item:hover { background: var(--background); }
+.conversation-item.has-unread {
+    background: rgba(0, 131, 143, .04);
+    border-right: 3px solid var(--primary-color);
+}
+.conversation-item.has-unread:hover { background: rgba(0, 131, 143, .08); }
+
+/* آواتار */
+.conv-avatar {
+    position: relative;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    overflow: visible;
+}
+.conv-avatar img {
+    width: 100%; height: 100%;
+    border-radius: 50%; object-fit: cover;
+}
+.conv-avatar-initial { font-weight: 700; font-size: 1.1rem; }
+.conv-online-dot {
+    position: absolute;
+    bottom: 1px; right: 1px;
+    width: 12px; height: 12px;
+    background: var(--success);
+    border-radius: 50%;
+    border: 2px solid var(--surface);
+}
+
+/* اطلاعات متنی */
+.conv-info { flex: 1; min-width: 0; }
+.conv-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: .25rem;
+}
+.conv-name { font-weight: 700; font-size: .95rem; }
+.conv-time { font-size: .78rem; color: var(--text-secondary); flex-shrink: 0; }
+.conv-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+}
+.conv-last-msg {
+    font-size: .85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+.conversation-item.has-unread .conv-last-msg {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.conv-unread-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    flex-shrink: 0;
+}
+
+/* ==========================================
+   Empty State
+========================================== */
+.inbox-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .85rem;
+    padding: 3.5rem 1.5rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+.empty-icon-wrap {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(0,131,143,.06);
+    border: 2px dashed rgba(0,131,143,.2);
+    display: flex; align-items: center; justify-content: center;
+}
+.empty-icon-wrap i { font-size: 2.5rem; color: var(--primary-color); opacity: .5; }
+.inbox-empty-state h3 { font-size: 1.05rem; color: var(--text-primary); margin: 0; }
+.inbox-empty-state p { font-size: .88rem; margin: 0; max-width: 280px; }
+</style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Animation for items
-    document.addEventListener('DOMContentLoaded', () => {
-        const items = document.querySelectorAll('.conversation-item');
-        items.forEach((item, index) => {
-            item.style.opacity = '0';
-            item.style.transform = 'translateY(10px)';
-            setTimeout(() => {
-                item.style.transition = 'all 0.3s ease';
-                item.style.opacity = '1';
-                item.style.transform = 'translateY(0)';
-            }, index * 50);
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    // انیمیشن ظاهر شدن ردیف‌های گفتگو به ترتیب
+    const items = document.querySelectorAll('.conversation-item');
+    items.forEach(function(item, index) {
+        setTimeout(function() {
+            item.style.transition = 'opacity .3s ease, transform .3s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        }, index * 60);
     });
+});
 </script>
 {% endblock %}

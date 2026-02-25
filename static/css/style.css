@@ -1,10 +1,12 @@
-/* --- CSS Variables & Theming --- */
+/* ============================================================
+   CSS Variables & Theming
+   ============================================================ */
 :root {
     --primary-color: #00838f;
     --primary-light: #4fb3bf;
     --primary-dark: #005662;
     --secondary-color: #546e7a;
-    
+
     --text-on-primary: #ffffff;
     --text-primary: #212121;
     --text-secondary: #757575;
@@ -15,10 +17,10 @@
     --success: #2e7d32;
     --info: #0288d1;
     --border-color: #e2e8f0;
-    
+
     --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
-    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 /* Dark Mode */
@@ -27,7 +29,7 @@
     --primary-light: #00838f;
     --primary-dark: #e0f7fa;
     --secondary-color: #455a64;
-    
+
     --text-on-primary: #121212;
     --text-primary: #e0e0e0;
     --text-secondary: #a0a0a0;
@@ -40,41 +42,141 @@
     --border-color: #333333;
 }
 
-/* --- Global --- */
+/* ============================================================
+   Global Reset & Base
+   ============================================================ */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Vazirmatn', sans-serif; background-color: var(--background); color: var(--text-primary); line-height: 1.6; direction: rtl; }
-a { text-decoration: none; color: inherit; }
-.container { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
 
-/* --- Navbar --- */
-.navbar { background-color: var(--primary-color); color: var(--text-on-primary); padding: 0.5rem 0; box-shadow: var(--shadow-sm); position: sticky; top: 0; z-index: 1000; height: 60px; }
-.navbar .container { display: flex; justify-content: space-between; align-items: center; height: 100%; }
-.navbar-brand { font-size: 1.5rem; font-weight: 700; color: var(--text-on-primary) !important; }
-.navbar-nav { display: flex; list-style: none; gap: 0.5rem; align-items: center; }
-.navbar-nav .nav-link { color: rgba(255, 255, 255, 0.85) !important; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; }
-.navbar-nav .nav-link:hover { background-color: rgba(255, 255, 255, 0.2); }
+body {
+    font-family: 'Vazirmatn', sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    line-height: 1.6;
+    direction: rtl;
+}
+
+a { text-decoration: none; color: inherit; }
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* ============================================================
+   Navbar
+   navbar دقیقاً 60px ارتفاع دارد — این مقدار باید با
+   تمام محاسبات calc(100vh - Xpx) در صفحات دیگر هماهنگ باشد
+   ============================================================ */
+.navbar {
+    background-color: var(--primary-color);
+    color: var(--text-on-primary);
+    padding: 0.5rem 0;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: 60px; /* مقدار مرجع برای سایر صفحات */
+}
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+}
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-on-primary) !important;
+}
+.navbar-nav {
+    display: flex;
+    list-style: none;
+    gap: 0.5rem;
+    align-items: center;
+}
+.navbar-nav .nav-link {
+    color: rgba(255,255,255,0.85) !important;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.navbar-nav .nav-link:hover { background-color: rgba(255,255,255,0.2); }
 
 /* User Dropdown */
 .user-dropdown { position: relative; cursor: pointer; padding: 0.5rem; border-radius: 50px; }
 .user-info { display: flex; align-items: center; gap: 0.5rem; color: var(--text-on-primary); }
-.user-avatar-nav { width: 32px; height: 32px; border-radius: 50%; background-color: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; overflow: hidden; border: 2px solid rgba(255,255,255,0.3); }
+.user-avatar-nav {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background-color: var(--primary-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.3);
+}
 .user-avatar-nav img { width: 100%; height: 100%; object-fit: cover; }
-.dropdown-menu { position: absolute; top: 100%; left: 0; background-color: var(--surface); min-width: 180px; box-shadow: var(--shadow-lg); border-radius: 8px; border: 1px solid var(--border-color); opacity: 0; visibility: hidden; transform: translateY(10px); transition: all 0.2s; z-index: 1001; margin-top: 10px; }
-.user-dropdown:hover .dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
-.dropdown-item { padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); transition: background 0.2s; }
+.dropdown-menu {
+    position: absolute; top: 100%; left: 0;
+    background-color: var(--surface);
+    min-width: 180px;
+    box-shadow: var(--shadow-lg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    opacity: 0; visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s;
+    z-index: 1001;
+    margin-top: 10px;
+}
+.user-dropdown:hover .dropdown-menu {
+    opacity: 1; visibility: visible; transform: translateY(0);
+}
+.dropdown-item {
+    padding: 0.75rem 1rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    color: var(--text-primary);
+    transition: background 0.2s;
+}
 .dropdown-item:hover { background-color: var(--background); }
 .dropdown-item.danger { color: var(--error); border-top: 1px solid var(--border-color); }
 
-/* --- Hero Section --- */
-.hero { background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); color: var(--text-on-primary); padding: 6rem 0; position: relative; overflow: hidden; }
-.hero-content { position: relative; z-index: 1; display: flex; align-items: center; min-height: 400px; }
+/* ============================================================
+   Hero Section
+   ============================================================ */
+.hero {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    color: var(--text-on-primary);
+    padding: 6rem 0;
+    position: relative;
+    overflow: hidden;
+}
+.hero-content {
+    position: relative; z-index: 1;
+    display: flex; align-items: center;
+    min-height: 400px;
+}
 .hero-text { flex: 1; padding-left: 2rem; }
 .hero-title { font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; }
 .hero-subtitle { font-size: 1.25rem; margin-bottom: 2rem; }
 .hero-image { flex: 1; display: flex; justify-content: center; align-items: center; }
 
-/* --- Buttons --- */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.3s; border: none; font-family: inherit; }
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem; font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+    font-family: inherit;
+}
 .btn-primary { background-color: var(--text-on-primary); color: var(--primary-color); }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
 .btn-custom { background-color: var(--primary-color); color: var(--text-on-primary); }
@@ -82,100 +184,452 @@ a { text-decoration: none; color: inherit; }
 .btn-outline { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
 .btn-outline:hover { background-color: var(--background); }
 
-/* --- Features Grid --- */
+/* ============================================================
+   Features Grid
+   ============================================================ */
 .features-section { padding: 5rem 0; background-color: var(--surface); }
-.section-title { text-align: center; font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary-color); }
-.section-subtitle { text-align: center; font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 3rem; max-width: 700px; margin-left: auto; margin-right: auto; }
-.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; }
-.feature-card { background-color: var(--background); border-radius: 12px; padding: 2rem; text-align: center; transition: all 0.3s; }
+.section-title {
+    text-align: center; font-size: 2.5rem; font-weight: 700;
+    margin-bottom: 1rem; color: var(--primary-color);
+}
+.section-subtitle {
+    text-align: center; font-size: 1.2rem;
+    color: var(--text-secondary); margin-bottom: 3rem;
+    max-width: 700px; margin-left: auto; margin-right: auto;
+}
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+.feature-card {
+    background-color: var(--background); border-radius: 12px;
+    padding: 2rem; text-align: center; transition: all 0.3s;
+}
 .feature-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
 .feature-icon { font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem; }
 .feature-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
 
-/* --- Dashboard & Schedule --- */
+/* ============================================================
+   Dashboard & Schedule (برای dashboard.html)
+   ============================================================ */
 .dashboard-container { padding: 2rem 0; }
-.schedule-card { background-color: var(--surface); border-radius: 12px; box-shadow: var(--shadow-md); padding: 1.5rem; margin-bottom: 2rem; overflow-x: auto; }
-.schedule-grid { display: grid; grid-template-columns: 80px repeat(5, 1fr); gap: 1px; background-color: var(--border-color); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; min-width: 600px; }
-.schedule-header, .schedule-time { background-color: var(--background); padding: 1rem; text-align: center; font-weight: 600; color: var(--text-secondary); font-size: 0.9rem; }
-.schedule-cell { background-color: var(--surface); min-height: 80px; padding: 0.5rem; cursor: pointer; transition: background 0.2s; position: relative; vertical-align: top; }
+
+/* schedule-card و schedule-grid در dashboard.html با کلاس‌های
+   section-card و schedule-grid بازنویسی شده‌اند، اما این کلاس‌های
+   قدیمی برای admin_dashboard.html هنوز استفاده می‌شوند */
+.schedule-card {
+    background-color: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+}
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+.card-header h2 { font-size: 1.2rem; font-weight: 700; }
+
+/* grid برنامه هفتگی — این کلاس در هر دو dashboard.html و admin_dashboard.html استفاده می‌شود */
+.schedule-grid {
+    display: grid;
+    grid-template-columns: 80px repeat(5, 1fr);
+    gap: 1px;
+    background-color: var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 600px;
+}
+.schedule-header,
+.schedule-time {
+    background-color: var(--background);
+    padding: 1rem;
+    text-align: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+.schedule-cell {
+    background-color: var(--surface);
+    min-height: 80px;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+    vertical-align: top;
+}
 .schedule-cell:hover { background-color: var(--background); }
 .schedule-cell.has-class { border-right: 3px solid var(--primary-color); }
 
-/* Odd/Even Split Styles */
+/* رنگ‌بندی هفته‌های زوج/فرد */
 .split-container { display: flex; flex-direction: column; height: 100%; width: 100%; }
-.split-half { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; border-bottom: 1px dashed var(--border-color); font-size: 0.8rem; padding: 0.25rem; }
+.split-half {
+    flex: 1;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    width: 100%;
+    border-bottom: 1px dashed var(--border-color);
+    font-size: 0.8rem; padding: 0.25rem;
+}
 .split-half:last-child { border-bottom: none; }
-.bg-odd { background-color: rgba(33, 150, 243, 0.15); } /* Light Blue */
-.bg-even { background-color: rgba(76, 175, 80, 0.15); } /* Light Green */
-.bg-all { background-color: rgba(0, 131, 143, 0.1); }
-
+.bg-odd  { background-color: rgba(33,150,243,0.15); }
+.bg-even { background-color: rgba(76,175,80,0.15); }
+.bg-all  { background-color: rgba(0,131,143,0.1); }
 .class-name { font-size: 0.85rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.25rem; }
 .class-location { font-size: 0.75rem; color: var(--text-secondary); }
 
-/* --- Chat Layout --- */
-.chat-layout { display: flex; height: calc(100vh - 80px); background-color: var(--surface); overflow: hidden; }
-.chat-sidebar { width: 350px; background-color: var(--surface); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; }
-.chat-main { flex: 1; display: flex; flex-direction: column; background-color: var(--background); position: relative; }
+/* Dashboard Tabs — مشترک بین dashboard.html و admin_dashboard.html */
+.dashboard-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 1rem;
+    background: var(--surface);
+    border-radius: 12px 12px 0 0;
+}
 
-/* Sidebar */
-.sidebar-header { padding: 1rem; background-color: var(--surface); border-bottom: 1px solid var(--border-color); }
+/* ============================================================
+   Chat Layout — chat.html
+   ============================================================
+   مشکل قبلی: ارتفاع calc(100vh - 80px) بود اما navbar
+   فقط 60px است. این اختلاف ۲۰ پیکسل باعث می‌شد یک نوار
+   خالی در پایین صفحه روی موبایل ظاهر شود.
+   راه‌حل: تغییر به calc(100vh - 60px) تا با navbar هماهنگ باشد.
+   ============================================================ */
+.chat-layout {
+    display: flex;
+    /* 60px = ارتفاع دقیق navbar که در همین فایل تعریف شده */
+    height: calc(100vh - 60px);
+    overflow: hidden;
+    background: var(--background);
+}
+
+/* sidebar عرض 300px دارد تا با تعریف chat.html هماهنگ باشد */
+.chat-sidebar {
+    width: 300px;
+    min-width: 300px;
+    background-color: var(--surface);
+    border-left: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Sidebar elements */
+.sidebar-header {
+    padding: 1rem 1.25rem;
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border-color);
+}
 .conversation-list { flex: 1; overflow-y: auto; }
-.convo-item { display: flex; align-items: center; padding: 0.75rem 1rem; gap: 0.75rem; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid var(--border-color); }
+.convo-item {
+    display: flex; align-items: center;
+    padding: 0.75rem 1rem; gap: 0.75rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid var(--border-color);
+}
 .convo-item:hover { background-color: var(--background); }
-.convo-item.active { background-color: var(--primary-color); color: white; }
-.convo-avatar { width: 48px; height: 48px; border-radius: 50%; background-color: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; overflow: hidden; flex-shrink: 0; position: relative;}
+.convo-item.active { background-color: rgba(0,131,143,.08); }
+.convo-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background-color: var(--primary-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; color: white;
+    overflow: hidden; flex-shrink: 0; position: relative;
+}
 .convo-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .convo-info { flex: 1; overflow: hidden; }
 .convo-name { font-weight: 600; font-size: 0.95rem; }
 .convo-msg { font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.convo-item.active .convo-name, .convo-item.active .convo-msg { color: white; }
 
-/* Chat Window */
-.chat-empty { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); flex-direction: column; gap: 1rem; }
-.chat-header-active { background-color: var(--surface); padding: 0.75rem 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-.chat-messages-active { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v-2h4v4h2v-4h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4v-2H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
-.message-bubble { max-width: 65%; padding: 0.75rem 1rem; border-radius: 12px; position: relative; word-wrap: break-word; }
-.message-bubble.sent { background-color: var(--primary-color); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-.message-bubble.received { background-color: var(--surface); color: var(--text-primary); align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: var(--shadow-sm); }
-.message-time { font-size: 0.7rem; margin-top: 0.25rem; opacity: 0.7; text-align: left; }
+/* Chat Header */
+.chat-header-active {
+    background-color: var(--surface);
+    padding: 0.75rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
+}
+
+/* Messages Area */
+.chat-messages-active {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v-2h4v4h2v-4h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4v-2H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   Message Bubbles — رفع تعارض با ساختار جدید chat.html
+   ============================================================
+   مشکل قبلی: .message-bubble.sent و .message-bubble.received
+   هر دو از align-self استفاده می‌کردند تا پیام را چپ یا راست
+   تراز کنند. اما در chat.html جدید، ساختار HTML تغییر کرده:
+     <div class="message-wrapper sent">      ← این المان align-self دارد
+       <div class="message-bubble">...</div> ← این فقط ظاهر بصری دارد
+     </div>
+   اگر align-self همچنان روی .message-bubble باقی می‌ماند، در
+   حالتی که هر دو استایل هم‌زمان load می‌شدند (چون CSS فایل
+   global است)، پیام‌ها ممکن بود هر دو در یک سمت نمایش داده شوند.
+   راه‌حل: حذف align-self از message-bubble و انتقال منطق
+   تراز به message-wrapper که ساختار جدید chat.html از آن
+   استفاده می‌کند. کلاس‌های sent/received روی bubble فقط
+   رنگ و شکل ظاهری را مدیریت می‌کنند.
+   ============================================================ */
+
+/* wrapper — مدیریت جهت (چپ یا راست) */
+.message-wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+}
+.message-wrapper.sent  { align-self: flex-end;  align-items: flex-end; }
+.message-wrapper.received { align-self: flex-start; align-items: flex-start; }
+
+/* bubble — فقط ظاهر بصری، بدون align-self */
+.message-bubble {
+    padding: 0.65rem 1rem;
+    border-radius: 14px;
+    position: relative;
+    word-wrap: break-word;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+.message-wrapper.sent .message-bubble {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border-bottom-left-radius: 4px;
+}
+.message-wrapper.received .message-bubble {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-bottom-right-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* پشتیبانی از ساختار قدیمی (برای صفحات دیگری که ممکن است
+   هنوز از .message-bubble.sent/received بدون wrapper استفاده کنند) */
+.message-bubble.sent {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    align-self: flex-end;
+    border-bottom-left-radius: 4px;
+}
+.message-bubble.received {
+    background-color: var(--surface);
+    color: var(--text-primary);
+    align-self: flex-start;
+    border: 1px solid var(--border-color);
+    border-bottom-right-radius: 4px;
+    box-shadow: var(--shadow-sm);
+}
+
+.message-time { font-size: 0.7rem; margin-top: 0.3rem; opacity: 0.7; display: block; }
+.message-wrapper.sent .message-time { text-align: left; color: var(--text-secondary); }
+.message-wrapper.received .message-time { text-align: right; color: var(--text-secondary); }
+/* پشتیبانی از ساختار قدیمی */
 .message-bubble.sent .message-time { text-align: right; }
 
-.chat-input-area { background-color: var(--surface); padding: 1rem; display: flex; align-items: center; gap: 0.75rem; border-top: 1px solid var(--border-color); }
-.chat-input-area input { flex: 1; padding: 0.75rem 1rem; border-radius: 24px; border: 1px solid var(--border-color); background-color: var(--background); color: var(--text-primary); font-family: inherit; }
-.chat-input-area input:focus { outline: none; border-color: var(--primary-color); }
-.send-btn { width: 48px; height: 48px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: transform 0.2s; }
-.send-btn:hover { transform: scale(1.05); }
+/* Chat Input */
+.chat-input-area {
+    background-color: var(--surface);
+    padding: 0.85rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+.chat-input-area input[type="text"] {
+    flex: 1;
+    padding: 0.7rem 1.1rem;
+    border-radius: 24px;
+    border: 1.5px solid var(--border-color);
+    background-color: var(--background);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.chat-input-area input[type="text"]:focus { border-color: var(--primary-color); }
+/* پشتیبانی از selector قدیمی input بدون type */
+.chat-input-area input:not([type]) {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 24px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background);
+    color: var(--text-primary);
+    font-family: inherit;
+}
+.chat-input-area input:not([type]):focus { outline: none; border-color: var(--primary-color); }
 
-/* --- Forms & Cards --- */
-.form-card { background-color: var(--surface); border-radius: 12px; padding: 2rem; box-shadow: var(--shadow-md); }
+.send-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 3px 10px rgba(0,131,143,.3);
+    flex-shrink: 0;
+}
+.send-btn:hover { transform: scale(1.08); box-shadow: 0 5px 14px rgba(0,131,143,.4); }
+.send-btn:active { transform: scale(0.95); }
+
+/* Empty State */
+.chat-empty {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary);
+    flex-direction: column; gap: 1rem;
+}
+
+/* ============================================================
+   Forms & Cards (global)
+   ============================================================ */
+.form-card {
+    background-color: var(--surface);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+}
 .form-group { margin-bottom: 1.5rem; }
-.form-label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: var(--text-primary); }
-.form-control, .form-select { width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background); color: var(--text-primary); font-family: inherit; transition: border 0.2s; }
-.form-control:focus { outline: none; border-color: var(--primary-color); }
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+.form-control,
+.form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--background);
+    color: var(--text-primary);
+    font-family: inherit;
+    transition: border 0.2s;
+}
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+/* کلاس قدیمی برای خطاهای فرم — هنوز در بعضی صفحات استفاده می‌شود */
 .error-message { color: var(--error); font-size: 0.85rem; margin-top: 0.25rem; }
 
-/* --- Footer --- */
-.footer { background-color: var(--secondary-color); color: var(--text-on-primary); padding: 2rem 0; margin-top: 4rem; }
+/* Modal — کلاس‌های پایه مشترک که ممکن است در base.html استفاده شوند */
+.modal-box {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 2000;
+    align-items: center; justify-content: center;
+    padding: 1rem;
+}
+.modal-box.open,
+.modal-box[style*="flex"] { display: flex; }
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+    background-color: var(--secondary-color);
+    color: var(--text-on-primary);
+    padding: 2rem 0;
+    margin-top: 4rem;
+}
 .footer-section { margin-bottom: 1rem; }
 .footer-title { font-size: 1.1rem; margin-bottom: 1rem; }
 .footer-links { list-style: none; }
-.footer-links a { color: rgba(255, 255, 255, 0.8); display: block; padding: 0.25rem 0; transition: padding 0.2s; }
+.footer-links a {
+    color: rgba(255,255,255,0.8);
+    display: block; padding: 0.25rem 0;
+    transition: padding 0.2s;
+}
 .footer-links a:hover { padding-right: 10px; }
 
-/* --- Utilities --- */
+/* ============================================================
+   Utilities
+   ============================================================ */
 .text-center { text-align: center; }
 .mt-3 { margin-top: 1rem; }
 .mb-3 { margin-bottom: 1rem; }
 
-/* --- Responsive --- */
+/* ============================================================
+   Responsive
+   ============================================================ */
 @media (max-width: 768px) {
+    /* Hero */
     .hero-content { flex-direction: column; text-align: center; }
     .hero-text { padding-left: 0; margin-bottom: 2rem; }
+    .hero-title { font-size: 2rem; }
     .features-grid { grid-template-columns: 1fr; }
-    
-    /* Chat Responsive */
-    .chat-layout { flex-direction: column; height: auto; min-height: calc(100vh - 60px); }
-    .chat-sidebar { width: 100%; border-left: none; }
-    .chat-main { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; }
+
+    /* ============================================================
+       Chat Responsive
+       ============================================================
+       مشکل قبلی: روی موبایل chat-main با display:none پنهان می‌شد
+       و فقط با کلاس active نمایش می‌یافت. اما در chat.html جدید،
+       sidebar و main هر دو از طریق JavaScript مستقیماً
+       display:flex/none می‌شوند. بنابراین کلاس active دیگر
+       ضروری نیست ولی برای backward compatibility نگه می‌داریم.
+       ============================================================ */
+    .chat-layout {
+        /* روی موبایل ارتفاع auto می‌شود تا محتوا اسکرول‌پذیر باشد */
+        height: calc(100vh - 60px);
+        flex-direction: column;
+        position: relative;
+    }
+    .chat-sidebar {
+        width: 100%;
+        min-width: unset;
+        border-left: none;
+        border-bottom: 1px solid var(--border-color);
+        /* JavaScript در chat.html مستقیماً display را کنترل می‌کند */
+    }
+    .chat-main {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 50;
+        /* به جای display:none، JavaScript از style.display استفاده می‌کند */
+    }
+    /* backward compatibility برای کد قدیمی که از کلاس active استفاده می‌کرد */
+    .chat-main:not([style]) { display: none; }
     .chat-main.active { display: flex; }
+
+    .message-wrapper { max-width: 88%; }
+
+    /* Navbar */
+    .navbar-nav .nav-link span { display: none; }
+}
+
+@media (max-width: 480px) {
+    .hero-title { font-size: 1.6rem; }
+    .section-title { font-size: 1.8rem; }
+    .form-card { padding: 1.25rem; }
 }

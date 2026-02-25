@@ -3,141 +3,490 @@
 {% block title %}پروفایل کاربری | یونی نت{% endblock %}
 
 {% block content %}
-<div class="container" style="max-width: 800px; margin: 2rem auto;">
-    
-    <!-- Profile Header Card -->
-    <div class="form-card" style="text-align: center; margin-bottom: 2rem;">
-        <form action="{{ url_for('update_profile') }}" method="POST" enctype="multipart/form-data" id="profile-form">
+<div class="profile-container">
+
+    <!-- نمایش پیام‌های flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="profile-alert profile-alert-{{ category }}">
+                <i class="material-icons">
+                    {% if category == 'success' %}check_circle
+                    {% elif category == 'error' %}error
+                    {% else %}info{% endif %}
+                </i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- ===== کارت هدر پروفایل ===== -->
+    <div class="profile-header-card">
+
+        <!-- آپلود عکس پروفایل -->
+        <!-- این فرم مجزا از فرم ویرایش اطلاعات است تا CSRF token مخصوص
+             خودش را داشته باشد و با submit() مستقیم مشکل‌ساز نشود -->
+        {% if can_edit %}
+        <form action="{{ url_for('update_profile') }}" method="POST"
+              enctype="multipart/form-data" id="profile-pic-form">
+            <!-- hidden_tag فیلد csrf_token را به طور خودکار رندر می‌کند -->
             {{ update_profile_form.hidden_tag() }}
-            
+        {% endif %}
+
             <div class="profile-pic-wrapper">
                 {% if user.profile_pic and user.profile_pic != 'default.jpg' %}
-                    <img src="{{ url_for('static', filename='uploads/profile_pics/' + user.profile_pic) }}?t={{ range(1000) | random }}" class="profile-pic-preview" alt="Profile">
+                    <!-- پارامتر t= کش مرورگر را پس از تغییر عکس باطل می‌کند -->
+                    <img src="{{ url_for('static', filename='uploads/profile_pics/' + user.profile_pic) }}?t={{ range(9999)|random }}"
+                         class="profile-pic-img" alt="{{ user.full_name }}">
                 {% else %}
-                    <img src="https://ui-avatars.com/api/?name={{ user.full_name }}&background=00838f&color=fff&size=200" class="profile-pic-preview" alt="Avatar">
+                    <img src="https://ui-avatars.com/api/?name={{ user.full_name | urlencode }}&background=00838f&color=fff&size=200"
+                         class="profile-pic-img" alt="{{ user.full_name }}">
                 {% endif %}
-                
+
                 {% if can_edit %}
-                    <label for="file-upload" class="profile-pic-edit">
-                        <i class="material-icons" style="font-size: 1.2rem;">camera_alt</i>
-                        <input id="file-upload" type="file" name="profile_pic" accept="image/*" style="display: none;" onchange="document.getElementById('profile-form').submit();">
-                    </label>
+                <!-- label روی input مخفی کلیک می‌کند؛ پس از انتخاب فایل،
+                     تابع JS فرم را submit می‌کند — این روش CSRF-safe است -->
+                <label for="file-upload" class="profile-pic-edit-btn" title="تغییر عکس">
+                    <i class="material-icons">camera_alt</i>
+                    <input id="file-upload" type="file" name="profile_pic"
+                           accept="image/png,image/jpg,image/jpeg,image/gif"
+                           style="display:none"
+                           onchange="submitProfilePic()">
+                </label>
                 {% endif %}
             </div>
-            
-            <h2 style="margin-bottom: 0.25rem;">{{ user.full_name }}</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">شماره دانشجویی: {{ user.student_id }}</p>
-            <span class="badge" style="background-color: var(--primary-light); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem;">{{ user.major }}</span>
-            
-            {% if not can_edit %}
-                <div style="margin-top: 1.5rem;">
-                    <a href="{{ url_for('chat_main', user_id=user.id) }}" class="btn btn-custom">
-                        <i class="material-icons" style="font-size: 1rem; margin-left: 5px;">chat</i>
-                        ارسال پیام
-                    </a>
-                </div>
-            {% endif %}
+
+        {% if can_edit %}
         </form>
+        {% endif %}
+
+        <!-- اطلاعات نمایشی کاربر -->
+        <div class="profile-user-info">
+            <h2 class="profile-user-name">{{ user.full_name }}</h2>
+            <p class="profile-student-id">
+                <i class="material-icons">badge</i>
+                شماره دانشجویی: {{ user.student_id }}
+            </p>
+            {% if user.major %}
+            <span class="profile-major-badge">{{ user.major }}</span>
+            {% endif %}
+        </div>
+
+        <!-- دکمه پیام (فقط برای مشاهده پروفایل دیگران) -->
+        {% if not can_edit %}
+        <div class="profile-actions">
+            <a href="{{ url_for('chat_main', user_id=user.id) }}" class="btn btn-custom">
+                <i class="material-icons">chat</i>
+                ارسال پیام
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline">
+                <i class="material-icons">arrow_back</i>
+                بازگشت
+            </a>
+        </div>
+        {% endif %}
     </div>
 
+    <!-- ===== بخش ویرایش (فقط برای صاحب حساب) ===== -->
     {% if can_edit %}
-    <!-- Tabs Container -->
-    <div class="form-card" style="padding: 0; overflow: hidden;">
-        <div class="profile-tabs" style="padding: 0 1rem; background: var(--surface);">
-            <div class="profile-tab active" onclick="switchProfileTab('info')">
-                <i class="material-icons">person</i> اطلاعات حساب
-            </div>
-            <div class="profile-tab" onclick="switchProfileTab('security')">
-                <i class="material-icons">security</i> امنیت
-            </div>
-            <div class="profile-tab" onclick="switchProfileTab('danger')">
-                <i class="material-icons">warning</i> خطرناک
-            </div>
+    <div class="profile-edit-card">
+
+        <!-- تب‌ها -->
+        <!-- مشکل قبلی: event.target.closest('.profile-tab') اگر کاربر روی آیکون
+             کلیک می‌کرد، ممکن بود .profile-tab را پیدا نکند (چون closest از خود
+             المان کلیک‌شده به بالا می‌رود، اما ممکن است در DOM بالای .profile-tab
+             نباشد). راه‌حل: پاس دادن this که همیشه خود div.profile-tab است. -->
+        <div class="profile-tabs-bar">
+            <button class="profile-tab active" id="ptab-info"
+                    onclick="switchProfileTab('info', this)">
+                <i class="material-icons">person</i>
+                <span>اطلاعات حساب</span>
+            </button>
+            <button class="profile-tab" id="ptab-security"
+                    onclick="switchProfileTab('security', this)">
+                <i class="material-icons">security</i>
+                <span>امنیت</span>
+            </button>
+            <button class="profile-tab" id="ptab-danger"
+                    onclick="switchProfileTab('danger', this)">
+                <i class="material-icons">warning</i>
+                <span>خطرناک</span>
+            </button>
         </div>
 
-        <!-- Tab: Info -->
-        <div id="tab-info" class="tab-content active" style="padding: 2rem;">
+        <!-- تب اطلاعات حساب -->
+        <div id="tab-info" class="profile-tab-content active">
             <form method="POST" action="{{ url_for('update_profile') }}">
                 {{ update_profile_form.hidden_tag() }}
+
                 <div class="form-group">
-                    <label class="form-label">نام و نام خانوادگی</label>
+                    <label class="form-label">
+                        <i class="material-icons form-label-icon">person</i>
+                        نام و نام خانوادگی
+                    </label>
                     {{ update_profile_form.full_name(class="form-control") }}
+                    {% if update_profile_form.full_name.errors %}
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ update_profile_form.full_name.errors[0] }}
+                        </div>
+                    {% endif %}
                 </div>
+
                 <div class="form-group">
-                    <label class="form-label">رشته تحصیلی</label>
+                    <label class="form-label">
+                        <i class="material-icons form-label-icon">school</i>
+                        رشته تحصیلی
+                    </label>
                     {{ update_profile_form.major(class="form-select") }}
                 </div>
-                <button type="submit" class="btn btn-custom">ذخیره تغییرات</button>
+
+                <button type="submit" class="btn btn-custom">
+                    <i class="material-icons">save</i>
+                    ذخیره تغییرات
+                </button>
             </form>
         </div>
 
-        <!-- Tab: Security -->
-        <div id="tab-security" class="tab-content" style="padding: 2rem;">
+        <!-- تب امنیت -->
+        <div id="tab-security" class="profile-tab-content">
             <form method="POST" action="{{ url_for('update_password') }}">
                 {{ update_password_form.hidden_tag() }}
+
                 <div class="form-group">
-                    <label class="form-label">رمز عبور فعلی</label>
-                    {{ update_password_form.current_password(class="form-control", type="password") }}
+                    <label class="form-label">
+                        <i class="material-icons form-label-icon">lock</i>
+                        رمز عبور فعلی
+                    </label>
+                    <div class="input-with-toggle">
+                        {{ update_password_form.current_password(
+                            class="form-control",
+                            id="pw-current"
+                        ) }}
+                        <button type="button" class="toggle-pw-btn"
+                                onclick="togglePw('pw-current', this)" tabindex="-1">
+                            <i class="material-icons">visibility</i>
+                        </button>
+                    </div>
+                    {% if update_password_form.current_password.errors %}
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ update_password_form.current_password.errors[0] }}
+                        </div>
+                    {% endif %}
                 </div>
+
                 <div class="form-group">
-                    <label class="form-label">رمز عبور جدید</label>
-                    {{ update_password_form.new_password(class="form-control", type="password") }}
+                    <label class="form-label">
+                        <i class="material-icons form-label-icon">lock_open</i>
+                        رمز عبور جدید
+                    </label>
+                    <div class="input-with-toggle">
+                        {{ update_password_form.new_password(
+                            class="form-control",
+                            id="pw-new"
+                        ) }}
+                        <button type="button" class="toggle-pw-btn"
+                                onclick="togglePw('pw-new', this)" tabindex="-1">
+                            <i class="material-icons">visibility</i>
+                        </button>
+                    </div>
+                    {% if update_password_form.new_password.errors %}
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ update_password_form.new_password.errors[0] }}
+                        </div>
+                    {% endif %}
                 </div>
+
                 <div class="form-group">
-                    <label class="form-label">تکرار رمز عبور جدید</label>
-                    {{ update_password_form.confirm_new_password(class="form-control", type="password") }}
+                    <label class="form-label">
+                        <i class="material-icons form-label-icon">lock_open</i>
+                        تکرار رمز عبور جدید
+                    </label>
+                    <div class="input-with-toggle">
+                        {{ update_password_form.confirm_new_password(
+                            class="form-control",
+                            id="pw-confirm"
+                        ) }}
+                        <button type="button" class="toggle-pw-btn"
+                                onclick="togglePw('pw-confirm', this)" tabindex="-1">
+                            <i class="material-icons">visibility</i>
+                        </button>
+                    </div>
+                    {% if update_password_form.confirm_new_password.errors %}
+                        <div class="field-error">
+                            <i class="material-icons">error_outline</i>
+                            {{ update_password_form.confirm_new_password.errors[0] }}
+                        </div>
+                    {% endif %}
                 </div>
-                <button type="submit" class="btn btn-custom">تغییر رمز عبور</button>
+
+                <button type="submit" class="btn btn-custom">
+                    <i class="material-icons">key</i>
+                    تغییر رمز عبور
+                </button>
             </form>
         </div>
 
-        <!-- Tab: Danger -->
-        <div id="tab-danger" class="tab-content" style="padding: 2rem;">
-            <div style="background-color: rgba(183, 28, 28, 0.05); border: 1px solid var(--error); border-radius: 8px; padding: 1.5rem;">
-                <h3 style="color: var(--error); margin-bottom: 0.5rem;">حذف حساب کاربری</h3>
-                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                    با حذف حساب کاربری، تمام اطلاعات شما شامل پیام‌ها و برنامه کلاسی به طور کامل پاک خواهد شد.
+        <!-- تب خطرناک -->
+        <div id="tab-danger" class="profile-tab-content">
+            <div class="danger-zone-card">
+                <div class="danger-zone-header">
+                    <i class="material-icons">warning_amber</i>
+                    <h3>حذف حساب کاربری</h3>
+                </div>
+                <p class="danger-zone-desc">
+                    با حذف حساب کاربری، تمام اطلاعات شما شامل پیام‌ها، برنامه کلاسی و رزروها
+                    به طور کامل و غیرقابل بازگشت پاک خواهد شد.
                 </p>
-                <form method="POST" action="{{ url_for('delete_account') }}" onsubmit="return confirm('آیا مطمئن هستید؟ این عملیات غیرقابل بازگشت است.');">
+                <form method="POST" action="{{ url_for('delete_account') }}"
+                      onsubmit="return confirm('آیا کاملاً مطمئن هستید؟\nاین عملیات غیرقابل بازگشت است.')">
                     {{ delete_account_form.hidden_tag() }}
-                    <button type="submit" class="btn" style="background-color: var(--error); color: white;">حذف حساب من</button>
+                    <button type="submit" class="btn btn-delete">
+                        <i class="material-icons">delete_forever</i>
+                        حذف حساب من
+                    </button>
                 </form>
             </div>
         </div>
-    </div>
+
+    </div><!-- /profile-edit-card -->
     {% endif %}
 
-</div>
+</div><!-- /profile-container -->
 
 <style>
-    /* Profile Specific Styles */
-    .profile-pic-wrapper { position: relative; width: 120px; height: 120px; margin: 0 auto 1.5rem; }
-    .profile-pic-preview { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-light); }
-    .profile-pic-edit { position: absolute; bottom: 0; right: 0; background-color: var(--primary-color); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform 0.2s; }
-    .profile-pic-edit:hover { transform: scale(1.1); }
 
-    .profile-tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 0; }
-    .profile-tab { padding: 1rem 1.5rem; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; display: flex; align-items: center; gap: 0.5rem; }
-    .profile-tab:hover { color: var(--primary-color); background: var(--background); }
-    .profile-tab.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
-    
-    .tab-content { display: none; animation: fadeIn 0.3s ease; }
-    .tab-content.active { display: block; }
+.profile-container {
+    max-width: 780px;
+    margin: 2rem auto;
+    padding: 0 1rem 3rem;
+}
 
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.profile-alert {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .85rem 1.1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: .9rem; font-weight: 500;
+}
+.profile-alert i { font-size: 1.1rem; flex-shrink: 0; }
+.profile-alert-success {
+    background: rgba(46,125,50,.1);
+    border: 1px solid rgba(46,125,50,.25);
+    color: var(--success);
+}
+.profile-alert-error {
+    background: rgba(183,28,28,.08);
+    border: 1px solid rgba(183,28,28,.2);
+    color: var(--error);
+}
+.profile-alert-info {
+    background: rgba(2,136,209,.08);
+    border: 1px solid rgba(2,136,209,.2);
+    color: var(--info);
+}
+
+.profile-header-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+}
+
+/* عکس پروفایل */
+.profile-pic-wrapper {
+    position: relative;
+    width: 120px; height: 120px;
+}
+.profile-pic-img {
+    width: 100%; height: 100%;
+    border-radius: 50%; object-fit: cover;
+    border: 4px solid var(--primary-light);
+    box-shadow: 0 4px 16px rgba(0,131,143,.2);
+}
+.profile-pic-edit-btn {
+    position: absolute;
+    bottom: 2px; right: 2px;
+    background: var(--primary-color); color: white;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    transition: transform .2s, background .2s;
+    border: 2px solid var(--surface);
+}
+.profile-pic-edit-btn:hover { transform: scale(1.1); background: var(--primary-dark); }
+.profile-pic-edit-btn i { font-size: 1rem; }
+
+/* اطلاعات کاربر */
+.profile-user-info { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+.profile-user-name { font-size: 1.5rem; font-weight: 700; margin: 0; }
+.profile-student-id {
+    display: flex; align-items: center; gap: .3rem;
+    color: var(--text-secondary); font-size: .9rem;
+}
+.profile-student-id i { font-size: 1rem; }
+.profile-major-badge {
+    background: rgba(0,131,143,.12);
+    color: var(--primary-dark);
+    border: 1px solid rgba(0,131,143,.2);
+    padding: .25rem .85rem;
+    border-radius: 20px; font-size: .82rem; font-weight: 600;
+}
+
+.profile-actions { display: flex; gap: .6rem; flex-wrap: wrap; justify-content: center; margin-top: .5rem; }
+
+.profile-edit-card {
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.profile-tabs-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--background);
+    padding: 0 .5rem;
+    gap: .25rem;
+}
+.profile-tab {
+    display: flex; align-items: center; gap: .4rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    font-weight: 600; font-size: .88rem;
+    color: var(--text-secondary);
+    border: none; background: transparent;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s, background .2s;
+    border-radius: 6px 6px 0 0;
+}
+.profile-tab:hover { color: var(--primary-color); background: rgba(0,131,143,.04); }
+.profile-tab.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    background: var(--surface);
+}
+.profile-tab i { font-size: 1.1rem; pointer-events: none; }
+.profile-tab span { pointer-events: none; }
+
+/* محتوای تب */
+.profile-tab-content { display: none; padding: 2rem; animation: profileFadeIn .3s ease; }
+.profile-tab-content.active { display: block; }
+@keyframes profileFadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+
+.input-with-toggle { position: relative; display: flex; align-items: center; }
+.input-with-toggle .form-control { padding-left: 2.75rem; width: 100%; }
+.toggle-pw-btn {
+    position: absolute; left: .6rem;
+    background: none; border: none; cursor: pointer;
+    color: var(--text-secondary); padding: .25rem;
+    display: flex; align-items: center; border-radius: 50%;
+    transition: color .2s; line-height: 1;
+}
+.toggle-pw-btn:hover { color: var(--primary-color); }
+.toggle-pw-btn i { font-size: 1.15rem; }
+
+.form-label { display: flex; align-items: center; gap: .3rem; font-weight: 600; font-size: .9rem; margin-bottom: .45rem; }
+.form-label-icon { font-size: .95rem; color: var(--primary-color); }
+
+.field-error {
+    display: flex; align-items: center; gap: .3rem;
+    color: var(--error); font-size: .82rem; margin-top: .35rem;
+}
+.field-error i { font-size: .9rem; }
+
+.danger-zone-card {
+    background: rgba(183,28,28,.04);
+    border: 1px solid rgba(183,28,28,.25);
+    border-radius: 12px; padding: 1.5rem;
+}
+.danger-zone-header {
+    display: flex; align-items: center; gap: .5rem;
+    color: var(--error); margin-bottom: .75rem;
+}
+.danger-zone-header i { font-size: 1.4rem; }
+.danger-zone-header h3 { font-size: 1.05rem; margin: 0; }
+.danger-zone-desc {
+    font-size: .88rem; color: var(--text-secondary);
+    margin-bottom: 1.25rem; line-height: 1.7;
+}
+.btn-delete {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--error); color: white;
+    padding: .65rem 1.35rem; border-radius: 8px;
+    border: none; cursor: pointer; font-family: inherit;
+    font-size: .9rem; font-weight: 600;
+    transition: opacity .2s, transform .15s;
+}
+.btn-delete:hover { opacity: .88; transform: translateY(-1px); }
+
+@media (max-width: 600px) {
+    .profile-tab span { display: none; }
+    .profile-tab { padding: .85rem .75rem; }
+}
 </style>
-
 {% endblock %}
 
 {% block scripts %}
 <script>
-    function switchProfileTab(tabName) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.profile-tab').forEach(el => el.classList.remove('active'));
-        
-        document.getElementById('tab-' + tabName).classList.add('active');
-        // Find the clicked tab and make it active
-        event.target.closest('.profile-tab').classList.add('active');
+
+function switchProfileTab(tabName, btn) {
+    document.querySelectorAll('.profile-tab-content').forEach(function(el) {
+        el.classList.remove('active');
+    });
+    document.querySelectorAll('.profile-tab').forEach(function(el) {
+        el.classList.remove('active');
+    });
+
+    const content = document.getElementById('tab-' + tabName);
+    if (content) content.classList.add('active');
+
+    if (btn) btn.classList.add('active');
+}
+
+function submitProfilePic() {
+    const form = document.getElementById('profile-pic-form');
+    if (!form) return;
+    if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+    } else {
+        form.submit();
     }
+}
+
+function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const icon = btn.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.textContent = 'visibility_off';
+    } else {
+        input.type = 'password';
+        if (icon) icon.textContent = 'visibility';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // بررسی وجود خطا در فیلدهای رمز عبور
+    const hasPwError = document.querySelector('#tab-security .field-error');
+    if (hasPwError) {
+        switchProfileTab('security', document.getElementById('ptab-security'));
+    }
+});
 </script>
 {% endblock %}
