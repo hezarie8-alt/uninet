@@ -31,11 +31,13 @@ app.config['CHAT_UPLOAD_FOLDER'] = CHAT_UPLOAD_FOLDER
 for folder in [UPLOAD_FOLDER, CHAT_UPLOAD_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
+
 database_url = os.getenv("DATABASE_URL")
 if not database_url:
     basedir = os.path.abspath(os.path.dirname(__file__))
     database_url = 'sqlite:///' + os.path.join(basedir, 'app.db')
 else:
+    # render.com از postgres:// استفاده می‌کند اما SQLAlchemy نیاز به postgresql:// دارد
     if database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -48,6 +50,8 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# psycogreen برای سازگاری eventlet با psycopg2 لازم است.
+# با try/except چون در محیط SQLite (local) نصب نیست.
 try:
     import psycogreen.psycopg2
     psycogreen.psycopg2.patch()
@@ -63,6 +67,9 @@ csrf = CSRFProtect(app)
 ONLINE_USERS_MEMORY = set()
 
 
+# ==========================================
+# State Manager
+# ==========================================
 class StateManager:
     @staticmethod
     def set_online(user_id):
@@ -77,6 +84,9 @@ class StateManager:
         return user_id in ONLINE_USERS_MEMORY
 
 
+# ==========================================
+# Models
+# ==========================================
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
@@ -187,10 +197,46 @@ class SystemSetting(db.Model):
     value = db.Column(db.String(100), nullable=True)
 
 
+# ==========================================
+# create_initial_data
+# این تابع توسط دستور build روی render.com فراخوانی می‌شود:
+# python -c "from app import app, db, create_initial_data;
+#             app.app_context().push(); db.create_all(); create_initial_data()"
+# وظیفه آن ایجاد داده‌های اولیه ضروری (مثل کاربر admin) است.
+# ==========================================
+def create_initial_data():
+    """ایجاد داده‌های اولیه پس از db.create_all() — ایمن در برابر اجرای مکرر"""
+    try:
+        # ایجاد کاربر admin اگر وجود نداشته باشد
+        if not User.query.filter_by(student_id='admin').first():
+            admin = User(
+                full_name='مدیر سیستم',
+                student_id='admin',
+                major='مدیریت',
+                password_hash=generate_password_hash('admin123', method='pbkdf2:sha256'),
+                is_admin=True
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print("✓ Admin user created: ID=admin | Password=admin123")
+        else:
+            print("✓ Admin user already exists, skipping.")
+    except Exception as e:
+        db.session.rollback()
+        # خطا را چاپ می‌کنیم اما raise نمی‌کنیم تا build کامل شود
+        print(f"Warning: create_initial_data error: {e}")
+
+
+# ==========================================
+# Helpers
+# ==========================================
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# ==========================================
+# Services
+# ==========================================
 class AuthService:
     @staticmethod
     def register_user(full_name, student_id, major, password):
@@ -298,6 +344,9 @@ class ChatService:
         return msg
 
 
+# ==========================================
+# Forms
+# ==========================================
 MAJOR_CHOICES = [
     ('', 'انتخاب کنید'),
     ('مهندسی کامپیوتر', 'مهندسی کامپیوتر'),
@@ -353,6 +402,9 @@ class DeleteAccountForm(FlaskForm):
     submit = SubmitField('حذف حساب کاربری')
 
 
+# ==========================================
+# Decorators
+# ==========================================
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -373,6 +425,9 @@ def admin_required(f):
     return decorated_function
 
 
+# ==========================================
+# Context Processor
+# ==========================================
 @app.context_processor
 def inject_user():
     user_id = session.get('current_user_id')
@@ -388,6 +443,9 @@ def inject_user():
     return dict(current_user=None, current_user_id=None, is_admin=False)
 
 
+# ==========================================
+# Utilities
+# ==========================================
 def get_week_number():
     return datetime.now().isocalendar()[1]
 
@@ -410,6 +468,9 @@ def check_weekly_reset():
         db.session.rollback()
 
 
+# ==========================================
+# Error Handlers
+# ==========================================
 @app.errorhandler(404)
 def not_found_error(e):
     if request.is_json or request.path.startswith('/api/') or request.path.startswith('/admin/save'):
@@ -433,6 +494,9 @@ def forbidden_error(e):
                            error_msg='دسترسی به این صفحه مجاز نیست.'), 403
 
 
+# ==========================================
+# Routes
+# ==========================================
 @app.route('/')
 def index():
     check_weekly_reset()
@@ -471,6 +535,7 @@ def register():
             return redirect(url_for('dashboard'))
         except Exception as e:
             db.session.rollback()
+            app.logger.error(f"register error: {e}")
             flash('خطا در ثبت‌نام. لطفاً دوباره تلاش کنید.', 'error')
     return render_template('register.html', form=form, login_form=LoginForm())
 
@@ -522,7 +587,6 @@ def dashboard():
         weekday_name = ''
         today_gregorian = datetime.today().date()
 
-    # کلاس‌های لغو شده امروز برای نمایش هشدار
     try:
         cancelled_today = CancelledClass.query.filter(
             or_(
@@ -719,7 +783,6 @@ def admin_dashboard():
 @csrf.exempt
 @admin_required
 def save_master_schedule():
-    """ذخیره برنامه مستر از AJAX - نیاز به csrf.exempt دارد"""
     try:
         data = request.get_json()
         if data is None:
@@ -924,7 +987,6 @@ def delete_account():
     return redirect(url_for('index'))
 
 
-
 @app.route('/chat')
 @login_required
 def chat_main():
@@ -991,7 +1053,6 @@ def check_user_online(user_id):
 @app.route('/api/online_users')
 @login_required
 def get_online_users():
-    """لیست کاربران آنلاین برای نمایش در گروه"""
     try:
         online_ids = list(ONLINE_USERS_MEMORY)
         users = User.query.filter(User.id.in_(online_ids)).all() if online_ids else []
@@ -1004,7 +1065,6 @@ def get_online_users():
 @app.route('/api/all_users')
 @login_required
 def get_all_users():
-    """تمام کاربران سیستم برای نمایش لیست اعضای گروه"""
     try:
         users = User.query.filter(User.id != session['current_user_id']).order_by(User.full_name).all()
         result = [{
@@ -1031,6 +1091,10 @@ def mark_notification_read(n_id):
         db.session.rollback()
     return jsonify({'status': 'ok'})
 
+
+# ==========================================
+# Socket.IO Events
+# ==========================================
 @socketio.on('connect')
 def handle_connect():
     if session.get('current_user_id'):
@@ -1172,19 +1236,13 @@ def handle_channel_message(data):
         emit('error', {'message': 'خطا در ارسال اطلاعیه'})
 
 
+# ==========================================
+# Application Startup
+# (فقط هنگام اجرای مستقیم — نه هنگام import توسط build command)
+# ==========================================
 with app.app_context():
     db.create_all()
-    if not User.query.filter_by(student_id='admin').first():
-        admin = User(
-            full_name='مدیر سیستم',
-            student_id='admin',
-            major='مدیریت',
-            password_hash=generate_password_hash('admin123', method='pbkdf2:sha256'),
-            is_admin=True
-        )
-        db.session.add(admin)
-        db.session.commit()
-        print("Admin created: ID=admin | Password=admin123")
+    create_initial_data()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

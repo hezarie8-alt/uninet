@@ -8,6 +8,7 @@ eventlet
 gunicorn
 jdatetime
 psycopg2-binary
+psycogreen
 email_validator
 WTForms
 SQLAlchemy
