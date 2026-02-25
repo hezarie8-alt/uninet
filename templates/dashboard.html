@@ -57,6 +57,7 @@
             {% endif %}
         </div>
     </div>
+
     {% if cancelled_classes %}
     <div class="cancelled-alert-banner">
         <div class="alert-icon"><i class="material-icons">warning_amber</i></div>
@@ -64,13 +65,21 @@
             <strong>کلاس‌های لغو شده امروز:</strong>
             {% for c in cancelled_classes %}
                 <span class="alert-item">
-                    {{ c.course_name }} (استاد {{ c.professor_name }})
+                    {% if c.course_name and c.professor_name %}
+                        {{ c.course_name }} (استاد {{ c.professor_name }})
+                    {% elif c.professor_name %}
+                        تمامی کلاس‌های استاد {{ c.professor_name }}
+                    {% else %}
+                        {{ c.course_name or 'بدون نام' }}
+                    {% endif %}
+                    {% if c.time_slot %} — ساعت {{ c.time_slot }}{% endif %}
                     {% if c.description %} — {{ c.description }}{% endif %}
                 </span>
             {% endfor %}
         </div>
     </div>
     {% endif %}
+
     <div class="tabs-bar">
         <button class="dash-tab active" id="tab-btn-schedule" onclick="openTab('personal-schedule', this)">
             <i class="material-icons">event_note</i>
@@ -83,11 +92,18 @@
         <button class="dash-tab" id="tab-btn-cancelled" onclick="openTab('cancelled-classes', this)">
             <i class="material-icons">event_busy</i>
             <span>کلاس‌های لغو شده</span>
-            {% if all_cancelled_classes %}
-                <span class="tab-badge">{{ all_cancelled_classes|length }}</span>
+            {#
+                مشکل ۱ رفع شد: badge حالا فقط تعداد دیده‌نشده‌ها رو نشون میده (unviewed_cancelled_count)
+                نه کل تعداد. وقتی کاربر تب رو باز کنه badge خودکار حذف میشه.
+            #}
+            {% if unviewed_cancelled_count and unviewed_cancelled_count > 0 %}
+                <span class="tab-badge" id="cancelled-badge">{{ unviewed_cancelled_count }}</span>
+            {% else %}
+                <span class="tab-badge" id="cancelled-badge" style="display:none;">0</span>
             {% endif %}
         </button>
     </div>
+
     <div id="personal-schedule" class="tab-content active">
         <div class="section-card">
             <div class="section-card-header">
@@ -153,12 +169,10 @@
                     <span>بروزرسانی</span>
                 </button>
             </div>
-
             <p class="section-hint">
                 <i class="material-icons" style="font-size:1rem; vertical-align:middle;">info_outline</i>
                 کلاس‌های رنگی قابل رزرو هستند. روی هر کلاس کلیک کنید تا درخواست رزرو ثبت کنید.
             </p>
-
             <div class="schedule-wrapper">
                 <div class="schedule-grid" id="reservation-table">
                     <div class="schedule-header corner-cell"></div>
@@ -180,7 +194,6 @@
                     {% endfor %}
                 </div>
             </div>
-
             <div class="legend-row">
                 <div class="legend-item">
                     <span class="legend-dot available"></span>
@@ -197,6 +210,7 @@
             </div>
         </div>
     </div>
+
     <div id="cancelled-classes" class="tab-content">
         <div class="section-card">
             <div class="section-card-header">
@@ -209,28 +223,66 @@
             {% if all_cancelled_classes %}
                 <div class="cancelled-grid">
                     {% for c in all_cancelled_classes %}
-                        <div class="cancelled-card">
+                        <div class="cancelled-card" data-cancel-id="{{ c.id }}">
                             <div class="cancelled-card-header">
                                 <div class="cancelled-course-info">
-                                    <span class="cancelled-course-name">{{ c.course_name or 'بدون نام' }}</span>
-                                    <span class="cancelled-professor">
-                                        <i class="material-icons" style="font-size:.9rem;">person</i>
-                                        استاد {{ c.professor_name or 'نامشخص' }}
-                                    </span>
+                                    {#
+                                        منطق نمایش اطلاعات لغو:
+                                        - اگر درس + استاد + ساعت باشد: فقط آن کلاس خاص لغو شده
+                                        - اگر فقط استاد + تاریخ باشد: تمام کلاس‌های آن استاد در آن روز
+                                    #}
+                                    {% if c.course_name %}
+                                        <span class="cancelled-course-name">{{ c.course_name }}</span>
+                                    {% else %}
+                                        <span class="cancelled-course-name cancelled-all-classes">
+                                            تمامی کلاس‌های استاد
+                                        </span>
+                                    {% endif %}
+                                    {% if c.professor_name %}
+                                        <span class="cancelled-professor">
+                                            <i class="material-icons" style="font-size:.9rem;">person</i>
+                                            استاد {{ c.professor_name }}
+                                        </span>
+                                    {% endif %}
+                                    {% if c.time_slot %}
+                                        <span class="cancelled-timeslot">
+                                            <i class="material-icons" style="font-size:.85rem;">access_time</i>
+                                            ساعت {{ c.time_slot }}
+                                        </span>
+                                    {% endif %}
                                 </div>
                                 <div class="cancelled-date-badge">
                                     {% if c.cancel_date %}
                                         <i class="material-icons">event</i>
-                                        {{ c.cancel_date.strftime('%Y/%m/%d') }}
+                                        {# تبدیل تاریخ میلادی به شمسی با JS - مقدار data-gregorian برای تبدیل #}
+                                        <span class="jalali-date" data-gregorian="{{ c.cancel_date.strftime('%Y-%m-%d') }}">
+                                            {{ c.cancel_date.strftime('%Y/%m/%d') }}
+                                        </span>
                                     {% elif c.start_date %}
                                         <i class="material-icons">date_range</i>
-                                        {{ c.start_date.strftime('%Y/%m/%d') }} تا {{ c.end_date.strftime('%Y/%m/%d') if c.end_date else '?' }}
+                                        <span class="jalali-date" data-gregorian="{{ c.start_date.strftime('%Y-%m-%d') }}">
+                                            {{ c.start_date.strftime('%Y/%m/%d') }}
+                                        </span>
+                                        تا
+                                        {% if c.end_date %}
+                                            <span class="jalali-date" data-gregorian="{{ c.end_date.strftime('%Y-%m-%d') }}">
+                                                {{ c.end_date.strftime('%Y/%m/%d') }}
+                                            </span>
+                                        {% else %}
+                                            ?
+                                        {% endif %}
                                     {% else %}
                                         <i class="material-icons">all_inclusive</i>
                                         نامشخص
                                     {% endif %}
                                 </div>
                             </div>
+                            {% if not c.course_name and c.professor_name %}
+                                <div class="cancelled-all-notice">
+                                    <i class="material-icons" style="font-size:.95rem; color:var(--error);">info</i>
+                                    تمامی کلاس‌های این استاد در روز مذکور برگزار نخواهد شد.
+                                </div>
+                            {% endif %}
                             {% if c.description %}
                                 <div class="cancelled-desc">
                                     <i class="material-icons" style="font-size:.9rem;">notes</i>
@@ -252,6 +304,7 @@
 
 </div><!-- /dashboard-container -->
 
+<!-- Modal: ویرایش برنامه هفتگی -->
 <div id="edit-modal" class="modal-overlay" onclick="handleOverlayClick(event, 'edit-modal')">
     <div class="modal-card" onclick="event.stopPropagation()">
         <div class="modal-card-header">
@@ -260,11 +313,9 @@
                 <i class="material-icons">close</i>
             </button>
         </div>
-
         <form id="schedule-form" onsubmit="handleScheduleSubmit(event)">
             <input type="hidden" id="day-input">
             <input type="hidden" id="time-input">
-
             <div class="form-group">
                 <label class="form-label">
                     <i class="material-icons form-label-icon">menu_book</i>
@@ -273,7 +324,6 @@
                 <input type="text" id="course-name" class="form-control"
                        placeholder="مثال: ریاضی مهندسی" autocomplete="off">
             </div>
-
             <div class="form-group">
                 <label class="form-label">
                     <i class="material-icons form-label-icon">person</i>
@@ -282,7 +332,6 @@
                 <input type="text" id="professor-name" class="form-control"
                        placeholder="مثال: دکتر محمدی" autocomplete="off">
             </div>
-
             <div class="form-group">
                 <label class="form-label">
                     <i class="material-icons form-label-icon">location_on</i>
@@ -291,7 +340,6 @@
                 <input type="text" id="class-location" class="form-control"
                        placeholder="مثال: کلاس ۱۰۱" autocomplete="off">
             </div>
-
             <div class="form-group">
                 <label class="form-label">
                     <i class="material-icons form-label-icon">repeat</i>
@@ -312,7 +360,6 @@
                     </label>
                 </div>
             </div>
-
             <div class="modal-actions">
                 <button type="submit" class="btn btn-custom">
                     <i class="material-icons">save</i> ذخیره
@@ -328,6 +375,7 @@
     </div>
 </div>
 
+<!-- Modal: رزرو کلاس -->
 <div id="reserve-modal" class="modal-overlay" onclick="handleOverlayClick(event, 'reserve-modal')">
     <div class="modal-card" onclick="event.stopPropagation()">
         <div class="modal-card-header">
@@ -336,7 +384,6 @@
                 <i class="material-icons">close</i>
             </button>
         </div>
-
         <div class="reserve-slot-info-card" id="reserve-slot-info-card">
             <div class="slot-info-row">
                 <i class="material-icons">meeting_room</i>
@@ -347,10 +394,8 @@
                 <span id="reserve-time-display">—</span>
             </div>
         </div>
-
         <form id="reserve-form" method="POST" action="">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
             <div class="form-group">
                 <label class="form-label">
                     <i class="material-icons form-label-icon">description</i>
@@ -360,7 +405,6 @@
                           rows="3" required
                           placeholder="مثال: جلسه انجمن علمی، کلاس جبرانی..."></textarea>
             </div>
-
             <div class="modal-actions">
                 <button type="submit" class="btn btn-custom">
                     <i class="material-icons">send</i> ارسال درخواست
@@ -373,6 +417,7 @@
     </div>
 </div>
 
+<!-- Modal: وارد کردن از اکسل -->
 <div id="paste-modal" class="modal-overlay" onclick="handleOverlayClick(event, 'paste-modal')">
     <div class="modal-card modal-wide" onclick="event.stopPropagation()">
         <div class="modal-card-header">
@@ -387,7 +432,6 @@
             <p>سیستم به صورت خودکار نام درس، استاد، محل و نوع هفته (زوج/فرد) را تشخیص می‌دهد.</p>
             <p class="guide-hint">فرمت پیشنهادی هر خانه: <code>نام درس | استاد | محل | زوج/فرد</code></p>
         </div>
-
         <div class="form-group">
             <label class="form-label">محتوای کپی‌شده را اینجا پیست کنید:</label>
             <textarea id="excel-paste-area" class="form-control excel-paste-area"
@@ -400,7 +444,6 @@
             <h4><i class="material-icons">preview</i> پیش‌نمایش ({{ "{}" }} ردیف تشخیص داده شد)</h4>
             <div id="paste-preview-table"></div>
         </div>
-
         <div class="modal-actions">
             <button class="btn btn-custom" onclick="applyPastedSchedule()" id="apply-paste-btn" disabled>
                 <i class="material-icons">check</i> اعمال برنامه
@@ -411,12 +454,14 @@
 </div>
 
 <style>
+/* =====================================================
+   استایل‌های dashboard — بدون تغییر در UI اصلی
+   ===================================================== */
 .dashboard-container {
     padding: 1.5rem 1rem;
     max-width: 1200px;
     margin: 0 auto;
 }
-
 .dashboard-top-row {
     display: grid;
     grid-template-columns: 280px 1fr;
@@ -533,10 +578,16 @@
     color: white;
     box-shadow: 0 4px 12px rgba(0,131,143,.3);
 }
+/* badge انیمیشن برای نمایش و حذف تعداد دیده‌نشده */
 .tab-badge {
     background: rgba(255,255,255,.3); color: white;
     border-radius: 20px; padding: .05rem .45rem;
     font-size: .72rem; font-weight: 700;
+    transition: opacity .3s, transform .3s;
+}
+.tab-badge.hiding {
+    opacity: 0;
+    transform: scale(0.5);
 }
 .dash-tab:not(.active) .tab-badge {
     background: var(--primary-color); color: white;
@@ -598,12 +649,8 @@
     min-height: 80px; padding: .4rem;
     position: relative; vertical-align: top;
 }
-.clickable-cell {
-    cursor: pointer; transition: background .18s;
-}
-.clickable-cell:hover {
-    background: rgba(0,131,143,.05);
-}
+.clickable-cell { cursor: pointer; transition: background .18s; }
+.clickable-cell:hover { background: rgba(0,131,143,.05); }
 .clickable-cell:hover::after {
     content: '+';
     position: absolute; top: 50%; left: 50%;
@@ -667,12 +714,12 @@
     flex-wrap: wrap;
 }
 .legend-item { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-secondary); }
-.legend-dot {
-    width: 12px; height: 12px; border-radius: 50%;
-}
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
 .legend-dot.available { background: var(--primary-color); }
 .legend-dot.reserved { background: var(--error); }
 .legend-dot.empty-slot { background: var(--border-color); }
+
+/* ===================== Cancelled Cards ===================== */
 .cancelled-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -692,9 +739,20 @@
 }
 .cancelled-course-info { display: flex; flex-direction: column; gap: .25rem; }
 .cancelled-course-name { font-weight: 700; font-size: 1rem; }
+/* نمایش ویژه برای لغو تمام کلاس‌های استاد */
+.cancelled-course-name.cancelled-all-classes {
+    color: var(--error);
+    font-style: italic;
+}
 .cancelled-professor {
     display: flex; align-items: center; gap: .25rem;
     font-size: .85rem; color: var(--text-secondary);
+}
+/* نمایش ساعت درس لغو شده — اضافه شده برای نمایش time_slot */
+.cancelled-timeslot {
+    display: flex; align-items: center; gap: .25rem;
+    font-size: .8rem; color: var(--primary-color);
+    font-weight: 600;
 }
 .cancelled-date-badge {
     display: flex; align-items: center; gap: .3rem;
@@ -702,6 +760,15 @@
     background: rgba(183,28,28,.08);
     padding: .25rem .65rem; border-radius: 20px;
     white-space: nowrap; flex-shrink: 0;
+    flex-wrap: wrap;
+}
+/* اطلاعیه لغو کل کلاس‌های استاد */
+.cancelled-all-notice {
+    display: flex; align-items: center; gap: .35rem;
+    font-size: .82rem; color: var(--error);
+    background: rgba(183,28,28,.06);
+    border-radius: 6px; padding: .4rem .65rem;
+    margin-bottom: .5rem;
 }
 .cancelled-desc {
     display: flex; align-items: center; gap: .3rem;
@@ -715,6 +782,8 @@
 }
 .empty-state-full i { font-size: 3.5rem; color: var(--success); margin-bottom: .75rem; display: block; }
 .empty-state-full h3 { margin-bottom: .5rem; color: var(--text-primary); }
+
+/* ===================== Modals ===================== */
 .modal-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,.4); backdrop-filter: blur(3px);
@@ -743,9 +812,7 @@
     transition: background .2s;
 }
 .modal-close-btn:hover { background: var(--background); color: var(--text-primary); }
-.week-type-selector {
-    display: flex; gap: .5rem; flex-wrap: wrap;
-}
+.week-type-selector { display: flex; gap: .5rem; flex-wrap: wrap; }
 .week-type-option { cursor: pointer; }
 .week-type-option input[type="radio"] { display: none; }
 .week-type-label {
@@ -768,7 +835,6 @@
     background: rgba(76,175,80,.1);
     color: #1b5e20; font-weight: 700;
 }
-
 .reserve-slot-info-card {
     background: rgba(0,131,143,.07);
     border: 1px solid rgba(0,131,143,.2);
@@ -782,10 +848,8 @@
     color: var(--primary-color);
 }
 .slot-info-row i { font-size: 1.1rem; }
-
 .form-label { display: flex; align-items: center; gap: .3rem; }
 .form-label-icon { font-size: 1rem; color: var(--primary-color); }
-
 .modal-actions { display: flex; gap: .6rem; margin-top: 1.25rem; flex-wrap: wrap; }
 .btn-danger-outline {
     background: transparent;
@@ -797,7 +861,6 @@
     transition: background .2s;
 }
 .btn-danger-outline:hover { background: rgba(183,28,28,.08); }
-
 .excel-guide {
     background: var(--background); border-radius: 10px;
     padding: .85rem 1rem; margin-bottom: 1.1rem;
@@ -842,6 +905,9 @@
 
 {% block scripts %}
 <script>
+/* =====================================================
+   ساعت زنده داشبورد
+   ===================================================== */
 function updateClock() {
     const now = new Date();
     const h = String(now.getHours()).padStart(2, '0');
@@ -853,16 +919,113 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+/* =====================================================
+   مشکل ۱: IDs تمام کلاس‌های لغو شده برای ارسال به API
+   این آرایه از Jinja رندر میشه تا JS بتونه ازشون استفاده کنه
+   ===================================================== */
+const cancelledClassIds = {{ all_cancelled_classes | map(attribute='id') | list | tojson if all_cancelled_classes else '[]' }};
+
+/**
+ * مشکل ۱: وقتی کاربر تب «کلاس‌های لغو شده» رو باز میکنه،
+ * تمام IDها به API ارسال میشه تا به عنوان «دیده شده» ثبت بشن،
+ * سپس badge با انیمیشن حذف میشه.
+ */
+function markAllCancelledAsViewed() {
+    if (!cancelledClassIds || cancelledClassIds.length === 0) return;
+
+    fetch('/api/cancelled_classes/mark_viewed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: cancelledClassIds })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // badge رو با انیمیشن fade-out حذف میکنیم
+            const badge = document.getElementById('cancelled-badge');
+            if (badge) {
+                badge.classList.add('hiding');
+                setTimeout(() => {
+                    badge.style.display = 'none';
+                }, 320);
+            }
+        }
+    })
+    .catch(() => {
+        // در صورت خطا ساکت عبور میکنیم — UI رو خراب نمیکنه
+    });
+}
+
+/* =====================================================
+   مدیریت تب‌ها
+   ===================================================== */
 function openTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     if (btn) btn.classList.add('active');
+
     if (id === 'reserve-room') {
         loadAvailableSlots();
     }
+
+    // مشکل ۱: وقتی کاربر روی تب لغو کلاس‌ها کلیک کرد، همه رو «دیده شده» ثبت میکنیم
+    if (id === 'cancelled-classes') {
+        markAllCancelledAsViewed();
+    }
 }
 
+/* =====================================================
+   تبدیل تاریخ میلادی به شمسی در کارت‌های لغو کلاس
+   (مقادیر رندر شده توسط Jinja به صورت میلادی هستند،
+    این تابع اونها رو کلاینت‌ساید به شمسی تبدیل میکنه)
+   ===================================================== */
+function gregorianToJalali(gy, gm, gd) {
+    /* الگوریتم تبدیل میلادی به شمسی */
+    var g_d_no, j_d_no;
+    var j_np, i;
+    var g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
+    var j_days_in_month = [31,31,31,31,31,31,30,30,30,30,30,29];
+    gy -= 1600; gm -= 1; gd -= 1;
+    g_d_no = 365*gy + Math.floor((gy+3)/4) - Math.floor((gy+99)/100) + Math.floor((gy+399)/400);
+    for (i=0; i<gm; i++) g_d_no += g_days_in_month[i];
+    if (gm > 1 && ((gy%4===0 && gy%100!==0) || (gy%400===0))) g_d_no++;
+    g_d_no += gd;
+    j_d_no = g_d_no - 79;
+    j_np = Math.floor(j_d_no/12053); j_d_no %= 12053;
+    var jy = 979 + 33*j_np + 4*Math.floor(j_d_no/1461);
+    j_d_no %= 1461;
+    if (j_d_no >= 366) { jy += Math.floor((j_d_no-1)/365); j_d_no = (j_d_no-1)%365; }
+    for (i=0; i<11 && j_d_no >= j_days_in_month[i]; i++) j_d_no -= j_days_in_month[i];
+    var jm = i+1; var jd = j_d_no+1;
+    return [jy, jm, jd];
+}
+
+function convertAllDatesToJalali() {
+    /* تمام عناصر .jalali-date که تاریخ میلادی دارند را شمسی میکنیم */
+    document.querySelectorAll('.jalali-date[data-gregorian]').forEach(function(el) {
+        var gDate = el.getAttribute('data-gregorian');
+        if (!gDate) return;
+        var parts = gDate.split('-');
+        if (parts.length !== 3) return;
+        try {
+            var j = gregorianToJalali(
+                parseInt(parts[0]),
+                parseInt(parts[1]),
+                parseInt(parts[2])
+            );
+            // فرمت شمسی: YYYY/MM/DD
+            var jStr = j[0] + '/' +
+                       String(j[1]).padStart(2, '0') + '/' +
+                       String(j[2]).padStart(2, '0');
+            el.textContent = jStr;
+        } catch(e) { /* در صورت خطا مقدار اصلی باقی میماند */ }
+    });
+}
+
+/* =====================================================
+   داده‌های برنامه هفتگی
+   ===================================================== */
 const dayMap = {
     'saturday':'شنبه', 'sunday':'یکشنبه', 'monday':'دوشنبه',
     'tuesday':'سه‌شنبه', 'wednesday':'چهارشنبه'
@@ -875,14 +1038,12 @@ function renderSchedule() {
         cell.innerHTML = '';
         cell.classList.remove('has-class');
     });
-
     const grouped = {};
     mySchedules.forEach(item => {
         const key = `${item.day}__${item.time_slot}`;
         if (!grouped[key]) grouped[key] = [];
         grouped[key].push(item);
     });
-
     Object.entries(grouped).forEach(([key, items]) => {
         const [day, time] = key.split('__');
         const cell = document.querySelector(
@@ -905,7 +1066,6 @@ function buildCellHTML(items) {
     }
     const oddItem = items.find(i => i.week_type === 'odd');
     const evenItem = items.find(i => i.week_type === 'even');
-
     let html = '<div class="cell-class-split">';
     if (oddItem) {
         html += `<div class="cell-half bg-odd">
@@ -929,11 +1089,17 @@ function buildCellHTML(items) {
     return html;
 }
 
-document.addEventListener('DOMContentLoaded', renderSchedule);
+document.addEventListener('DOMContentLoaded', function() {
+    renderSchedule();
+    convertAllDatesToJalali(); // تبدیل تاریخ‌های میلادی به شمسی در کارت‌ها
+});
+
+/* =====================================================
+   ویرایش خانه‌های برنامه هفتگی
+   ===================================================== */
 function openEditModal(cell) {
     const day = cell.dataset.day;
     const time = cell.dataset.time;
-
     document.getElementById('day-input').value = day;
     document.getElementById('time-input').value = time;
     document.getElementById('modal-title').textContent =
@@ -951,7 +1117,6 @@ function openEditModal(cell) {
         const radio = document.querySelector(`input[name="week_type"][value="${radioVal}"]`);
         if (radio) radio.checked = true;
     }
-
     openModal('edit-modal');
     setTimeout(() => document.getElementById('course-name').focus(), 150);
 }
@@ -966,16 +1131,13 @@ function handleScheduleSubmit(e) {
         professor_name: document.getElementById('professor-name').value.trim(),
         week_type: document.querySelector('input[name="week_type"]:checked').value
     };
-
     saveScheduleItem(data, () => closeModal('edit-modal'));
 }
 
 function deleteClass() {
     const day = document.getElementById('day-input').value;
     const time = document.getElementById('time-input').value;
-
     if (!confirm('آیا می‌خواهید این کلاس را حذف کنید؟')) return;
-
     saveScheduleItem({ day, time_slot: time, course_name: '' }, () => closeModal('edit-modal'));
 }
 
@@ -992,9 +1154,7 @@ function saveScheduleItem(data, onSuccess) {
                 s => s.day === data.day && s.time_slot === data.time_slot
             );
             if (idx !== -1) mySchedules.splice(idx, 1);
-            if (data.course_name) {
-                mySchedules.push(data);
-            }
+            if (data.course_name) mySchedules.push(data);
             renderSchedule();
             if (onSuccess) onSuccess();
         } else {
@@ -1006,13 +1166,15 @@ function saveScheduleItem(data, onSuccess) {
         alert('خطا در ارتباط با سرور');
     });
 }
+
+/* =====================================================
+   کپی برنامه هفتگی
+   ===================================================== */
 function copyScheduleAsText() {
     const days = ['saturday','sunday','monday','tuesday','wednesday'];
     const dayNames = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه'];
     const times = ['8-10','10-12','12-14','14-16','16-18','18-20'];
-
     let text = 'برنامه هفتگی\n' + '='.repeat(50) + '\n\n';
-
     days.forEach((day, di) => {
         const daySchedules = mySchedules.filter(s => s.day === day);
         if (daySchedules.length === 0) return;
@@ -1029,7 +1191,6 @@ function copyScheduleAsText() {
         });
         text += '\n';
     });
-
     if (!navigator.clipboard) {
         const ta = document.createElement('textarea');
         ta.value = text; document.body.appendChild(ta);
@@ -1037,7 +1198,6 @@ function copyScheduleAsText() {
     } else {
         navigator.clipboard.writeText(text);
     }
-
     const btn = event.target.closest('button');
     const original = btn.innerHTML;
     btn.innerHTML = '<i class="material-icons">check</i> کپی شد!';
@@ -1045,6 +1205,9 @@ function copyScheduleAsText() {
     setTimeout(() => { btn.innerHTML = original; btn.style.color = ''; }, 2000);
 }
 
+/* =====================================================
+   وارد کردن از اکسل
+   ===================================================== */
 let parsedScheduleData = [];
 
 function openPasteModal() {
@@ -1064,12 +1227,10 @@ function parseExcelPaste() {
         parsedScheduleData = [];
         return;
     }
-
     const rows = raw.split('\n').map(r => r.split('\t').map(c => c.trim()));
-
     parsedScheduleData = [];
     const dayKeywords = {
-        'شنبه': 'saturday', 'شنبه': 'saturday',
+        'شنبه': 'saturday',
         'یکشنبه': 'sunday', 'يکشنبه': 'sunday',
         'دوشنبه': 'monday', 'سه شنبه': 'tuesday',
         'سه‌شنبه': 'tuesday', 'چهارشنبه': 'wednesday',
@@ -1079,10 +1240,8 @@ function parseExcelPaste() {
     const timePattern = /(\d{1,2})\s*[-–—]\s*(\d{1,2})/;
     const weekOddKeywords = ['فرد', 'odd', 'زوج نیست'];
     const weekEvenKeywords = ['زوج', 'even'];
-
     let dayColumns = {};
     let headerRow = -1;
-
     rows.forEach((row, ri) => {
         row.forEach((cell, ci) => {
             const lower = cell.toLowerCase().trim();
@@ -1099,15 +1258,11 @@ function parseExcelPaste() {
             if (ri <= headerRow) return;
             if (!row.some(c => c)) return;
             const timeMatch = row[0] ? row[0].match(timePattern) : null;
-            const timeSlot = timeMatch
-                ? `${timeMatch[1]}-${timeMatch[2]}`
-                : null;
-
+            const timeSlot = timeMatch ? `${timeMatch[1]}-${timeMatch[2]}` : null;
             Object.entries(dayColumns).forEach(([ci, dayKey]) => {
                 const cellVal = row[parseInt(ci)] || '';
                 if (!cellVal) return;
                 const parts = cellVal.split(/[|،,\n]/).map(p => p.trim()).filter(p => p);
-
                 let courseName = parts[0] || '';
                 let professorName = '';
                 let classLocation = '';
@@ -1118,22 +1273,17 @@ function parseExcelPaste() {
                     if (part.includes('دکتر') || part.includes('مهندس') || part.includes('استاد') ||
                         part.includes('dr.') || part.includes('prof')) {
                         professorName = part.replace(/^استاد[:\s]*/i, '').trim();
-                    }
-                    else if (weekOddKeywords.some(k => lowerPart.includes(k))) {
+                    } else if (weekOddKeywords.some(k => lowerPart.includes(k))) {
                         weekType = 'odd';
-                    }
-                    else if (weekEvenKeywords.some(k => lowerPart.includes(k))) {
+                    } else if (weekEvenKeywords.some(k => lowerPart.includes(k))) {
                         weekType = 'even';
-                    }
-                    else if (part.match(/\d+/) || lowerPart.includes('کلاس') ||
-                             lowerPart.includes('آزمایشگاه') || lowerPart.includes('سالن') ||
-                             lowerPart.includes('lab') || lowerPart.includes('room')) {
+                    } else if (part.match(/\d+/) || lowerPart.includes('کلاس') ||
+                               lowerPart.includes('آزمایشگاه') || lowerPart.includes('سالن') ||
+                               lowerPart.includes('lab') || lowerPart.includes('room')) {
                         classLocation = part;
-                    }
-                    else if (!professorName && pi === 1) {
+                    } else if (!professorName && pi === 1) {
                         professorName = part;
-                    }
-                    else if (!classLocation && pi === 2) {
+                    } else if (!classLocation && pi === 2) {
                         classLocation = part;
                     }
                 });
@@ -1156,10 +1306,8 @@ function parseExcelPaste() {
                 ([kw]) => row[0] && row[0].toLowerCase().includes(kw.toLowerCase())
             );
             if (!dayKey) return;
-
             const timeMatch = row[1] ? row[1].match(timePattern) : null;
             if (!timeMatch) return;
-
             parsedScheduleData.push({
                 day: dayKey[1],
                 time_slot: `${timeMatch[1]}-${timeMatch[2]}`,
@@ -1171,37 +1319,31 @@ function parseExcelPaste() {
             });
         });
     }
-
     showPastePreview();
 }
 
 function showPastePreview() {
     const container = document.getElementById('paste-preview');
     const tableContainer = document.getElementById('paste-preview-table');
-
     if (parsedScheduleData.length === 0) {
         container.style.display = 'none';
         document.getElementById('apply-paste-btn').disabled = true;
         return;
     }
-
     container.style.display = 'block';
     container.querySelector('h4').innerHTML =
         `<i class="material-icons">preview</i> پیش‌نمایش (${parsedScheduleData.length} ردیف تشخیص داده شد)`;
     document.getElementById('apply-paste-btn').disabled = false;
-
     const dayNames = {
         'saturday':'شنبه', 'sunday':'یکشنبه', 'monday':'دوشنبه',
         'tuesday':'سه‌شنبه', 'wednesday':'چهارشنبه'
     };
     const weekNames = { 'all': 'همیشه', 'odd': 'فرد', 'even': 'زوج' };
-
     let html = `<div style="overflow-x:auto;"><table class="preview-table">
         <thead><tr>
             <th>روز</th><th>ساعت</th><th>نام درس</th>
             <th>استاد</th><th>مکان</th><th>نوع هفته</th>
         </tr></thead><tbody>`;
-
     parsedScheduleData.forEach(item => {
         html += `<tr>
             <td>${dayNames[item.day] || item.day}</td>
@@ -1212,22 +1354,18 @@ function showPastePreview() {
             <td>${weekNames[item.week_type] || '—'}</td>
         </tr>`;
     });
-
     html += '</tbody></table></div>';
     tableContainer.innerHTML = html;
 }
 
 function applyPastedSchedule() {
     if (parsedScheduleData.length === 0) return;
-
     if (!confirm(`آیا مطمئن هستید؟ برنامه هفتگی فعلی شما پاک می‌شود و ${parsedScheduleData.length} کلاس جدید جایگزین می‌شود.`)) {
         return;
     }
-
     const btn = document.getElementById('apply-paste-btn');
     btn.disabled = true;
     btn.innerHTML = '<i class="material-icons">hourglass_empty</i> در حال پردازش...';
-
     fetch('/bulk_update_schedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1258,24 +1396,24 @@ function applyPastedSchedule() {
     });
 }
 
+/* =====================================================
+   رزرو کلاس
+   ===================================================== */
 function loadAvailableSlots() {
     document.querySelectorAll('#reservation-table .reserve-cell').forEach(cell => {
         cell.innerHTML = '<span class="cell-loading">بارگذاری...</span>';
     });
-
     fetch('/api/master_schedule')
         .then(res => res.json())
         .then(slots => {
             document.querySelectorAll('#reservation-table .reserve-cell').forEach(cell => {
                 cell.innerHTML = '<span class="cell-empty-text">—</span>';
             });
-
             slots.forEach(slot => {
                 const cell = document.querySelector(
                     `#reservation-table .reserve-cell[data-day="${slot.day}"][data-time="${slot.time_slot}"]`
                 );
                 if (!cell) return;
-
                 if (slot.available_rooms.length > 0) {
                     let html = '';
                     slot.available_rooms.forEach(room => {
@@ -1302,14 +1440,15 @@ function openReserveModal(slotId, room, day, time) {
     document.getElementById('reserve-time-display').textContent =
         `${dayMap[day]} — ساعت ${time.replace('-', ' تا ')}`;
     document.getElementById('reserve-reason').value = '';
-
     const form = document.getElementById('reserve-form');
     form.action = `/submit_reservation/${slotId}/${room}`;
-
     openModal('reserve-modal');
     setTimeout(() => document.getElementById('reserve-reason').focus(), 150);
 }
 
+/* =====================================================
+   مدیریت مودال‌ها
+   ===================================================== */
 function openModal(id) {
     const el = document.getElementById(id);
     el.classList.add('open');
@@ -1335,6 +1474,9 @@ document.addEventListener('keydown', e => {
     }
 });
 
+/* =====================================================
+   علامت‌گذاری نوتیفیکیشن به عنوان خوانده شده
+   ===================================================== */
 function markRead(notifId, el) {
     fetch(`/mark_notification_read/${notifId}`)
         .then(() => {
@@ -1346,6 +1488,7 @@ function markRead(notifId, el) {
         .catch(() => {});
 }
 
+/* استایل inline برای alert موفقیت وارد کردن از اکسل */
 const style = document.createElement('style');
 style.textContent = `
 .alert-banner-success {

@@ -1,717 +1,658 @@
 {% extends "base.html" %}
-
 {% block title %}پیام‌رسان | یونی نت{% endblock %}
 
 {% block content %}
 <div class="chat-layout">
 
-    <aside class="chat-sidebar" id="chat-sidebar">
-        <div class="sidebar-header">
-            <h2 style="font-size:1.2rem; margin:0; color:var(--primary-color);">
-                <i class="material-icons" style="vertical-align:middle; font-size:1.3rem;">forum</i>
-                پیام‌رسان
-            </h2>
-        </div>
-
-        <div class="chat-special-sections">
-            <div class="special-item" id="sidebar-group" onclick="loadChat('group')">
-                <div class="special-icon group-icon">
-                    <i class="material-icons">groups</i>
-                </div>
-                <div class="special-info">
-                    <span class="special-name">گروه عمومی دانشجویان</span>
-                    <span class="special-desc">گفتگوی آزاد بین همه دانشجویان</span>
-                </div>
-            </div>
-            <div class="special-item" id="sidebar-channel" onclick="loadChat('channel')">
-                <div class="special-icon channel-icon">
-                    <i class="material-icons">campaign</i>
-                </div>
-                <div class="special-info">
-                    <span class="special-name">کانال اطلاعیه‌ها</span>
-                    <span class="special-desc">اطلاعیه‌های مدیریت</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="sidebar-divider">
-            <span>پیام‌های خصوصی</span>
-        </div>
-
-        <div class="conversation-list" id="conversation-list">
-            {% if conversations %}
-                {% for convo in conversations %}
-                <div class="convo-item {% if active_chat_user and active_chat_user.id == convo.other_user_id %}active{% endif %}"
-                     onclick="loadChat({{ convo.other_user_id }})"
-                     data-name="{{ convo.other_user_name }}"
-                     data-id="{{ convo.other_user_id }}"
-                     id="convo-{{ convo.other_user_id }}">
-
-                    <div class="convo-avatar">
-                        {% if convo.other_user_pic and convo.other_user_pic != 'default.jpg' %}
-                            <img src="{{ url_for('static', filename='uploads/profile_pics/' + convo.other_user_pic) }}" alt="{{ convo.other_user_name }}">
-                        {% else %}
-                            <span class="avatar-initial">{{ convo.other_user_name[0] }}</span>
-                        {% endif %}
-                        {% if convo.is_online %}
-                            <span class="online-dot"></span>
-                        {% endif %}
-                    </div>
-
-                    <div class="convo-info">
-                        <div class="convo-header-row">
-                            <span class="convo-name">{{ convo.other_user_name }}</span>
-                            <span class="convo-time">{{ convo.last_message_timestamp.strftime('%H:%M') }}</span>
-                        </div>
-                        <div class="convo-msg-row">
-                            <span class="convo-last-msg">{{ convo.last_message_content[:30] }}{% if convo.last_message_content|length > 30 %}...{% endif %}</span>
-                            {% if convo.has_unread %}
-                                <span class="unread-badge">!</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="empty-state-small">
-                    <i class="material-icons">chat_bubble_outline</i>
-                    <p>هنوز گفتگویی ندارید</p>
-                </div>
-            {% endif %}
-        </div>
-    </aside>
-
-    <main class="chat-main" id="chat-main-area">
-
-        <div id="group-view" class="chat-window" style="display:none;">
-            <div class="chat-header-active">
-                <button class="btn-icon back-btn" onclick="showSidebar()" title="بازگشت">
-                    <i class="material-icons">arrow_forward_ios</i>
-                </button>
-                <div class="header-avatar group-avatar">
-                    <i class="material-icons">groups</i>
-                </div>
-                <div class="chat-header-info">
-                    <h3>گروه عمومی دانشجویان</h3>
-                    <span id="group-member-count">در حال بارگذاری...</span>
-                </div>
-                <button class="btn-icon members-btn" onclick="openMembersModal()" title="مشاهده اعضا">
-                    <i class="material-icons">people</i>
-                    <span style="font-size:.75rem; margin-right:2px;">اعضا</span>
-                </button>
-            </div>
-            <div class="chat-messages-active" id="group-messages-container">
-                <div class="messages-loading">
-                    <i class="material-icons spin">sync</i>
-                    <span>در حال بارگذاری...</span>
-                </div>
-            </div>
-            <div class="chat-input-area">
-                <label for="file-upload-group" class="attach-btn" title="پیوست فایل">
-                    <i class="material-icons">attach_file</i>
-                </label>
-                <input id="file-upload-group" type="file" style="display:none"
-                       accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip"
-                       onchange="handleFileUpload(this,'group')">
-                <input type="text" id="group-msg-input"
-                       placeholder="پیام خود را بنویسید..."
-                       onkeydown="handleInputKeydown(event,'group')">
-                <button class="send-btn" onclick="sendGroupMessage()" title="ارسال">
-                    <i class="material-icons">send</i>
-                </button>
-            </div>
-        </div>
-
-        <div id="channel-view" class="chat-window" style="display:none;">
-            <div class="chat-header-active">
-                <button class="btn-icon back-btn" onclick="showSidebar()" title="بازگشت">
-                    <i class="material-icons">arrow_forward_ios</i>
-                </button>
-                <div class="header-avatar channel-avatar">
-                    <i class="material-icons">campaign</i>
-                </div>
-                <div class="chat-header-info">
-                    <h3>کانال اطلاعیه‌ها</h3>
-                    <span>فقط مدیریت پیام ارسال می‌کند</span>
-                </div>
-            </div>
-            <div class="chat-messages-active" id="channel-messages-container">
-                <div class="messages-loading">
-                    <i class="material-icons spin">sync</i>
-                    <span>در حال بارگذاری...</span>
-                </div>
-            </div>
-            {% if is_admin %}
-            <div class="chat-input-area">
-                <label for="file-upload-channel" class="attach-btn" title="پیوست فایل">
-                    <i class="material-icons">attach_file</i>
-                </label>
-                <input id="file-upload-channel" type="file" style="display:none"
-                       accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip"
-                       onchange="handleFileUpload(this,'channel')">
-                <input type="text" id="channel-msg-input"
-                       placeholder="اطلاعیه جدید بنویسید..."
-                       onkeydown="handleInputKeydown(event,'channel')">
-                <button class="send-btn" onclick="sendChannelMessage()" title="ارسال">
-                    <i class="material-icons">send</i>
-                </button>
-            </div>
-            {% else %}
-            <div class="chat-input-area input-disabled">
-                <i class="material-icons" style="color:var(--text-secondary); opacity:.6;">lock</i>
-                <span>شما نمی‌توانید در کانال پیام ارسال کنید</span>
-            </div>
-            {% endif %}
-        </div>
-
-        <div id="private-view" class="chat-window" style="display:none;">
-            <div class="chat-header-active">
-                <button class="btn-icon back-btn" onclick="showSidebar()" title="بازگشت">
-                    <i class="material-icons">arrow_forward_ios</i>
-                </button>
-                <div class="header-avatar private-avatar" id="private-avatar-el">
-                    <i class="material-icons">person</i>
-                </div>
-                <div class="chat-header-info">
-                    <h3 id="private-name">—</h3>
-                    <span id="private-status">آفلاین</span>
-                </div>
-                <a href="#" id="private-profile-link" class="btn-icon" title="مشاهده پروفایل">
-                    <i class="material-icons">account_circle</i>
-                </a>
-            </div>
-            <div class="chat-messages-active" id="private-messages-container">
-                <div class="messages-loading">
-                    <i class="material-icons spin">sync</i>
-                    <span>در حال بارگذاری...</span>
-                </div>
-            </div>
-            <div class="chat-input-area">
-                <label for="file-upload-private" class="attach-btn" title="پیوست فایل">
-                    <i class="material-icons">attach_file</i>
-                </label>
-                <input id="file-upload-private" type="file" style="display:none"
-                       accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip"
-                       onchange="handleFileUpload(this,'private')">
-                <input type="text" id="private-msg-input"
-                       placeholder="پیام خصوصی..."
-                       onkeydown="handleInputKeydown(event,'private')">
-                <button class="send-btn" onclick="sendPrivateMessage()" title="ارسال">
-                    <i class="material-icons">send</i>
-                </button>
-            </div>
-        </div>
-
-        <div id="empty-view" class="chat-empty">
-            <div class="empty-icon-wrap">
-                <i class="material-icons">forum</i>
-            </div>
-            <h3>یک گفتگو انتخاب کنید</h3>
-            <p>از لیست سمت راست یک مکالمه را باز کنید</p>
-        </div>
-
-    </main>
-</div>
-
-<div id="members-modal" class="modal-overlay" onclick="handleOverlayClick(event,'members-modal')">
-    <div class="modal-card" onclick="event.stopPropagation()">
-        <div class="modal-card-header">
-            <h3>
-                <i class="material-icons" style="vertical-align:middle; font-size:1.2rem;">groups</i>
-                اعضای گروه
-            </h3>
-            <button class="modal-close-btn" onclick="closeModal('members-modal')">
-                <i class="material-icons">close</i>
-            </button>
-        </div>
-        <div id="members-list-container">
-            <div class="members-loading">
-                <i class="material-icons spin">sync</i>
-                <span>در حال بارگذاری...</span>
-            </div>
-        </div>
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="chat-sidebar" id="chat-sidebar">
+    <div class="sidebar-header">
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <i class="material-icons" style="font-size:1.3rem;color:var(--primary-color);">forum</i>
+        <h2 style="font-size:1.1rem;margin:0;color:var(--primary-color);">پیام‌رسان</h2>
+      </div>
+      <div style="display:flex;gap:.25rem;">
+        <button class="btn-icon" onclick="openPrivacyModal()" title="تنظیمات حریم خصوصی">
+          <i class="material-icons" style="font-size:1.1rem;">privacy_tip</i>
+        </button>
+        <button class="btn-icon" onclick="openNewChatModal()" title="چت جدید">
+          <i class="material-icons" style="font-size:1.1rem;">edit</i>
+        </button>
+      </div>
     </div>
+
+    <div class="chat-special-sections">
+      <div class="special-item" id="sidebar-group" onclick="loadChat('group')">
+        <div class="special-icon group-icon"><i class="material-icons">groups</i></div>
+        <div class="special-info">
+          <span class="special-name">گروه عمومی دانشجویان</span>
+          <span class="special-desc">گفتگوی آزاد</span>
+        </div>
+      </div>
+      <div class="special-item" id="sidebar-channel" onclick="loadChat('channel')">
+        <div class="special-icon channel-icon"><i class="material-icons">campaign</i></div>
+        <div class="special-info">
+          <span class="special-name">کانال اطلاعیه‌ها</span>
+          <span class="special-desc">اطلاعیه‌های مدیریت</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"><span>پیام‌های خصوصی</span></div>
+
+    <div class="conversation-list" id="conversation-list">
+      {% if conversations %}
+        {% for convo in conversations %}
+        <div class="convo-item {% if active_chat_user and active_chat_user.id == convo.other_user_id %}active{% endif %}"
+             onclick="loadChat({{ convo.other_user_id }})"
+             id="convo-{{ convo.other_user_id }}"
+             data-name="{{ convo.other_user_name }}"
+             data-student-id="{{ convo.other_user_student_id }}">
+          <div class="convo-avatar">
+            {% if convo.other_user_pic and convo.other_user_pic != 'default.jpg' %}
+              <img src="{{ url_for('static', filename='uploads/profile_pics/' + convo.other_user_pic) }}" alt="">
+            {% else %}
+              <span class="avatar-initial">{{ convo.other_user_name[0] }}</span>
+            {% endif %}
+            {% if convo.is_online %}<span class="online-dot"></span>{% endif %}
+          </div>
+          <div class="convo-info">
+            <div class="convo-header-row">
+              <span class="convo-name">
+                {{ convo.other_user_name }}
+                <small style="font-weight:400;color:var(--text-secondary);font-size:.72rem;">#{{ convo.other_user_student_id }}</small>
+              </span>
+              <span class="convo-time">{{ convo.last_message_timestamp }}</span>
+            </div>
+            <div class="convo-msg-row">
+              <span class="convo-last-msg">{{ convo.last_message_content[:35] }}{% if convo.last_message_content|length > 35 %}...{% endif %}</span>
+              {% if convo.has_unread %}<span class="unread-badge">!</span>{% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state-small">
+          <i class="material-icons">chat_bubble_outline</i>
+          <p>هنوز گفتگویی ندارید</p>
+        </div>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <main class="chat-main" id="chat-main-area">
+
+    <!-- ——— GROUP VIEW ——— -->
+    <div id="group-view" class="chat-window" style="display:none;">
+      <div class="chat-header-active">
+        <button class="btn-icon back-btn" onclick="showSidebar()"><i class="material-icons">arrow_forward_ios</i></button>
+        <div class="header-avatar group-avatar"><i class="material-icons">groups</i></div>
+        <div class="chat-header-info">
+          <h3>گروه عمومی دانشجویان</h3>
+          <span id="group-member-count">...</span>
+        </div>
+        <button class="btn-icon" id="group-search-toggle" onclick="toggleSearch('group')" title="جستجو">
+          <i class="material-icons">search</i>
+        </button>
+        <button class="btn-icon" onclick="openMembersModal()" title="اعضا">
+          <i class="material-icons">people</i>
+        </button>
+        {% if is_admin or is_group_admin %}
+        <button class="btn-icon" onclick="openGroupSettings()" title="تنظیمات">
+          <i class="material-icons">settings</i>
+        </button>
+        {% endif %}
+      </div>
+      <div id="group-search-bar" class="chat-search-bar" style="display:none;">
+        <i class="material-icons" style="color:var(--text-secondary);font-size:1.1rem;">search</i>
+        <input type="text" id="group-search-input" placeholder="جستجو در پیام‌های گروه..." oninput="debounceSearch('group', this.value)">
+        <button class="btn-icon" onclick="toggleSearch('group')"><i class="material-icons">close</i></button>
+      </div>
+      <div id="group-pinned-bar" class="pinned-bar" style="display:none;" onclick="scrollToPinnedGroup()">
+        <i class="material-icons" style="font-size:.95rem;color:var(--primary-color);">push_pin</i>
+        <span id="group-pinned-text" class="pinned-text"></span>
+      </div>
+      <div class="chat-messages-active" id="group-messages-container"></div>
+      <div id="group-reply-preview" class="reply-preview" style="display:none;">
+        <div class="reply-preview-inner">
+          <div class="reply-bar"></div>
+          <div>
+            <div class="reply-preview-name" id="group-reply-name"></div>
+            <div class="reply-preview-text" id="group-reply-text"></div>
+          </div>
+        </div>
+        <button class="btn-icon" onclick="cancelReply('group')"><i class="material-icons">close</i></button>
+      </div>
+      <div id="group-readonly-notice" class="readonly-bar" style="display:{% if group_setting and group_setting.is_readonly and not is_admin and not is_group_admin %}flex{% else %}none{% endif %};">
+        <i class="material-icons" style="font-size:1rem;">lock</i>
+        <span>گروه در حالت فقط خواندنی است</span>
+      </div>
+      <div class="chat-input-area" id="group-input-area" {% if group_setting and group_setting.is_readonly and not is_admin and not is_group_admin %}style="display:none;"{% endif %}>
+        <label for="file-upload-group" class="attach-btn" title="پیوست فایل">
+          <i class="material-icons">attach_file</i>
+        </label>
+        <input id="file-upload-group" type="file" style="display:none" accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip" onchange="handleFileUpload(this,'group')">
+        <div style="flex:1;position:relative;">
+          <input type="text" id="group-msg-input" placeholder="پیام خود را بنویسید..." onkeydown="handleInputKeydown(event,'group')" oninput="handleMentionInput(this)">
+          <div id="mention-suggestions" class="mention-suggestions" style="display:none;"></div>
+        </div>
+        <button class="send-btn" onclick="sendGroupMessage()"><i class="material-icons">send</i></button>
+      </div>
+    </div>
+
+    <!-- ——— CHANNEL VIEW ——— -->
+    <div id="channel-view" class="chat-window" style="display:none;">
+      <div class="chat-header-active">
+        <button class="btn-icon back-btn" onclick="showSidebar()"><i class="material-icons">arrow_forward_ios</i></button>
+        <div class="header-avatar channel-avatar"><i class="material-icons">campaign</i></div>
+        <div class="chat-header-info">
+          <h3>کانال اطلاعیه‌ها</h3>
+          <span>فقط مدیریت پیام ارسال می‌کند</span>
+        </div>
+        <button class="btn-icon" onclick="toggleSearch('channel')" title="جستجو"><i class="material-icons">search</i></button>
+      </div>
+      <div id="channel-search-bar" class="chat-search-bar" style="display:none;">
+        <i class="material-icons" style="color:var(--text-secondary);font-size:1.1rem;">search</i>
+        <input type="text" id="channel-search-input" placeholder="جستجو در اطلاعیه‌ها..." oninput="debounceSearch('channel', this.value)">
+        <button class="btn-icon" onclick="toggleSearch('channel')"><i class="material-icons">close</i></button>
+      </div>
+      <div id="channel-pinned-bar" class="pinned-bar" style="display:none;">
+        <i class="material-icons" style="font-size:.95rem;color:#7b1fa2;">push_pin</i>
+        <span id="channel-pinned-text" class="pinned-text"></span>
+      </div>
+      <div class="chat-messages-active" id="channel-messages-container"></div>
+      {% if is_admin %}
+      <div class="chat-input-area">
+        <label for="file-upload-channel" class="attach-btn"><i class="material-icons">attach_file</i></label>
+        <input id="file-upload-channel" type="file" style="display:none" accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip" onchange="handleFileUpload(this,'channel')">
+        <input type="text" id="channel-msg-input" placeholder="اطلاعیه جدید..." onkeydown="handleInputKeydown(event,'channel')">
+        <button class="send-btn" onclick="sendChannelMessage()"><i class="material-icons">send</i></button>
+      </div>
+      {% else %}
+      <div class="chat-input-area input-disabled">
+        <i class="material-icons" style="opacity:.5;">lock</i>
+        <span>فقط مدیریت می‌تواند پیام ارسال کند</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ——— PRIVATE VIEW ——— -->
+    <div id="private-view" class="chat-window" style="display:none;">
+      <div class="chat-header-active">
+        <button class="btn-icon back-btn" onclick="showSidebar()"><i class="material-icons">arrow_forward_ios</i></button>
+        <div class="header-avatar private-avatar" id="private-header-avatar">
+          <span id="private-avatar-initial">؟</span>
+        </div>
+        <div class="chat-header-info">
+          <h3 id="private-name">—</h3>
+          <span id="private-status">آفلاین</span>
+        </div>
+        <button class="btn-icon" onclick="toggleSearch('private')" title="جستجو"><i class="material-icons">search</i></button>
+        <a href="#" id="private-profile-link" class="btn-icon" title="پروفایل"><i class="material-icons">account_circle</i></a>
+        <button class="btn-icon" id="block-btn" onclick="toggleBlockUser()" title="بلاک کاربر" style="color:var(--error);">
+          <i class="material-icons">block</i>
+        </button>
+      </div>
+      <div id="private-search-bar" class="chat-search-bar" style="display:none;">
+        <i class="material-icons" style="color:var(--text-secondary);font-size:1.1rem;">search</i>
+        <input type="text" id="private-search-input" placeholder="جستجو در پیام‌ها..." oninput="debounceSearch('private', this.value)">
+        <button class="btn-icon" onclick="toggleSearch('private')"><i class="material-icons">close</i></button>
+      </div>
+      <div id="private-pinned-bar" class="pinned-bar" style="display:none;">
+        <i class="material-icons" style="font-size:.95rem;color:var(--primary-color);">push_pin</i>
+        <span id="private-pinned-text" class="pinned-text"></span>
+      </div>
+      <div class="chat-messages-active" id="private-messages-container"></div>
+      <div id="private-reply-preview" class="reply-preview" style="display:none;">
+        <div class="reply-preview-inner">
+          <div class="reply-bar"></div>
+          <div>
+            <div class="reply-preview-name" id="private-reply-name"></div>
+            <div class="reply-preview-text" id="private-reply-text"></div>
+          </div>
+        </div>
+        <button class="btn-icon" onclick="cancelReply('private')"><i class="material-icons">close</i></button>
+      </div>
+      <div class="chat-input-area" id="private-input-area">
+        <label for="file-upload-private" class="attach-btn"><i class="material-icons">attach_file</i></label>
+        <input id="file-upload-private" type="file" style="display:none" accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip" onchange="handleFileUpload(this,'private')">
+        <input type="text" id="private-msg-input" placeholder="پیام خصوصی..." onkeydown="handleInputKeydown(event,'private')">
+        <button class="send-btn" onclick="sendPrivateMessage()"><i class="material-icons">send</i></button>
+      </div>
+    </div>
+
+    <!-- ——— EMPTY VIEW ——— -->
+    <div id="empty-view" class="chat-empty">
+      <div class="empty-icon-wrap"><i class="material-icons">forum</i></div>
+      <h3>یک گفتگو انتخاب کنید</h3>
+      <p>از لیست سمت راست یک مکالمه را باز کنید</p>
+    </div>
+
+  </main>
 </div>
 
+<!-- ===================== MODALS ===================== -->
+
+<!-- Members Modal -->
+<div id="members-modal" class="modal-overlay" onclick="handleOverlayClick(event,'members-modal')">
+  <div class="modal-card wide-modal" onclick="event.stopPropagation()">
+    <div class="modal-card-header">
+      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">groups</i> اعضای گروه</h3>
+      <button class="modal-close-btn" onclick="closeModal('members-modal')"><i class="material-icons">close</i></button>
+    </div>
+    <div id="members-list-container"><div class="loading-state"><i class="material-icons spin">sync</i> در حال بارگذاری...</div></div>
+  </div>
+</div>
+
+<!-- Forward Modal -->
+<div id="forward-modal" class="modal-overlay" onclick="handleOverlayClick(event,'forward-modal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-card-header">
+      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">forward</i> فوروارد پیام</h3>
+      <button class="modal-close-btn" onclick="closeModal('forward-modal')"><i class="material-icons">close</i></button>
+    </div>
+    <div class="forward-option" onclick="doForwardToGroup()">
+      <div class="special-icon group-icon" style="width:36px;height:36px;border-radius:8px;flex-shrink:0;"><i class="material-icons" style="font-size:1.1rem;">groups</i></div>
+      <span>گروه عمومی دانشجویان</span>
+    </div>
+    <div style="font-size:.82rem;color:var(--text-secondary);margin:.75rem 0 .4rem;">پیام خصوصی:</div>
+    <div id="forward-users-list"><div class="loading-state"><i class="material-icons spin">sync</i></div></div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="edit-modal" class="modal-overlay" onclick="handleOverlayClick(event,'edit-modal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-card-header">
+      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">edit</i> ویرایش پیام</h3>
+      <button class="modal-close-btn" onclick="closeModal('edit-modal')"><i class="material-icons">close</i></button>
+    </div>
+    <textarea id="edit-textarea" class="modal-textarea" rows="4"></textarea>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('edit-modal')">انصراف</button>
+      <button class="btn-primary" onclick="submitEdit()">ذخیره</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="delete-modal" class="modal-overlay" onclick="handleOverlayClick(event,'delete-modal')">
+  <div class="modal-card small-modal" onclick="event.stopPropagation()">
+    <div class="modal-card-header">
+      <h3 style="color:var(--error);"><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">delete_outline</i> حذف پیام</h3>
+      <button class="modal-close-btn" onclick="closeModal('delete-modal')"><i class="material-icons">close</i></button>
+    </div>
+    <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:1.25rem;">می‌خواهید این پیام را چطور حذف کنید؟</p>
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+      <button class="btn-danger" id="delete-everyone-btn" onclick="confirmDelete('everyone')">حذف برای همه</button>
+      <button class="btn-secondary" onclick="confirmDelete('me')">حذف فقط برای من</button>
+      <button class="btn-secondary" onclick="closeModal('delete-modal')">انصراف</button>
+    </div>
+  </div>
+</div>
+
+<!-- Emoji Picker -->
+<div id="emoji-picker" class="emoji-picker-popup" style="display:none;" onclick="event.stopPropagation()">
+  <div class="emoji-grid">
+    {% for em in ['👍','❤️','😂','😮','😢','😡','🎉','🔥','✅','👏','💯','🙏','🤔','😍','🌟'] %}
+    <button class="emoji-btn" onclick="selectEmoji('{{ em }}')">{{ em }}</button>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- New Chat Modal -->
+<div id="new-chat-modal" class="modal-overlay" onclick="handleOverlayClick(event,'new-chat-modal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-card-header">
+      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">person_add</i> شروع گفتگوی جدید</h3>
+      <button class="modal-close-btn" onclick="closeModal('new-chat-modal')"><i class="material-icons">close</i></button>
+    </div>
+    <input type="text" id="user-search-input" class="modal-search-input" placeholder="جستجوی نام یا شماره دانشجویی..." oninput="searchUsersDebounced(this.value)">
+    <div id="user-search-results" class="user-search-results"><div style="text-align:center;color:var(--text-secondary);padding:1.5rem;font-size:.88rem;">برای شروع تایپ کنید</div></div>
+  </div>
+</div>
+
+<!-- Group Settings Modal -->
+<div id="group-settings-modal" class="modal-overlay" onclick="handleOverlayClick(event,'group-settings-modal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-card-header">
+      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">settings</i> تنظیمات گروه</h3>
+      <button class="modal-close-btn" onclick="closeModal('group-settings-modal')"><i class="material-icons">close</i></button>
+    </div>
+    <div class="settings-row">
+      <div>
+        <div style="font-weight:600;font-size:.9rem;">حالت فقط خواندنی</div>
+        <div style="font-size:.78rem;color:var(--text-secondary);margin-top:.15rem;">فقط ادمین‌ها می‌توانند پیام ارسال کنند</div>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="readonly-toggle" onchange="toggleGroupReadonly(this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Privacy Settings Modal -->
+<div id="privacy-modal" class="modal-overlay" onclick="handleOverlayClick(event,'privacy-modal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-card-header">
+      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">privacy_tip</i> تنظیمات حریم خصوصی</h3>
+      <button class="modal-close-btn" onclick="closeModal('privacy-modal')"><i class="material-icons">close</i></button>
+    </div>
+    <div class="settings-row">
+      <div style="font-size:.9rem;font-weight:600;">نمایش آخرین بازدید</div>
+      <select id="last-seen-select" class="settings-select" onchange="savePrivacy('last_seen_visibility',this.value)">
+        <option value="all">همه</option>
+        <option value="contacts">مخاطبین</option>
+        <option value="none">هیچ‌کس</option>
+      </select>
+    </div>
+    <div class="settings-row">
+      <div style="font-size:.9rem;font-weight:600;">نمایش عکس پروفایل</div>
+      <select id="profile-pic-select" class="settings-select" onchange="savePrivacy('profile_pic_visibility',this.value)">
+        <option value="all">همه</option>
+        <option value="contacts">مخاطبین</option>
+        <option value="none">هیچ‌کس</option>
+      </select>
+    </div>
+    <div class="settings-row">
+      <div style="font-size:.9rem;font-weight:600;">ارسال پیام خصوصی</div>
+      <select id="who-can-msg-select" class="settings-select" onchange="savePrivacy('who_can_message',this.value)">
+        <option value="all">همه</option>
+        <option value="none">هیچ‌کس</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Message Context Dropdown -->
+<div id="msg-context-menu" class="context-menu" style="display:none;" onclick="event.stopPropagation()"></div>
+
+<!-- ===================== STYLES ===================== -->
 <style>
+/* ── Layout ── */
+.chat-layout{display:flex;height:calc(100vh - 64px);overflow:hidden;background:var(--background);}
 
-.chat-layout {
-    display: flex;
-    height: calc(100vh - 64px);
-    overflow: hidden;
-    background: var(--background);
-}
-.chat-sidebar {
-    width: 300px;
-    min-width: 300px;
-    background: var(--surface);
-    border-left: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: all .3s;
-}
+/* ── Sidebar ── */
+.chat-sidebar{width:300px;min-width:300px;background:var(--surface);border-left:1px solid var(--border-color);display:flex;flex-direction:column;overflow:hidden;transition:all .3s;}
+.sidebar-header{padding:.85rem 1rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;}
+.chat-special-sections{padding:.5rem .6rem 0;}
+.special-item{display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;border-radius:10px;cursor:pointer;margin-bottom:.35rem;transition:background .2s;border:1px solid transparent;}
+.special-item:hover{background:var(--background);border-color:var(--border-color);}
+.special-item.active{background:rgba(0,131,143,.08);border-color:rgba(0,131,143,.25);}
+.special-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.group-icon{background:linear-gradient(135deg,#00838f,#006064);color:white;}
+.channel-icon{background:linear-gradient(135deg,#7b1fa2,#4a148c);color:white;}
+.special-info{display:flex;flex-direction:column;gap:.1rem;overflow:hidden;}
+.special-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.special-desc{font-size:.74rem;color:var(--text-secondary);}
+.sidebar-divider{padding:.55rem 1rem .35rem;font-size:.7rem;color:var(--text-secondary);font-weight:700;letter-spacing:.05em;display:flex;align-items:center;gap:.5rem;margin-top:.15rem;}
+.sidebar-divider::before{content:'';flex:1;height:1px;background:var(--border-color);order:2;}
+.conversation-list{flex:1;overflow-y:auto;padding:.4rem .6rem;}
+.conversation-list::-webkit-scrollbar{width:3px;}
+.conversation-list::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px;}
+.convo-item{display:flex;align-items:center;gap:.7rem;padding:.6rem .8rem;border-radius:10px;cursor:pointer;transition:background .2s;margin-bottom:.2rem;border:1px solid transparent;}
+.convo-item:hover{background:var(--background);border-color:var(--border-color);}
+.convo-item.active{background:rgba(0,131,143,.08);border-color:rgba(0,131,143,.25);}
+.convo-avatar{position:relative;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:visible;}
+.convo-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
+.avatar-initial{font-weight:700;font-size:.95rem;}
+.online-dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:var(--success);border-radius:50%;border:2px solid var(--surface);}
+.convo-info{flex:1;min-width:0;}
+.convo-header-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.15rem;}
+.convo-name{font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
+.convo-time{font-size:.7rem;color:var(--text-secondary);flex-shrink:0;}
+.convo-msg-row{display:flex;align-items:center;justify-content:space-between;}
+.convo-last-msg{font-size:.78rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px;}
+.unread-badge{background:var(--primary-color);color:white;border-radius:50%;width:18px;height:18px;font-size:.68rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.empty-state-small{text-align:center;padding:2rem 1rem;color:var(--text-secondary);}
+.empty-state-small i{font-size:2.5rem;color:var(--border-color);display:block;margin-bottom:.5rem;}
+.empty-state-small p{font-size:.85rem;}
 
-.sidebar-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--surface);
-    display: flex;
-    align-items: center;
-}
+/* ── Chat Main ── */
+.chat-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.chat-window{flex:1;display:flex;flex-direction:column;height:100%;overflow:hidden;}
+.chat-header-active{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;background:var(--surface);border-bottom:1px solid var(--border-color);box-shadow:0 2px 8px rgba(0,0,0,.05);z-index:10;}
+.header-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;color:white;}
+.group-avatar{background:linear-gradient(135deg,#00838f,#006064);}
+.channel-avatar{background:linear-gradient(135deg,#7b1fa2,#4a148c);}
+.private-avatar{background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));}
+.chat-header-info{flex:1;display:flex;flex-direction:column;gap:.05rem;min-width:0;}
+.chat-header-info h3{font-size:.95rem;margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chat-header-info span{font-size:.75rem;color:var(--text-secondary);}
+.btn-icon{background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:.45rem;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .2s,color .2s;flex-shrink:0;}
+.btn-icon:hover{background:var(--background);color:var(--primary-color);}
+.btn-icon i{font-size:1.1rem;}
+.back-btn{display:none;}
 
-.chat-special-sections {
-    padding: .6rem .6rem 0;
-}
+/* ── Search bar ── */
+.chat-search-bar{display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--surface);border-bottom:1px solid var(--border-color);}
+.chat-search-bar input{flex:1;padding:.45rem .75rem;border-radius:20px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.88rem;color:var(--text-primary);outline:none;}
+.chat-search-bar input:focus{border-color:var(--primary-color);}
 
-.special-item {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    padding: .75rem .85rem;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-bottom: .4rem;
-    transition: background .2s;
-    border: 1px solid transparent;
-}
-.special-item:hover {
-    background: var(--background);
-    border-color: var(--border-color);
-}
-.special-item.active {
-    background: rgba(0,131,143,.08);
-    border-color: rgba(0,131,143,.25);
-}
+/* ── Pinned bar ── */
+.pinned-bar{display:flex;align-items:center;gap:.5rem;padding:.45rem 1rem;background:rgba(0,131,143,.06);border-bottom:1px solid rgba(0,131,143,.15);cursor:pointer;font-size:.82rem;color:var(--text-primary);}
+.pinned-text{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-.special-icon {
-    width: 44px; height: 44px;
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-}
-.group-icon { background: linear-gradient(135deg, #00838f, #006064); color: white; }
-.channel-icon { background: linear-gradient(135deg, #7b1fa2, #4a148c); color: white; }
+/* ── Readonly bar ── */
+.readonly-bar{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem 1rem;background:rgba(244,67,54,.06);border-bottom:1px solid rgba(244,67,54,.15);font-size:.82rem;color:var(--error);}
 
-.special-info { display: flex; flex-direction: column; gap: .15rem; overflow: hidden; }
-.special-name { font-weight: 600; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.special-desc { font-size: .75rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ── Messages ── */
+.chat-messages-active{flex:1;overflow-y:auto;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.35rem;background:var(--background);}
+.chat-messages-active::-webkit-scrollbar{width:4px;}
+.chat-messages-active::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:4px;}
+.loading-state{display:flex;align-items:center;justify-content:center;gap:.5rem;color:var(--text-secondary);padding:2rem;font-size:.88rem;}
 
-.sidebar-divider {
-    padding: .6rem 1rem .4rem;
-    font-size: .72rem;
-    color: var(--text-secondary);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    display: flex; align-items: center; gap: .5rem;
-    margin-top: .25rem;
-}
-.sidebar-divider::before {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border-color);
-    order: 2;
-}
+/* ── Message wrapper ── */
+.message-wrapper{display:flex;flex-direction:column;max-width:68%;position:relative;}
+.message-wrapper.sent{align-self:flex-end;align-items:flex-end;}
+.message-wrapper.received{align-self:flex-start;align-items:flex-start;}
+@keyframes msgFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-.conversation-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: .5rem .6rem;
-}
-.conversation-list::-webkit-scrollbar { width: 4px; }
-.conversation-list::-webkit-scrollbar-track { background: transparent; }
-.conversation-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+.message-sender-name{font-size:.72rem;color:var(--primary-color);font-weight:700;margin-bottom:.2rem;padding:0 .35rem;cursor:pointer;}
+.message-sender-name:hover{text-decoration:underline;}
 
-.convo-item {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    padding: .65rem .85rem;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background .2s;
-    margin-bottom: .25rem;
-    border: 1px solid transparent;
-}
-.convo-item:hover { background: var(--background); border-color: var(--border-color); }
-.convo-item.active {
-    background: rgba(0,131,143,.08);
-    border-color: rgba(0,131,143,.25);
-}
+/* Forwarded indicator */
+.forwarded-badge{font-size:.72rem;color:var(--text-secondary);display:flex;align-items:center;gap:.2rem;padding:0 .35rem;margin-bottom:.15rem;}
+.forwarded-badge i{font-size:.85rem;}
 
-.convo-avatar {
-    position: relative;
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    overflow: visible;
-}
-.convo-avatar img {
-    width: 100%; height: 100%;
-    border-radius: 50%; object-fit: cover;
-}
-.avatar-initial { font-weight: 700; font-size: 1rem; }
+/* Reply quote */
+.reply-quote{border-radius:8px;padding:.35rem .65rem;margin-bottom:.3rem;font-size:.78rem;border-right:3px solid var(--primary-color);background:rgba(0,131,143,.07);cursor:pointer;}
+.reply-quote-name{font-weight:700;color:var(--primary-color);margin-bottom:.1rem;}
+.reply-quote-text{color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;}
+.message-wrapper.sent .reply-quote{border-right-color:rgba(255,255,255,.7);background:rgba(255,255,255,.15);}
+.message-wrapper.sent .reply-quote-name{color:rgba(255,255,255,.9);}
+.message-wrapper.sent .reply-quote-text{color:rgba(255,255,255,.7);}
 
-.online-dot {
-    position: absolute;
-    bottom: 1px; right: 1px;
-    width: 10px; height: 10px;
-    background: var(--success);
-    border-radius: 50%;
-    border: 2px solid var(--surface);
-}
+/* Bubble */
+.message-bubble{padding:.55rem .9rem;border-radius:14px;word-wrap:break-word;position:relative;font-size:.9rem;line-height:1.55;}
+.message-wrapper.sent .message-bubble{background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;border-bottom-left-radius:4px;}
+.message-wrapper.received .message-bubble{background:var(--surface);color:var(--text-primary);border:1px solid var(--border-color);border-bottom-right-radius:4px;}
+.deleted-bubble{opacity:.55;font-style:italic;font-size:.85rem;}
 
-.convo-info { flex: 1; min-width: 0; }
-.convo-header-row {
-    display: flex; justify-content: space-between;
-    align-items: baseline; margin-bottom: .2rem;
-}
-.convo-name { font-weight: 600; font-size: .88rem; }
-.convo-time { font-size: .72rem; color: var(--text-secondary); }
-.convo-msg-row { display: flex; align-items: center; justify-content: space-between; }
-.convo-last-msg {
-    font-size: .8rem; color: var(--text-secondary);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    max-width: 150px;
-}
-.unread-badge {
-    background: var(--primary-color); color: white;
-    border-radius: 50%; width: 18px; height: 18px;
-    font-size: .7rem; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-}
+/* Message meta */
+.message-meta{display:flex;align-items:center;gap:.3rem;margin-top:.2rem;padding:0 .3rem;}
+.message-wrapper.received .message-meta{flex-direction:row-reverse;}
+.msg-time{font-size:.68rem;color:var(--text-secondary);}
+.msg-edited-tag{font-size:.65rem;color:var(--text-secondary);}
+.msg-ticks{font-size:.8rem;display:flex;align-items:center;}
+.ticks-sent{color:var(--text-secondary);}
+.ticks-delivered{color:var(--text-secondary);}
+.ticks-read{color:#2196F3;}
 
-.empty-state-small {
-    text-align: center; padding: 2rem 1rem;
-    color: var(--text-secondary);
-}
-.empty-state-small i { font-size: 2.5rem; color: var(--border-color); display: block; margin-bottom: .5rem; }
-.empty-state-small p { font-size: .88rem; }
+/* File attachment */
+.msg-file{display:inline-flex;align-items:center;gap:.4rem;margin-top:.4rem;padding:.35rem .75rem;border-radius:8px;background:rgba(255,255,255,.15);text-decoration:none;font-size:.82rem;color:inherit;border:1px solid rgba(255,255,255,.2);transition:background .2s;}
+.message-wrapper.received .msg-file{background:rgba(0,131,143,.07);border-color:rgba(0,131,143,.2);color:var(--primary-color);}
+.msg-file:hover{background:rgba(255,255,255,.25);}
+.msg-file i{font-size:.95rem;}
 
-.chat-main {
-    flex: 1;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
+/* Reactions */
+.msg-reactions{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem;padding:0 .2rem;}
+.reaction-chip{display:flex;align-items:center;gap:.25rem;padding:.2rem .45rem;border-radius:12px;background:var(--surface);border:1.5px solid var(--border-color);font-size:.8rem;cursor:pointer;transition:background .15s,border-color .15s;user-select:none;}
+.reaction-chip:hover{border-color:var(--primary-color);background:rgba(0,131,143,.06);}
+.reaction-chip.mine{border-color:var(--primary-color);background:rgba(0,131,143,.1);}
+.reaction-chip .rc-count{font-size:.72rem;color:var(--text-secondary);}
 
-.chat-window {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-}
+/* Message actions toolbar */
+.msg-actions{display:none;position:absolute;top:50%;transform:translateY(-50%);background:var(--surface);border:1px solid var(--border-color);border-radius:24px;padding:.2rem .4rem;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:20;gap:.1rem;align-items:center;}
+.message-wrapper.sent .msg-actions{left:-12px;transform:translate(-100%,-50%);}
+.message-wrapper.received .msg-actions{right:-12px;transform:translate(100%,-50%);}
+.message-wrapper:hover .msg-actions{display:flex;}
+.msg-action-btn{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:.3rem;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;}
+.msg-action-btn:hover{color:var(--primary-color);background:var(--background);}
+.msg-action-btn i{font-size:.95rem;}
 
-.chat-header-active {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    padding: .85rem 1.25rem;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 2px 8px rgba(0,0,0,.05);
-    z-index: 10;
-}
+/* Dropdown inside action toolbar */
+.action-dropdown{position:relative;}
+.action-dropdown-menu{display:none;position:absolute;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:130px;z-index:100;overflow:hidden;}
+.action-dropdown-menu.open-up{top:auto;bottom:calc(100% + 4px);}
+.action-dropdown.open .action-dropdown-menu{display:block;}
+.message-wrapper.sent .action-dropdown-menu{right:0;}
+.message-wrapper.received .action-dropdown-menu{left:0;}
+.dropdown-item{display:flex;align-items:center;gap:.5rem;padding:.55rem .85rem;font-size:.82rem;cursor:pointer;color:var(--text-primary);transition:background .15s;white-space:nowrap;}
+.dropdown-item:hover{background:var(--background);}
+.dropdown-item.danger{color:var(--error);}
+.dropdown-item i{font-size:.9rem;color:var(--text-secondary);}
+.dropdown-item.danger i{color:var(--error);}
 
-.header-avatar {
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    font-weight: 700; font-size: 1rem; color: white;
-}
-.group-avatar { background: linear-gradient(135deg, #00838f, #006064); }
-.channel-avatar { background: linear-gradient(135deg, #7b1fa2, #4a148c); }
-.private-avatar { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); }
+/* Pinned message bubble indicator */
+.pinned-msg-indicator{font-size:.68rem;color:var(--primary-color);display:flex;align-items:center;gap:.2rem;margin-bottom:.15rem;padding:0 .3rem;}
 
-.chat-header-info {
-    flex: 1;
-    display: flex; flex-direction: column; gap: .1rem;
-}
-.chat-header-info h3 { font-size: 1rem; margin: 0; font-weight: 700; }
-.chat-header-info span { font-size: .78rem; color: var(--text-secondary); }
+/* ── Reply preview ── */
+.reply-preview{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:var(--surface);border-top:1px solid rgba(0,131,143,.2);}
+.reply-preview-inner{display:flex;align-items:center;gap:.6rem;flex:1;min-width:0;}
+.reply-bar{width:3px;height:36px;background:var(--primary-color);border-radius:3px;flex-shrink:0;}
+.reply-preview-name{font-size:.78rem;font-weight:700;color:var(--primary-color);}
+.reply-preview-text{font-size:.78rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:250px;}
 
-.btn-icon {
-    background: none; border: none;
-    color: var(--text-secondary);
-    cursor: pointer; padding: .5rem;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    text-decoration: none;
-    transition: background .2s, color .2s;
-}
-.btn-icon:hover { background: var(--background); color: var(--primary-color); }
+/* ── Mention suggestions ── */
+.mention-suggestions{position:absolute;bottom:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.1);max-height:160px;overflow-y:auto;z-index:50;}
+.mention-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;cursor:pointer;font-size:.85rem;transition:background .15s;}
+.mention-item:hover{background:var(--background);}
+.mention-item .m-name{font-weight:600;}
+.mention-item .m-sid{font-size:.72rem;color:var(--text-secondary);}
 
-.back-btn { display: none; }
+/* ── Chat input ── */
+.chat-input-area{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;background:var(--surface);border-top:1px solid var(--border-color);}
+.input-disabled{justify-content:center;opacity:.7;gap:.5rem;font-size:.85rem;color:var(--text-secondary);}
+.attach-btn{cursor:pointer;color:var(--text-secondary);padding:.4rem;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:color .2s,background .2s;flex-shrink:0;}
+.attach-btn:hover{color:var(--primary-color);background:var(--background);}
+.chat-input-area input[type="text"]{flex:1;padding:.65rem 1rem;border-radius:22px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.9rem;color:var(--text-primary);outline:none;transition:border-color .2s;}
+.chat-input-area input[type="text"]:focus{border-color:var(--primary-color);}
+.send-btn{width:40px;height:40px;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,box-shadow .15s;box-shadow:0 3px 10px rgba(0,131,143,.3);}
+.send-btn:hover{transform:scale(1.07);box-shadow:0 5px 14px rgba(0,131,143,.4);}
+.send-btn:active{transform:scale(.95);}
 
-.members-btn {
-    display: flex; align-items: center; gap: .2rem;
-    border-radius: 8px !important;
-    padding: .4rem .75rem !important;
-    border: 1px solid var(--border-color) !important;
-    font-size: .82rem;
-}
-.members-btn:hover { background: var(--background) !important; border-color: var(--primary-color) !important; }
+/* ── Empty view ── */
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-secondary);gap:.75rem;}
+.empty-icon-wrap{width:76px;height:76px;background:linear-gradient(135deg,rgba(0,131,143,.1),rgba(0,131,143,.04));border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px dashed rgba(0,131,143,.2);}
+.empty-icon-wrap i{font-size:2.3rem;color:var(--primary-color);opacity:.5;}
+.chat-empty h3{font-size:1.05rem;color:var(--text-primary);margin:0;}
+.chat-empty p{font-size:.85rem;margin:0;}
 
-.chat-messages-active {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
-    background: var(--background);
-}
-.chat-messages-active::-webkit-scrollbar { width: 4px; }
-.chat-messages-active::-webkit-scrollbar-track { background: transparent; }
-.chat-messages-active::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+/* ── Modals ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);z-index:3000;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.open{display:flex;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.modal-card{background:var(--surface);border-radius:16px;padding:1.5rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:80vh;overflow-y:auto;}
+.wide-modal{max-width:520px;}
+.small-modal{max-width:360px;}
+.modal-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;}
+.modal-card-header h3{font-size:1.05rem;margin:0;color:var(--text-primary);}
+.modal-close-btn{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:.25rem;border-radius:50%;display:flex;align-items:center;transition:background .2s;}
+.modal-close-btn:hover{background:var(--background);color:var(--text-primary);}
+.modal-textarea{width:100%;min-height:90px;padding:.75rem;border-radius:10px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.9rem;resize:vertical;color:var(--text-primary);outline:none;box-sizing:border-box;}
+.modal-textarea:focus{border-color:var(--primary-color);}
+.modal-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.85rem;}
+.modal-search-input{width:100%;padding:.65rem 1rem;border-radius:10px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.9rem;color:var(--text-primary);outline:none;margin-bottom:.85rem;box-sizing:border-box;}
+.modal-search-input:focus{border-color:var(--primary-color);}
+.user-search-results{max-height:280px;overflow-y:auto;}
+.user-result-item{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;cursor:pointer;border:1px solid var(--border-color);margin-bottom:.4rem;transition:background .15s,border-color .15s;}
+.user-result-item:hover{background:var(--background);border-color:var(--primary-color);}
 
-.messages-loading {
-    display: flex; align-items: center; justify-content: center;
-    gap: .5rem; color: var(--text-secondary);
-    padding: 2rem; font-size: .88rem;
-}
-.message-wrapper {
-    display: flex;
-    flex-direction: column;
-    max-width: 70%;
-}
-.message-wrapper.sent { align-self: flex-end; align-items: flex-end; }
-.message-wrapper.received { align-self: flex-start; align-items: flex-start; }
+/* Settings */
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border-color);}
+.settings-row:last-child{border-bottom:none;}
+.settings-select{padding:.4rem .65rem;border-radius:8px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.85rem;color:var(--text-primary);cursor:pointer;outline:none;}
+.settings-select:focus{border-color:var(--primary-color);}
 
-.message-sender-name {
-    font-size: .72rem;
-    color: var(--primary-color);
-    font-weight: 700;
-    margin-bottom: .2rem;
-    cursor: pointer;
-    padding: 0 .4rem;
-}
-.message-sender-name:hover { text-decoration: underline; }
+/* Toggle switch */
+.toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:24px;transition:.3s;}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;}
+.toggle-switch input:checked+.toggle-slider{background:var(--primary-color);}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(20px);}
 
-.message-bubble {
-    padding: .6rem 1rem;
-    border-radius: 14px;
-    word-wrap: break-word;
-    position: relative;
-    font-size: .9rem;
-    line-height: 1.55;
-}
-.message-wrapper.sent .message-bubble {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    border-bottom-left-radius: 4px;
-}
-.message-wrapper.received .message-bubble {
-    background: var(--surface);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-bottom-right-radius: 4px;
-}
+/* Member items */
+.member-item{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;border:1px solid var(--border-color);margin-bottom:.4rem;transition:background .15s;}
+.member-item:hover{background:var(--background);}
+.member-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;position:relative;overflow:hidden;}
+.member-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.member-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;background:var(--success);border-radius:50%;border:1.5px solid var(--surface);}
+.member-info{flex:1;min-width:0;}
+.member-name{font-weight:600;font-size:.88rem;}
+.member-sub{font-size:.74rem;color:var(--text-secondary);}
+.member-role-badge{font-size:.68rem;padding:.15rem .45rem;border-radius:10px;font-weight:700;}
+.role-admin{background:rgba(0,131,143,.12);color:var(--primary-color);}
+.role-muted{background:rgba(255,152,0,.12);color:#f57c00;}
+.role-banned{background:rgba(244,67,54,.12);color:var(--error);}
+.member-actions{display:flex;gap:.25rem;margin-top:.3rem;flex-wrap:wrap;}
+.member-action-btn{font-size:.72rem;padding:.2rem .5rem;border-radius:6px;border:1px solid var(--border-color);background:none;cursor:pointer;color:var(--text-secondary);transition:background .15s,color .15s;}
+.member-action-btn:hover{background:var(--background);color:var(--primary-color);}
+.member-action-btn.danger:hover{color:var(--error);}
 
-.message-time {
-    font-size: .68rem;
-    opacity: .65;
-    margin-top: .3rem;
-    display: block;
-    padding: 0 .4rem;
-}
-.message-wrapper.sent .message-time { text-align: left; color: var(--text-secondary); }
-.message-wrapper.received .message-time { text-align: right; color: var(--text-secondary); }
+/* Forward option */
+.forward-option{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;border:1px solid var(--border-color);cursor:pointer;margin-bottom:.4rem;transition:background .15s,border-color .15s;}
+.forward-option:hover{background:var(--background);border-color:var(--primary-color);}
 
-.message-file-attach {
-    display: flex; align-items: center; gap: .4rem;
-    margin-top: .5rem;
-    padding: .4rem .75rem;
-    border-radius: 8px;
-    background: rgba(255,255,255,.15);
-    text-decoration: none;
-    font-size: .82rem;
-    color: inherit;
-    border: 1px solid rgba(255,255,255,.2);
-    transition: background .2s;
-}
-.message-wrapper.received .message-file-attach {
-    background: rgba(0,131,143,.08);
-    border-color: rgba(0,131,143,.2);
-    color: var(--primary-color);
-}
-.message-file-attach:hover { background: rgba(255,255,255,.25); }
+/* Emoji picker */
+.emoji-picker-popup{position:fixed;background:var(--surface);border:1px solid var(--border-color);border-radius:14px;padding:.6rem;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:4000;}
+.emoji-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.25rem;}
+.emoji-btn{width:36px;height:36px;border:none;background:none;cursor:pointer;border-radius:8px;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.emoji-btn:hover{background:var(--background);}
 
-.chat-input-area {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    padding: .85rem 1.25rem;
-    background: var(--surface);
-    border-top: 1px solid var(--border-color);
-}
-.input-disabled {
-    justify-content: center;
-    opacity: .7;
-    gap: .5rem;
-    font-size: .88rem;
-    color: var(--text-secondary);
-}
+/* Context menu */
+.context-menu{position:fixed;background:var(--surface);border:1px solid var(--border-color);border-radius:12px;padding:.35rem;box-shadow:0 8px 28px rgba(0,0,0,.15);z-index:3500;min-width:150px;}
+.context-menu-item{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--text-primary);transition:background .15s;}
+.context-menu-item:hover{background:var(--background);}
+.context-menu-item.danger{color:var(--error);}
+.context-menu-item i{font-size:.9rem;color:var(--text-secondary);}
+.context-menu-item.danger i{color:var(--error);}
 
-.attach-btn {
-    cursor: pointer;
-    color: var(--text-secondary);
-    padding: .4rem;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    transition: color .2s, background .2s;
-    flex-shrink: 0;
-}
-.attach-btn:hover { color: var(--primary-color); background: var(--background); }
+/* Buttons */
+.btn-primary{padding:.55rem 1.25rem;background:var(--primary-color);color:white;border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:600;transition:background .2s;}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-secondary{padding:.55rem 1.25rem;background:var(--background);color:var(--text-primary);border:1.5px solid var(--border-color);border-radius:10px;cursor:pointer;font-family:inherit;font-size:.88rem;transition:background .2s;}
+.btn-secondary:hover{background:var(--border-color);}
+.btn-danger{padding:.55rem 1.25rem;background:var(--error);color:white;border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:.88rem;transition:opacity .2s;}
+.btn-danger:hover{opacity:.85;}
 
-.chat-input-area input[type="text"] {
-    flex: 1;
-    padding: .7rem 1.1rem;
-    border-radius: 24px;
-    border: 1.5px solid var(--border-color);
-    background: var(--background);
-    font-family: inherit;
-    font-size: .9rem;
-    color: var(--text-primary);
-    outline: none;
-    transition: border-color .2s;
-}
-.chat-input-area input[type="text"]:focus {
-    border-color: var(--primary-color);
-}
+/* Search results highlight */
+.search-result-msg{padding:.6rem .75rem;border-radius:8px;border:1px solid var(--border-color);margin-bottom:.4rem;cursor:pointer;font-size:.85rem;transition:background .15s;}
+.search-result-msg:hover{background:var(--background);}
+.search-result-msg .sr-name{font-weight:700;color:var(--primary-color);margin-bottom:.15rem;font-size:.78rem;}
+.search-result-msg .sr-text{color:var(--text-primary);}
 
-.send-btn {
-    width: 42px; height: 42px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    border: none; border-radius: 50%;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: transform .15s, box-shadow .15s;
-    box-shadow: 0 3px 10px rgba(0,131,143,.3);
-}
-.send-btn:hover { transform: scale(1.08); box-shadow: 0 5px 14px rgba(0,131,143,.4); }
-.send-btn:active { transform: scale(.95); }
-.chat-empty {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-secondary);
-    gap: .75rem;
-    padding: 2rem;
-}
-.empty-icon-wrap {
-    width: 80px; height: 80px;
-    background: linear-gradient(135deg, rgba(0,131,143,.1), rgba(0,131,143,.05));
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: 2px dashed rgba(0,131,143,.2);
-}
-.empty-icon-wrap i { font-size: 2.5rem; color: var(--primary-color); opacity: .5; }
-.chat-empty h3 { font-size: 1.1rem; color: var(--text-primary); margin: 0; }
-.chat-empty p { font-size: .88rem; margin: 0; }
-.modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.4);
-    backdrop-filter: blur(3px);
-    z-index: 3000;
-    align-items: center; justify-content: center;
-    padding: 1rem;
-}
-.modal-overlay.open { display: flex; animation: fadeIn .2s ease; }
-@keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+/* Toast */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);color:white;padding:.65rem 1.4rem;border-radius:24px;font-size:.85rem;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:msgFadeIn .25s ease;}
 
-.modal-card {
-    background: var(--surface);
-    border-radius: 16px; padding: 1.5rem;
-    width: 100%; max-width: 460px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.2);
-    max-height: 80vh; overflow-y: auto;
-}
-.modal-card-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1.25rem;
-}
-.modal-card-header h3 { font-size: 1.1rem; color: var(--text-primary); margin: 0; }
-.modal-close-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-secondary); padding: .25rem;
-    border-radius: 50%;
-    display: flex; align-items: center;
-    transition: background .2s;
-}
-.modal-close-btn:hover { background: var(--background); color: var(--text-primary); }
+.spin{animation:spin 1s linear infinite;display:inline-block;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 
-.members-loading {
-    display: flex; align-items: center; justify-content: center;
-    gap: .5rem; color: var(--text-secondary); padding: 2rem;
-    font-size: .88rem;
-}
-.members-empty {
-    display: flex; flex-direction: column; align-items: center;
-    gap: .75rem; padding: 2rem 1rem;
-    color: var(--text-secondary); text-align: center;
-}
-.members-empty i { font-size: 2.5rem; color: var(--border-color); }
-.members-empty p { font-size: .9rem; margin: 0; }
+/* Day separator */
+.day-sep{text-align:center;margin:.5rem 0;color:var(--text-secondary);font-size:.72rem;position:relative;}
+.day-sep::before,.day-sep::after{content:'';position:absolute;top:50%;width:30%;height:1px;background:var(--border-color);}
+.day-sep::before{right:0;}
+.day-sep::after{left:0;}
 
-.member-item {
-    display: flex; align-items: center; gap: .85rem;
-    padding: .65rem .75rem;
-    border-radius: 10px; border: 1px solid var(--border-color);
-    margin-bottom: .5rem;
-    cursor: pointer;
-    text-decoration: none;
-    color: var(--text-primary);
-    transition: background .2s, border-color .2s;
-}
-.member-item:hover { background: var(--background); border-color: var(--primary-color); }
-
-.member-avatar {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: .95rem;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-}
-.member-avatar img {
-    width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
-}
-.member-online-dot {
-    position: absolute; bottom: 1px; right: 1px;
-    width: 10px; height: 10px;
-    background: var(--success);
-    border-radius: 50%;
-    border: 2px solid var(--surface);
-}
-
-.member-info { display: flex; flex-direction: column; gap: .15rem; }
-.member-name { font-weight: 600; font-size: .9rem; }
-.member-status { font-size: .75rem; color: var(--text-secondary); }
-.member-status.online { color: var(--success); font-weight: 600; }
-
-.spin { animation: spin 1s linear infinite; display: inline-block; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-@media (max-width: 768px) {
-    .chat-sidebar { position: absolute; z-index: 100; height: 100%; width: 100%; min-width: unset; }
-    .back-btn { display: flex !important; }
-    .chat-main { width: 100%; }
-    .message-wrapper { max-width: 88%; }
+@media(max-width:768px){
+  .chat-sidebar{position:absolute;z-index:100;height:100%;width:100%;min-width:unset;}
+  .back-btn{display:flex !important;}
+  .chat-main{width:100%;}
+  .message-wrapper{max-width:85%;}
+  .msg-actions{display:none !important;}
 }
 </style>
 
@@ -719,432 +660,1176 @@
 
 {% block scripts %}
 <script>
+// ═══════════════════════════════════════════════
+//  CONSTANTS & STATE
+// ═══════════════════════════════════════════════
 const socket = io();
 const CURRENT_USER_ID = {{ current_user.id if current_user else 'null' }};
 const IS_ADMIN = {{ 'true' if is_admin else 'false' }};
+const IS_GROUP_ADMIN = {{ 'true' if is_group_admin else 'false' }};
 
 let currentView = 'empty';
 let privateRecipientId = null;
+let replyState = { group: null, private: null };  // {id, content, sender_name}
+let forwardMsgId = null, forwardCtx = null;
+let editMsgId = null, editCtx = null;
+let deleteMsgId = null, deleteCtx = null, deleteIsMine = false;
+let emojiTarget = null;  // {msgId, ctx, element}
+let allUsers = [];
+let searchTimers = {};
+let groupReadonly = {{ 'true' if group_setting and group_setting.is_readonly else 'false' }};
 
-const initialGroupMessages = [
-    {% for msg in group_messages %}
-    {
-        sender_id: {{ msg.sender_id }},
-        sender_name: {{ msg.sender.full_name | tojson }},
-        content: {{ (msg.content or '') | tojson }},
-        file_path: {{ msg.file_path | tojson if msg.file_path else 'null' }},
-        timestamp: {{ msg.timestamp.strftime('%H:%M') | tojson }}
-    }{% if not loop.last %},{% endif %}
-    {% endfor %}
+// Initial data from server
+const INIT_PRIVATE_MSGS = [
+{% for msg in messages %}
+{
+  id:{{msg.id}},
+  sender_id:{{msg.sender_id}},
+  sender_name:{{msg.sender.full_name|tojson}},
+  sender_student_id:{{msg.sender.student_id|tojson}},
+  content:{{(msg.content or '')|tojson}},
+  file_path:{{(msg.file_path or None)|tojson}},
+  timestamp:{{msg.timestamp.strftime('%H:%M')|tojson}},
+  read_at:{{'true' if msg.read_at else 'false'}},
+  delivered_at:{{'true' if msg.delivered_at else 'false'}},
+  is_edited:{{'true' if msg.is_edited else 'false'}},
+  is_pinned:{{'true' if msg.is_pinned else 'false'}},
+  deleted_for_sender:{{'true' if msg.deleted_for_sender else 'false'}},
+  deleted_for_receiver:{{'true' if msg.deleted_for_receiver else 'false'}},
+  forwarded_from_id:{{msg.forwarded_from_id or 'null'}},
+  reply_to:{% if msg.reply_to %}{id:{{msg.reply_to.id}},content:{{(msg.reply_to.content or '')|tojson}},sender_name:{{msg.reply_to.sender.full_name|tojson if msg.reply_to.sender else '"؟"'}}}{% else %}null{% endif %}
+}{% if not loop.last %},{% endif %}
+{% endfor %}
 ];
 
-const initialChannelMessages = [
-    {% for msg in channel_messages %}
-    {
-        sender_id: {{ msg.sender_id }},
-        sender_name: {{ msg.sender.full_name | tojson }},
-        content: {{ msg.content | tojson }},
-        file_path: {{ msg.file_path | tojson if msg.file_path else 'null' }},
-        timestamp: {{ msg.timestamp.strftime('%H:%M') | tojson }}
-    }{% if not loop.last %},{% endif %}
-    {% endfor %}
+const INIT_GROUP_MSGS = [
+{% for msg in group_messages %}
+{
+  id:{{msg.id}},
+  sender_id:{{msg.sender_id}},
+  sender_name:{{msg.sender.full_name|tojson}},
+  sender_student_id:{{msg.sender.student_id|tojson}},
+  sender_pic:{{(msg.sender.profile_pic or 'default.jpg')|tojson}},
+  content:{{('' if msg.is_deleted else (msg.content or ''))|tojson}},
+  file_path:{{(None if msg.is_deleted else msg.file_path)|tojson}},
+  timestamp:{{msg.timestamp.strftime('%H:%M')|tojson}},
+  is_deleted:{{'true' if msg.is_deleted else 'false'}},
+  is_pinned:{{'true' if msg.is_pinned else 'false'}},
+  forwarded_info:{{(msg.forwarded_info or None)|tojson}},
+  reply_to:{% if msg.reply_to %}{id:{{msg.reply_to.id}},content:{{(('[پیام حذف شده]' if msg.reply_to.is_deleted else msg.reply_to.content) or '')|tojson}},sender_name:{{msg.reply_to.sender.full_name|tojson if msg.reply_to.sender else '"؟"'}}}{% else %}null{% endif %}
+}{% if not loop.last %},{% endif %}
+{% endfor %}
 ];
 
-const initialPrivateMessages = [
-    {% for msg in messages %}
-    {
-        sender_id: {{ msg.sender_id }},
-        sender_name: {{ msg.sender.full_name | tojson }},
-        content: {{ msg.content | tojson }},
-        file_path: {{ msg.file_path | tojson if msg.file_path else 'null' }},
-        timestamp: {{ msg.timestamp.strftime('%H:%M') | tojson }}
-    }{% if not loop.last %},{% endif %}
-    {% endfor %}
+const INIT_CHANNEL_MSGS = [
+{% for msg in channel_messages %}
+{
+  id:{{msg.id}},
+  sender_id:{{msg.sender_id}},
+  sender_name:"مدیریت",
+  content:{{('' if msg.is_deleted else msg.content)|tojson}},
+  file_path:{{(None if msg.is_deleted else msg.file_path)|tojson}},
+  timestamp:{{msg.timestamp.strftime('%H:%M')|tojson}},
+  is_deleted:{{'true' if msg.is_deleted else 'false'}},
+  is_edited:{{'true' if msg.is_edited else 'false'}},
+  is_pinned:{{'true' if msg.is_pinned else 'false'}},
+  view_count:{{msg.view_count or 0}}
+}{% if not loop.last %},{% endif %}
+{% endfor %}
 ];
 
 {% if active_chat_user %}
-const INITIAL_PRIVATE_USER_ID = {{ active_chat_user.id }};
-const INITIAL_PRIVATE_USER_NAME = {{ active_chat_user.full_name | tojson }};
+const INIT_PRIVATE_UID = {{active_chat_user.id}};
+const INIT_PRIVATE_NAME = {{active_chat_user.full_name|tojson}};
 {% else %}
-const INITIAL_PRIVATE_USER_ID = null;
-const INITIAL_PRIVATE_USER_NAME = null;
+const INIT_PRIVATE_UID = null;
+const INIT_PRIVATE_NAME = null;
 {% endif %}
 
-socket.on('connect', function() {
-    socket.emit('join_group');
-    socket.emit('join_channel');
-    console.log('Socket connected');
+// ═══════════════════════════════════════════════
+//  SOCKET SETUP
+// ═══════════════════════════════════════════════
+socket.on('connect', () => {
+  socket.emit('join_group');
+  socket.emit('join_channel');
+  if (privateRecipientId) socket.emit('join_chat', {other_user_id: privateRecipientId});
 });
 
-socket.on('connect_error', function(err) {
-    console.error('Socket connection error:', err);
+socket.on('error', d => showToast('خطا: ' + (d.message||''), 'error'));
+
+socket.on('new_message', d => {
+  if (currentView !== 'private') return;
+  const isSent = d.sender_id === CURRENT_USER_ID;
+  appendMsgToContainer('private-messages-container', buildMsgNode(d, 'private', isSent));
 });
 
-socket.on('error', function(data) {
-    console.error('Socket error:', data);
-    showToast('خطا: ' + (data.message || 'خطای ناشناخته'), 'error');
+socket.on('new_group_message', d => {
+  if (currentView !== 'group') return;
+  const isSent = d.sender_id === CURRENT_USER_ID;
+  appendMsgToContainer('group-messages-container', buildMsgNode(d, 'group', isSent));
 });
 
-socket.on('new_group_message', function(data) {
-    if (currentView === 'group') {
-        const isSent = (data.sender_id === CURRENT_USER_ID);
-        appendMessage('group-messages-container', data, isSent);
-    }
+socket.on('new_channel_message', d => {
+  if (currentView !== 'channel') return;
+  appendMsgToContainer('channel-messages-container', buildMsgNode(d, 'channel', false));
+  // Mark as viewed
+  if (d.id) fetch(`/api/channel/message/${d.id}/view`, {method:'POST'}).catch(()=>{});
 });
 
-socket.on('new_channel_message', function(data) {
-    if (currentView === 'channel') {
-        appendMessage('channel-messages-container', data, false);
-    }
+// Status events
+socket.on('message_delivered', d => {
+  const el = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-ticks`);
+  if (el) el.innerHTML = `<i class="material-icons ticks-delivered" style="font-size:.85rem;">done_all</i>`;
 });
 
-socket.on('new_message', function(data) {
-    if (currentView === 'private') {
-        const isSent = (data.sender_id === CURRENT_USER_ID);
-        appendMessage('private-messages-container', data, isSent);
-    }
+socket.on('message_read_update', d => {
+  const el = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-ticks`);
+  if (el) el.innerHTML = `<i class="material-icons ticks-read" style="font-size:.85rem;">done_all</i>`;
 });
 
+// Reaction events
+socket.on('message_reaction_updated', d => updateReactions(d.message_id, d.reactions, 'private'));
+socket.on('group_message_reaction_updated', d => updateReactions(d.message_id, d.reactions, 'group'));
+socket.on('channel_message_reaction_updated', d => updateReactions(d.message_id, d.reactions, 'channel'));
+
+// Edit events
+socket.on('message_edited', d => {
+  const bubble = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-text`);
+  if (bubble) bubble.textContent = d.new_content;
+  const edited = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-edited-tag`);
+  if (edited) edited.style.display = 'inline';
+});
+
+socket.on('channel_message_edited', d => {
+  const bubble = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-text`);
+  if (bubble) bubble.textContent = d.new_content;
+  const edited = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-edited-tag`);
+  if (edited) edited.style.display = 'inline';
+});
+
+// Delete events
+socket.on('message_deleted', d => {
+  const el = document.querySelector(`[data-msg-id="${d.message_id}"]`);
+  if (el) {
+    if (d.delete_for === 'everyone') el.remove();
+  }
+});
+
+socket.on('group_message_deleted', d => {
+  const bubble = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-text`);
+  if (bubble) { bubble.textContent = '[پیام حذف شده]'; bubble.classList.add('deleted-bubble'); }
+  const file = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-file`);
+  if (file) file.remove();
+  const actions = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-actions`);
+  if (actions) actions.remove();
+});
+
+socket.on('channel_message_deleted', d => {
+  const el = document.querySelector(`[data-msg-id="${d.message_id}"]`);
+  if (el) el.remove();
+});
+
+// Pin events
+socket.on('message_pinned', d => {
+  if (d.is_pinned) loadPinnedMessage('private');
+  else document.getElementById('private-pinned-bar').style.display = 'none';
+});
+
+socket.on('group_message_pinned', d => {
+  if (d.is_pinned) loadPinnedMessage('group');
+  else document.getElementById('group-pinned-bar').style.display = 'none';
+});
+
+socket.on('channel_message_pinned', d => {
+  if (d.is_pinned) loadPinnedMessage('channel');
+  else document.getElementById('channel-pinned-bar').style.display = 'none';
+});
+
+// Group admin events
+socket.on('group_settings_updated', d => {
+  groupReadonly = d.is_readonly;
+  const noticeEl = document.getElementById('group-readonly-notice');
+  const inputEl = document.getElementById('group-input-area');
+  if (d.is_readonly && !IS_ADMIN && !IS_GROUP_ADMIN) {
+    if (noticeEl) noticeEl.style.display = 'flex';
+    if (inputEl) inputEl.style.display = 'none';
+  } else {
+    if (noticeEl) noticeEl.style.display = 'none';
+    if (inputEl) inputEl.style.display = 'flex';
+  }
+  const tog = document.getElementById('readonly-toggle');
+  if (tog) tog.checked = d.is_readonly;
+});
+
+socket.on('group_member_banned', d => {
+  if (d.user_id === CURRENT_USER_ID && d.is_banned) {
+    const inputEl = document.getElementById('group-input-area');
+    if (inputEl) inputEl.style.display = 'none';
+    showToast('شما از گروه محروم شده‌اید', 'error');
+  }
+});
+
+// ═══════════════════════════════════════════════
+//  CHAT NAVIGATION
+// ═══════════════════════════════════════════════
 function loadChat(typeOrId) {
-    ['group-view','channel-view','private-view','empty-view'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-    document.querySelectorAll('.special-item, .convo-item').forEach(el => el.classList.remove('active'));
+  ['group-view','channel-view','private-view','empty-view'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  document.querySelectorAll('.special-item,.convo-item').forEach(el => el.classList.remove('active'));
 
-    if (typeOrId === 'group') {
-        currentView = 'group';
-        document.getElementById('group-view').style.display = 'flex';
-        document.getElementById('sidebar-group').classList.add('active');
-        initGroupView();
-    } else if (typeOrId === 'channel') {
-        currentView = 'channel';
-        document.getElementById('channel-view').style.display = 'flex';
-        document.getElementById('sidebar-channel').classList.add('active');
-        initChannelView();
+  if (typeOrId === 'group') {
+    currentView = 'group';
+    document.getElementById('group-view').style.display = 'flex';
+    document.getElementById('sidebar-group').classList.add('active');
+    initGroupView();
+  } else if (typeOrId === 'channel') {
+    currentView = 'channel';
+    document.getElementById('channel-view').style.display = 'flex';
+    document.getElementById('sidebar-channel').classList.add('active');
+    initChannelView();
+  } else {
+    const uid = parseInt(typeOrId);
+    // If same user already loaded, just show; otherwise reload page
+    if (INIT_PRIVATE_UID && INIT_PRIVATE_UID === uid) {
+      currentView = 'private';
+      privateRecipientId = uid;
+      document.getElementById('private-view').style.display = 'flex';
+      const convoEl = document.getElementById('convo-' + uid);
+      if (convoEl) convoEl.classList.add('active');
+      initPrivateView(uid, true);
     } else {
-        currentView = 'private';
-        privateRecipientId = parseInt(typeOrId);
-        document.getElementById('private-view').style.display = 'flex';
-        const convoEl = document.getElementById('convo-' + privateRecipientId);
-        if (convoEl) convoEl.classList.add('active');
-        initPrivateView(privateRecipientId);
+      window.location.href = '/chat?user_id=' + uid;
     }
-    if (window.innerWidth < 768) {
-        document.getElementById('chat-sidebar').style.display = 'none';
-    }
+  }
+  if (window.innerWidth < 768) document.getElementById('chat-sidebar').style.display = 'none';
 }
 
 function showSidebar() {
-    document.getElementById('chat-sidebar').style.display = 'flex';
+  const sb = document.getElementById('chat-sidebar');
+  sb.style.display = 'flex';
+  currentView = 'empty';
 }
 
+// ═══════════════════════════════════════════════
+//  GROUP
+// ═══════════════════════════════════════════════
 function initGroupView() {
-    const container = document.getElementById('group-messages-container');
-    container.innerHTML = '';
-    initialGroupMessages.forEach(msg => {
-        appendMessage('group-messages-container', msg, msg.sender_id === CURRENT_USER_ID, true);
-    });
-    scrollToBottom('group-messages-container');
-
-    fetch('/api/all_users')
-        .then(r => r.json())
-        .then(users => {
-            const count = users.length + 1;
-            document.getElementById('group-member-count').textContent = count + ' عضو';
-        })
-        .catch(() => {
-            document.getElementById('group-member-count').textContent = '';
-        });
+  const c = document.getElementById('group-messages-container');
+  c.innerHTML = '';
+  INIT_GROUP_MSGS.forEach(m => {
+    const isSent = m.sender_id === CURRENT_USER_ID;
+    c.appendChild(buildMsgNode(m, 'group', isSent, true));
+  });
+  scrollToBottom('group-messages-container');
+  loadPinnedMessage('group');
+  fetch('/api/all_users').then(r=>r.json()).then(users => {
+    allUsers = users;
+    document.getElementById('group-member-count').textContent = (users.length + 1) + ' عضو';
+  }).catch(()=>{});
 }
 
 function sendGroupMessage() {
-    const input = document.getElementById('group-msg-input');
-    const content = input.value.trim();
-    if (!content) return;
-    socket.emit('send_group_message', { content: content, file_path: null });
-    input.value = '';
-    input.focus();
+  const inp = document.getElementById('group-msg-input');
+  const content = inp.value.trim();
+  if (!content) return;
+  const reply = replyState.group;
+  socket.emit('send_group_message', {
+    content,
+    file_path: null,
+    reply_to_id: reply ? reply.id : null
+  });
+  inp.value = '';
+  cancelReply('group');
+  inp.focus();
 }
 
+// ═══════════════════════════════════════════════
+//  CHANNEL
+// ═══════════════════════════════════════════════
 function initChannelView() {
-    const container = document.getElementById('channel-messages-container');
-    container.innerHTML = '';
-    initialChannelMessages.forEach(msg => {
-        appendMessage('channel-messages-container', msg, false, true);
-    });
-    scrollToBottom('channel-messages-container');
+  const c = document.getElementById('channel-messages-container');
+  c.innerHTML = '';
+  INIT_CHANNEL_MSGS.forEach(m => {
+    c.appendChild(buildMsgNode(m, 'channel', false, true));
+  });
+  scrollToBottom('channel-messages-container');
+  loadPinnedMessage('channel');
+  // Mark visible messages as viewed
+  INIT_CHANNEL_MSGS.forEach(m => {
+    if (!m.is_deleted) fetch(`/api/channel/message/${m.id}/view`, {method:'POST'}).catch(()=>{});
+  });
 }
 
 function sendChannelMessage() {
-    const input = document.getElementById('channel-msg-input');
-    const content = input.value.trim();
-    if (!content) return;
-    socket.emit('send_channel_message', { content: content, file_path: null });
-    input.value = '';
-    input.focus();
+  const inp = document.getElementById('channel-msg-input');
+  const content = inp.value.trim();
+  if (!content) return;
+  socket.emit('send_channel_message', {content, file_path: null});
+  inp.value = '';
+  inp.focus();
 }
 
-function initPrivateView(userId) {
-    const convoEl = document.getElementById('convo-' + userId);
-    if (convoEl) {
-        const name = convoEl.dataset.name || '—';
-        document.getElementById('private-name').textContent = name;
-    } else if (INITIAL_PRIVATE_USER_ID && INITIAL_PRIVATE_USER_ID === userId) {
-        document.getElementById('private-name').textContent = INITIAL_PRIVATE_USER_NAME || '—';
-    }
-    document.getElementById('private-profile-link').href = '/profile/' + userId;
+// ═══════════════════════════════════════════════
+//  PRIVATE
+// ═══════════════════════════════════════════════
+function initPrivateView(uid, useInitial) {
+  privateRecipientId = uid;
+  socket.emit('join_chat', {other_user_id: uid});
 
-    fetch('/api/user_status/' + userId)
-        .then(r => r.json())
-        .then(data => {
-            const statusEl = document.getElementById('private-status');
-            if (statusEl) {
-                statusEl.textContent = data.online ? 'آنلاین' : 'آفلاین';
-                statusEl.style.color = data.online ? 'var(--success)' : 'var(--text-secondary)';
-            }
-        })
-        .catch(() => {});
+  // Update header
+  const convoEl = document.getElementById('convo-' + uid);
+  const name = convoEl ? convoEl.dataset.name : (INIT_PRIVATE_NAME || '—');
+  const sid = convoEl ? convoEl.dataset.studentId : '';
+  document.getElementById('private-name').textContent = name + (sid ? ` #${sid}` : '');
+  document.getElementById('private-avatar-initial').textContent = name[0] || '؟';
+  document.getElementById('private-profile-link').href = '/profile/' + uid;
 
-    socket.emit('join_chat', { other_user_id: userId });
-    const container = document.getElementById('private-messages-container');
-    container.innerHTML = '';
-    if (INITIAL_PRIVATE_USER_ID && parseInt(INITIAL_PRIVATE_USER_ID) === parseInt(userId)) {
-        initialPrivateMessages.forEach(msg => {
-            appendMessage('private-messages-container', msg, msg.sender_id === CURRENT_USER_ID, true);
-        });
-    }
-    scrollToBottom('private-messages-container');
-    document.getElementById('private-msg-input').focus();
+  // Online status
+  fetch('/api/user_status/' + uid).then(r=>r.json()).then(d => {
+    const el = document.getElementById('private-status');
+    el.textContent = d.online ? 'آنلاین' : ('آخرین بازدید: ' + (d.last_seen || 'نامشخص'));
+    el.style.color = d.online ? 'var(--success)' : 'var(--text-secondary)';
+  }).catch(()=>{});
+
+  // Load messages
+  const c = document.getElementById('private-messages-container');
+  c.innerHTML = '';
+  if (useInitial) {
+    INIT_PRIVATE_MSGS.forEach(m => {
+      const isSent = m.sender_id === CURRENT_USER_ID;
+      const isDeleted = (isSent && m.deleted_for_sender) || (!isSent && m.deleted_for_receiver);
+      if (!isDeleted) c.appendChild(buildMsgNode(m, 'private', isSent, true));
+    });
+  }
+  scrollToBottom('private-messages-container');
+  loadPinnedMessage('private');
+  document.getElementById('private-msg-input').focus();
 }
 
 function sendPrivateMessage() {
-    const input = document.getElementById('private-msg-input');
-    const content = input.value.trim();
-    if (!content || !privateRecipientId) return;
-    socket.emit('send_message', {
-        other_user_id: privateRecipientId,
-        content: content,
-        file_path: null
-    });
-    input.value = '';
-    input.focus();
+  const inp = document.getElementById('private-msg-input');
+  const content = inp.value.trim();
+  if (!content || !privateRecipientId) return;
+  const reply = replyState.private;
+  socket.emit('send_message', {
+    other_user_id: privateRecipientId,
+    content,
+    file_path: null,
+    reply_to_id: reply ? reply.id : null
+  });
+  inp.value = '';
+  cancelReply('private');
+  inp.focus();
 }
 
+// ═══════════════════════════════════════════════
+//  MESSAGE BUILDER
+// ═══════════════════════════════════════════════
+function buildMsgNode(data, ctx, isSent, noAnim = false) {
+  const wrapper = document.createElement('div');
+  wrapper.className = `message-wrapper ${isSent ? 'sent' : 'received'}`;
+  wrapper.dataset.msgId = data.id || '';
+  wrapper.dataset.ctx = ctx;
+  if (!noAnim) wrapper.style.animation = 'msgFadeIn .25s ease';
+
+  // Determine if deleted
+  const isDeleted = data.is_deleted || false;
+
+  let html = '';
+
+  // Sender name (group, channel received)
+  if (!isSent && ctx === 'group' && data.sender_name) {
+    html += `<span class="message-sender-name" onclick="window.location.href='/profile/${data.sender_id}'">${esc(data.sender_name)} <small style="font-weight:400;color:var(--text-secondary);font-size:.68rem;">#${esc(data.sender_student_id||'')}</small></span>`;
+  }
+  if (ctx === 'channel' && data.sender_name) {
+    html += `<span class="message-sender-name" style="cursor:default;">${esc(data.sender_name)}</span>`;
+  }
+
+  // Forwarded badge
+  if (data.forwarded_info || data.forwarded_from_id) {
+    const fwdText = data.forwarded_info || 'فوروارد شده';
+    html += `<div class="forwarded-badge"><i class="material-icons" style="font-size:.85rem;">forward</i>${esc(fwdText)}</div>`;
+  }
+
+  // Pinned indicator
+  if (data.is_pinned) {
+    html += `<div class="pinned-msg-indicator"><i class="material-icons" style="font-size:.75rem;">push_pin</i>پین شده</div>`;
+  }
+
+  // Bubble start
+  html += `<div class="message-bubble${isDeleted ? ' deleted-bubble' : ''}">`;
+
+  // Reply quote
+  if (data.reply_to) {
+    html += `<div class="reply-quote" onclick="scrollToMsg(${data.reply_to.id})">
+      <div class="reply-quote-name">${esc(data.reply_to.sender_name)}</div>
+      <div class="reply-quote-text">${esc(data.reply_to.content)}</div>
+    </div>`;
+  }
+
+  // Content
+  const displayContent = isDeleted ? '[پیام حذف شده]' : (data.content || '');
+  html += `<span class="msg-text">${esc(displayContent)}</span>`;
+
+  // File
+  if (!isDeleted && data.file_path) {
+    const fname = data.file_path.split('/').pop();
+    const ext = fname.split('.').pop().toLowerCase();
+    const isImg = ['png','jpg','jpeg','gif','webp'].includes(ext);
+    if (isImg) {
+      html += `<div style="margin-top:.4rem;"><img src="${data.file_path}" style="max-width:220px;max-height:180px;border-radius:10px;display:block;cursor:pointer;" onclick="window.open('${data.file_path}','_blank')"></div>`;
+    } else {
+      html += `<a class="msg-file" href="${data.file_path}" target="_blank" download>
+        <i class="material-icons">attach_file</i><span>${esc(fname)}</span>
+      </a>`;
+    }
+  }
+
+  // Meta row
+  html += `<div class="message-meta">`;
+  if (data.is_edited) html += `<span class="msg-edited-tag">(ویرایش شده)</span>`;
+  if (ctx === 'channel' && IS_ADMIN && data.view_count !== undefined) {
+    html += `<span class="msg-edited-tag" style="display:flex;align-items:center;gap:.15rem;"><i class="material-icons" style="font-size:.75rem;">visibility</i>${data.view_count}</span>`;
+  }
+  html += `<span class="msg-time">${data.timestamp || ''}</span>`;
+  if (isSent && ctx === 'private') {
+    let tickHtml = '<i class="material-icons ticks-sent" style="font-size:.85rem;">done</i>';
+    if (data.read_at) tickHtml = '<i class="material-icons ticks-read" style="font-size:.85rem;">done_all</i>';
+    else if (data.delivered_at) tickHtml = '<i class="material-icons ticks-delivered" style="font-size:.85rem;">done_all</i>';
+    html += `<span class="msg-ticks">${tickHtml}</span>`;
+  }
+  html += `</div>`;
+
+  html += `</div>`; // end bubble
+
+  // Reactions area
+  html += `<div class="msg-reactions" id="reactions-${data.id}">`;
+  if (data.reactions) {
+    html += buildReactionsHTML(data.reactions, data.id || 0, ctx);
+  }
+  html += `</div>`;
+
+  // Action toolbar (not for deleted)
+  if (!isDeleted && data.id) {
+    html += buildActionsHTML(data, ctx, isSent);
+  }
+
+  wrapper.innerHTML = html;
+  return wrapper;
+}
+
+function buildActionsHTML(data, ctx, isSent) {
+  const msgId = data.id;
+  const canEdit = isSent && ctx !== 'channel';
+  const canEditCh = isSent && ctx === 'channel' && IS_ADMIN;
+  const canDelete = isSent || IS_ADMIN || IS_GROUP_ADMIN;
+  const canPin = isSent || IS_ADMIN || IS_GROUP_ADMIN;
+  const canForward = ctx !== 'channel';
+
+  let html = `<div class="msg-actions">`;
+  html += `<button class="msg-action-btn" onclick="startReply(${msgId},'${ctx}')" title="ریپلای"><i class="material-icons">reply</i></button>`;
+  if (ctx !== 'channel') {
+    html += `<button class="msg-action-btn" onclick="openEmojiPicker(event,${msgId},'${ctx}')" title="ری‌اکشن"><i class="material-icons">add_reaction</i></button>`;
+  } else {
+    html += `<button class="msg-action-btn" onclick="openEmojiPicker(event,${msgId},'${ctx}')" title="ری‌اکشن"><i class="material-icons">add_reaction</i></button>`;
+  }
+  if (canForward) {
+    html += `<button class="msg-action-btn" onclick="openForwardModal(${msgId},'${ctx}')" title="فوروارد"><i class="material-icons">forward</i></button>`;
+  }
+  // More dropdown
+  html += `<div class="action-dropdown" id="dd-${msgId}">`;
+  html += `<button class="msg-action-btn" onclick="toggleDropdown(${msgId})" title="بیشتر"><i class="material-icons">more_vert</i></button>`;
+  html += `<div class="action-dropdown-menu">`;
+  if (canEdit || canEditCh) {
+    html += `<div class="dropdown-item" onclick="openEditModal(${msgId},'${ctx}')"><i class="material-icons">edit</i>ویرایش</div>`;
+  }
+  if (canPin) {
+    html += `<div class="dropdown-item" onclick="doPinMsg(${msgId},'${ctx}')"><i class="material-icons">push_pin</i>پین کردن</div>`;
+  }
+  if (canDelete) {
+    html += `<div class="dropdown-item danger" onclick="openDeleteModal(${msgId},'${ctx}',${isSent})"><i class="material-icons">delete_outline</i>حذف</div>`;
+  }
+  if (ctx === 'group' && (IS_ADMIN || IS_GROUP_ADMIN) && !isSent) {
+    html += `<div class="dropdown-item danger" onclick="adminDeleteGroupMsg(${msgId})"><i class="material-icons">delete_outline</i>حذف (ادمین)</div>`;
+  }
+  html += `</div></div>`;
+  html += `</div>`;
+  return html;
+}
+
+function buildReactionsHTML(reactions, msgId, ctx) {
+  if (!reactions || Object.keys(reactions).length === 0) return '';
+  let html = '';
+  for (const [emoji, info] of Object.entries(reactions)) {
+    const isMine = info.users && info.users.some(u => u.id === CURRENT_USER_ID);
+    const names = info.users ? info.users.map(u => u.name).join('، ') : '';
+    html += `<button class="reaction-chip${isMine ? ' mine' : ''}" onclick="doReact(${msgId},'${ctx}','${emoji}')" title="${esc(names)}">
+      <span>${emoji}</span><span class="rc-count">${info.count}</span>
+    </button>`;
+  }
+  return html;
+}
+
+// ═══════════════════════════════════════════════
+//  APPEND & SCROLL
+// ═══════════════════════════════════════════════
+function appendMsgToContainer(containerId, node) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  c.appendChild(node);
+  scrollToBottom(containerId);
+}
+
+function scrollToBottom(cid) {
+  const el = document.getElementById(cid);
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+function scrollToMsg(msgId) {
+  const el = document.querySelector(`[data-msg-id="${msgId}"]`);
+  if (el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.background='rgba(0,131,143,.1)'; setTimeout(()=>el.style.background='',1200); }
+}
+
+// ═══════════════════════════════════════════════
+//  INPUT HANDLERS
+// ═══════════════════════════════════════════════
 function handleInputKeydown(event, type) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        if (type === 'group') sendGroupMessage();
-        else if (type === 'channel') sendChannelMessage();
-        else if (type === 'private') sendPrivateMessage();
-    }
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    if (type === 'group') sendGroupMessage();
+    else if (type === 'channel') sendChannelMessage();
+    else if (type === 'private') sendPrivateMessage();
+  }
 }
 
-function appendMessage(containerId, data, isSent, noAnimation = false) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'message-wrapper ' + (isSent ? 'sent' : 'received');
-    if (!noAnimation) wrapper.style.animation = 'fadeIn .25s ease';
-
-    let senderHtml = '';
-    if (!isSent && containerId === 'group-messages-container' && data.sender_name) {
-        const profileUrl = '/profile/' + (data.sender_id || '');
-        senderHtml = `<span class="message-sender-name" onclick="window.location.href='${profileUrl}'">${escapeHtml(data.sender_name)}</span>`;
+// @mention handler
+let mentionQuery = null, mentionStartPos = 0;
+function handleMentionInput(inputEl) {
+  const val = inputEl.value;
+  const cursor = inputEl.selectionStart;
+  const atIdx = val.lastIndexOf('@', cursor - 1);
+  const sugg = document.getElementById('mention-suggestions');
+  if (atIdx >= 0 && (atIdx === 0 || val[atIdx-1] === ' ')) {
+    const q = val.slice(atIdx + 1, cursor);
+    mentionQuery = q;
+    mentionStartPos = atIdx;
+    const matches = allUsers.filter(u =>
+      u.name.includes(q) || (u.student_id||'').includes(q)
+    ).slice(0, 5);
+    if (matches.length > 0) {
+      sugg.style.display = 'block';
+      sugg.innerHTML = matches.map(u =>
+        `<div class="mention-item" onclick="insertMention('${esc(u.student_id||u.name)}')">
+          <span class="m-name">${esc(u.name)}</span>
+          <span class="m-sid">#${esc(u.student_id||'')}</span>
+        </div>`
+      ).join('');
+      return;
     }
-    if (containerId === 'channel-messages-container' && data.sender_name) {
-        senderHtml = `<span class="message-sender-name" style="cursor:default;">${escapeHtml(data.sender_name)}</span>`;
-    }
-
-    let contentHtml = '';
-    if (data.content) {
-        contentHtml = `<div class="message-bubble">${escapeHtml(data.content)}</div>`;
-    }
-
-    let fileHtml = '';
-    if (data.file_path) {
-        const fileName = data.file_path.split('/').pop();
-        fileHtml = `<a class="message-file-attach" href="${data.file_path}" target="_blank" rel="noopener">
-            <i class="material-icons" style="font-size:1rem;">attach_file</i>
-            <span>${escapeHtml(fileName)}</span>
-        </a>`;
-    }
-
-    const timeHtml = `<span class="message-time">${data.timestamp || ''}</span>`;
-
-    wrapper.innerHTML = senderHtml + contentHtml + fileHtml + timeHtml;
-    container.appendChild(wrapper);
-    scrollToBottom(containerId);
+  }
+  sugg.style.display = 'none';
 }
 
-function scrollToBottom(containerId) {
-    const el = document.getElementById(containerId);
-    if (el) {
-        el.scrollTop = el.scrollHeight;
-    }
+function insertMention(sid) {
+  const inp = document.getElementById('group-msg-input');
+  const val = inp.value;
+  inp.value = val.slice(0, mentionStartPos) + '@' + sid + ' ' + val.slice(inp.selectionStart);
+  document.getElementById('mention-suggestions').style.display = 'none';
+  inp.focus();
 }
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
+// File upload
 function handleFileUpload(inputEl, type) {
-    const file = inputEl.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    fetch('/upload_chat_file', {
-        method: 'POST',
-        body: formData
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.filepath) {
-            const payload = {
-                content: 'فایل ارسال شد: ' + file.name,
-                file_path: data.filepath
-            };
-            if (type === 'group') {
-                socket.emit('send_group_message', payload);
-            } else if (type === 'channel') {
-                socket.emit('send_channel_message', payload);
-            } else if (type === 'private' && privateRecipientId) {
-                payload.other_user_id = privateRecipientId;
-                socket.emit('send_message', payload);
-            }
-        } else {
-            showToast('خطا در آپلود فایل: ' + (data.error || ''), 'error');
+  const file = inputEl.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  showToast('در حال آپلود...', 'info');
+  fetch('/upload_chat_file', {method:'POST', body:fd})
+    .then(r=>r.json())
+    .then(d => {
+      if (d.filepath) {
+        const payload = {content: file.name, file_path: d.filepath};
+        if (type === 'group') socket.emit('send_group_message', payload);
+        else if (type === 'channel') socket.emit('send_channel_message', payload);
+        else if (type === 'private' && privateRecipientId) {
+          payload.other_user_id = privateRecipientId;
+          socket.emit('send_message', payload);
         }
+        showToast('فایل ارسال شد', 'success');
+      } else { showToast('خطا در آپلود: ' + (d.error||''), 'error'); }
     })
-    .catch(() => {
-        showToast('خطا در ارتباط با سرور', 'error');
-    });
-
-    inputEl.value = '';
+    .catch(() => showToast('خطا در ارتباط با سرور', 'error'));
+  inputEl.value = '';
 }
 
+// ═══════════════════════════════════════════════
+//  REPLY
+// ═══════════════════════════════════════════════
+function startReply(msgId, ctx) {
+  const wrapper = document.querySelector(`[data-msg-id="${msgId}"]`);
+  if (!wrapper) return;
+  const textEl = wrapper.querySelector('.msg-text');
+  const nameEl = wrapper.querySelector('.message-sender-name');
+  const content = textEl ? textEl.textContent : '';
+  const senderName = nameEl ? nameEl.textContent.trim() : 'کاربر';
+  replyState[ctx] = {id: msgId, content, sender_name: senderName};
+  const previewId = ctx + '-reply-preview';
+  const preview = document.getElementById(previewId);
+  if (preview) {
+    document.getElementById(ctx + '-reply-name').textContent = senderName;
+    document.getElementById(ctx + '-reply-text').textContent = content;
+    preview.style.display = 'flex';
+  }
+  const inputId = ctx === 'group' ? 'group-msg-input' : 'private-msg-input';
+  const inp = document.getElementById(inputId);
+  if (inp) inp.focus();
+  closeAllDropdowns();
+}
+
+function cancelReply(ctx) {
+  replyState[ctx] = null;
+  const preview = document.getElementById(ctx + '-reply-preview');
+  if (preview) preview.style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════
+//  EMOJI REACTIONS
+// ═══════════════════════════════════════════════
+function openEmojiPicker(event, msgId, ctx) {
+  event.stopPropagation();
+  emojiTarget = {msgId, ctx};
+  const picker = document.getElementById('emoji-picker');
+  picker.style.display = 'block';
+  // Position near click
+  const x = Math.min(event.clientX, window.innerWidth - 200);
+  const y = Math.min(event.clientY + 8, window.innerHeight - 180);
+  picker.style.left = x + 'px';
+  picker.style.top = y + 'px';
+  closeAllDropdowns();
+}
+
+function selectEmoji(emoji) {
+  if (!emojiTarget) return;
+  doReact(emojiTarget.msgId, emojiTarget.ctx, emoji);
+  document.getElementById('emoji-picker').style.display = 'none';
+  emojiTarget = null;
+}
+
+function doReact(msgId, ctx, emoji) {
+  let url;
+  if (ctx === 'private') url = `/api/messages/${msgId}/react`;
+  else if (ctx === 'group') url = `/api/group/message/${msgId}/react`;
+  else url = `/api/channel/message/${msgId}/react`;
+
+  fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({emoji})})
+    .then(r=>r.json())
+    .then(d => { if (d.reactions) updateReactions(msgId, d.reactions, ctx); })
+    .catch(()=>{});
+}
+
+function updateReactions(msgId, reactions, ctx) {
+  const container = document.getElementById(`reactions-${msgId}`);
+  if (!container) return;
+  container.innerHTML = buildReactionsHTML(reactions, msgId, ctx);
+}
+
+// ═══════════════════════════════════════════════
+//  FORWARD
+// ═══════════════════════════════════════════════
+function openForwardModal(msgId, ctx) {
+  forwardMsgId = msgId;
+  forwardCtx = ctx;
+  openModal('forward-modal');
+  const ul = document.getElementById('forward-users-list');
+  ul.innerHTML = '<div class="loading-state"><i class="material-icons spin">sync</i></div>';
+  fetch('/api/all_users').then(r=>r.json()).then(users => {
+    ul.innerHTML = users.map(u => `
+      <div class="forward-option" onclick="doForwardToUser(${u.id})">
+        <div class="member-avatar" style="width:32px;height:32px;font-size:.8rem;">
+          ${u.name[0]}
+        </div>
+        <div>
+          <div style="font-size:.88rem;font-weight:600;">${esc(u.name)}</div>
+          <div style="font-size:.74rem;color:var(--text-secondary);">#${esc(u.student_id||'')}</div>
+        </div>
+      </div>`).join('');
+  }).catch(()=>{ ul.innerHTML = '<div style="color:var(--text-secondary);font-size:.85rem;text-align:center;padding:1rem;">خطا در بارگذاری</div>'; });
+  closeAllDropdowns();
+}
+
+function doForwardToGroup() {
+  if (!forwardMsgId) return;
+  const url = forwardCtx === 'channel'
+    ? `/api/channel/message/${forwardMsgId}/forward`  // doesn't exist but we can use general
+    : `/api/messages/${forwardMsgId}/forward`;
+
+  // For group messages, use group forward endpoint
+  let endpoint;
+  if (forwardCtx === 'private') endpoint = `/api/messages/${forwardMsgId}/forward`;
+  else if (forwardCtx === 'group') endpoint = `/api/group/message/${forwardMsgId}/forward`;
+  else return;
+
+  fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({target_type:'group'})})
+    .then(r=>r.json())
+    .then(d => {
+      closeModal('forward-modal');
+      showToast('پیام فوروارد شد', 'success');
+    }).catch(()=> showToast('خطا', 'error'));
+}
+
+function doForwardToUser(targetId) {
+  if (!forwardMsgId) return;
+  let endpoint;
+  if (forwardCtx === 'private') endpoint = `/api/messages/${forwardMsgId}/forward`;
+  else if (forwardCtx === 'group') endpoint = `/api/group/message/${forwardMsgId}/forward`;
+  else return;
+
+  fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({target_type:'private', target_id: targetId})})
+    .then(r=>r.json())
+    .then(d => {
+      closeModal('forward-modal');
+      showToast('پیام فوروارد شد', 'success');
+    }).catch(()=> showToast('خطا', 'error'));
+}
+
+// ═══════════════════════════════════════════════
+//  EDIT
+// ═══════════════════════════════════════════════
+function openEditModal(msgId, ctx) {
+  editMsgId = msgId;
+  editCtx = ctx;
+  const textEl = document.querySelector(`[data-msg-id="${msgId}"] .msg-text`);
+  const ta = document.getElementById('edit-textarea');
+  if (ta && textEl) ta.value = textEl.textContent;
+  openModal('edit-modal');
+  closeAllDropdowns();
+}
+
+function submitEdit() {
+  const content = document.getElementById('edit-textarea').value.trim();
+  if (!content) return;
+  let url;
+  if (editCtx === 'private') url = `/api/messages/${editMsgId}/edit`;
+  else if (editCtx === 'channel') url = `/api/channel/message/${editMsgId}/edit`;
+  else return;
+
+  fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({content})})
+    .then(r=>r.json())
+    .then(d => {
+      if (d.status === 'success') {
+        const textEl = document.querySelector(`[data-msg-id="${editMsgId}"] .msg-text`);
+        if (textEl) textEl.textContent = content;
+        const editedTag = document.querySelector(`[data-msg-id="${editMsgId}"] .msg-edited-tag`);
+        if (editedTag) editedTag.style.display = 'inline';
+        closeModal('edit-modal');
+        showToast('پیام ویرایش شد', 'success');
+      } else showToast(d.error || 'خطا', 'error');
+    }).catch(()=> showToast('خطا در ارتباط', 'error'));
+}
+
+// ═══════════════════════════════════════════════
+//  DELETE
+// ═══════════════════════════════════════════════
+function openDeleteModal(msgId, ctx, isMine) {
+  deleteMsgId = msgId;
+  deleteCtx = ctx;
+  deleteIsMine = isMine;
+  const everyoneBtn = document.getElementById('delete-everyone-btn');
+  if (everyoneBtn) everyoneBtn.style.display = (isMine && ctx === 'private') ? 'block' : 'none';
+  openModal('delete-modal');
+  closeAllDropdowns();
+}
+
+function confirmDelete(deleteFor) {
+  if (deleteCtx === 'group') {
+    fetch(`/api/group/message/${deleteMsgId}/delete`, {method:'POST'})
+      .then(r=>r.json())
+      .then(d => {
+        if (d.status === 'success') {
+          const bubble = document.querySelector(`[data-msg-id="${deleteMsgId}"] .msg-text`);
+          if (bubble) { bubble.textContent = '[پیام حذف شده]'; bubble.classList.add('deleted-bubble'); }
+          closeModal('delete-modal');
+          showToast('پیام حذف شد', 'success');
+        }
+      }).catch(()=>{});
+  } else {
+    fetch(`/api/messages/${deleteMsgId}/delete`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({delete_for: deleteFor})})
+      .then(r=>r.json())
+      .then(d => {
+        if (d.status === 'success') {
+          const el = document.querySelector(`[data-msg-id="${deleteMsgId}"]`);
+          if (el) el.remove();
+          closeModal('delete-modal');
+          showToast('پیام حذف شد', 'success');
+        }
+      }).catch(()=>{});
+  }
+}
+
+function adminDeleteGroupMsg(msgId) {
+  fetch(`/api/group/message/${msgId}/delete`, {method:'POST'})
+    .then(r=>r.json())
+    .then(d => {
+      closeAllDropdowns();
+      showToast('پیام حذف شد', 'success');
+    }).catch(()=>{});
+}
+
+// ═══════════════════════════════════════════════
+//  PIN
+// ═══════════════════════════════════════════════
+function doPinMsg(msgId, ctx) {
+  let url;
+  if (ctx === 'private') url = `/api/messages/${msgId}/pin`;
+  else if (ctx === 'group') url = `/api/group/message/${msgId}/pin`;
+  else if (ctx === 'channel') url = `/api/channel/message/${msgId}/pin`;
+
+  fetch(url, {method:'POST'})
+    .then(r=>r.json())
+    .then(d => {
+      if (d.status === 'success') {
+        showToast(d.is_pinned ? 'پیام پین شد' : 'پین برداشته شد', 'success');
+        if (d.is_pinned) loadPinnedMessage(ctx);
+        else document.getElementById(ctx + '-pinned-bar').style.display = 'none';
+      }
+    }).catch(()=>{});
+  closeAllDropdowns();
+}
+
+function loadPinnedMessage(ctx) {
+  let url;
+  if (ctx === 'private') {
+    if (!privateRecipientId) return;
+    url = `/api/chat/${privateRecipientId}/pinned`;
+  } else if (ctx === 'group') {
+    url = '/api/group/pinned'; // we'll use settings
+  } else if (ctx === 'channel') {
+    url = '/api/channel/pinned';
+  }
+
+  if (ctx === 'channel') {
+    fetch('/api/channel/pinned').then(r=>r.json()).then(msg => {
+      if (msg && msg.content) {
+        document.getElementById('channel-pinned-text').textContent = msg.content.slice(0,60) + (msg.content.length > 60 ? '...' : '');
+        document.getElementById('channel-pinned-bar').style.display = 'flex';
+      }
+    }).catch(()=>{});
+  } else if (ctx === 'private') {
+    fetch(url).then(r=>r.json()).then(msgs => {
+      if (msgs && msgs.length > 0) {
+        const last = msgs[0];
+        document.getElementById('private-pinned-text').textContent = (last.content||'').slice(0,60);
+        document.getElementById('private-pinned-bar').style.display = 'flex';
+      }
+    }).catch(()=>{});
+  }
+  // Group pinned handled via group_settings pinned_message_id - load from API later
+}
+
+// ═══════════════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════════════
+function toggleSearch(ctx) {
+  const bar = document.getElementById(ctx + '-search-bar');
+  if (!bar) return;
+  const isVisible = bar.style.display !== 'none';
+  bar.style.display = isVisible ? 'none' : 'flex';
+  if (!isVisible) {
+    const inp = document.getElementById(ctx + '-search-input');
+    if (inp) { inp.value = ''; inp.focus(); }
+  }
+}
+
+function debounceSearch(ctx, val) {
+  clearTimeout(searchTimers[ctx]);
+  searchTimers[ctx] = setTimeout(() => doSearch(ctx, val), 400);
+}
+
+function doSearch(ctx, q) {
+  if (!q) return;
+  let url;
+  if (ctx === 'private') url = `/api/messages/search?q=${encodeURIComponent(q)}&user_id=${privateRecipientId}`;
+  else if (ctx === 'group') url = `/api/group/search?q=${encodeURIComponent(q)}`;
+  else if (ctx === 'channel') url = `/api/channel/search?q=${encodeURIComponent(q)}`;
+
+  fetch(url).then(r=>r.json()).then(msgs => {
+    const container = document.getElementById(ctx + '-messages-container');
+    if (!Array.isArray(msgs) || msgs.length === 0) {
+      showToast('نتیجه‌ای یافت نشد', 'info');
+      return;
+    }
+    // Highlight first result by scrolling to it
+    const firstId = msgs[0].id;
+    let el = document.querySelector(`[data-msg-id="${firstId}"]`);
+    if (el) {
+      el.scrollIntoView({behavior:'smooth', block:'center'});
+      el.style.outline = '2px solid var(--primary-color)';
+      el.style.borderRadius = '12px';
+      setTimeout(() => { el.style.outline = ''; el.style.borderRadius = ''; }, 2000);
+    } else {
+      showToast(`${msgs.length} پیام یافت شد`, 'success');
+    }
+  }).catch(()=>{});
+}
+
+// ═══════════════════════════════════════════════
+//  BLOCK
+// ═══════════════════════════════════════════════
+function toggleBlockUser() {
+  if (!privateRecipientId) return;
+  fetch(`/api/users/${privateRecipientId}/block`, {method:'POST'})
+    .then(r=>r.json())
+    .then(d => {
+      if (d.action === 'blocked') showToast('کاربر بلاک شد', 'success');
+      else showToast('کاربر آنبلاک شد', 'success');
+    }).catch(()=>{});
+}
+
+// ═══════════════════════════════════════════════
+//  MEMBERS MODAL
+// ═══════════════════════════════════════════════
 function openMembersModal() {
-    openModal('members-modal');
-
-    const container = document.getElementById('members-list-container');
-    container.innerHTML = `<div class="members-loading">
-        <i class="material-icons spin">sync</i>
-        <span>در حال بارگذاری اعضا...</span>
-    </div>`;
-
-    fetch('/api/all_users')
-        .then(r => r.json())
-        .then(users => {
-            renderMembersList(users, container);
-        })
-        .catch(() => {
-            container.innerHTML = `<div class="members-empty">
-                <i class="material-icons">error_outline</i>
-                <p>خطا در بارگذاری لیست اعضا</p>
-            </div>`;
-        });
+  openModal('members-modal');
+  const c = document.getElementById('members-list-container');
+  c.innerHTML = '<div class="loading-state"><i class="material-icons spin">sync</i> در حال بارگذاری...</div>';
+  fetch('/api/group/members').then(r=>r.json()).then(members => {
+    renderMembersList(members, c);
+  }).catch(()=> { c.innerHTML = '<div class="loading-state">خطا در بارگذاری</div>'; });
 }
 
-function renderMembersList(users, container) {
-    if (!users || users.length === 0) {
-        container.innerHTML = `<div class="members-empty">
-            <i class="material-icons">group_off</i>
-            <p>عضوی داخل گروه نیست</p>
-        </div>`;
-        return;
+function renderMembersList(members, container) {
+  if (!members || !members.length) {
+    container.innerHTML = '<div class="loading-state">عضوی یافت نشد</div>';
+    return;
+  }
+  const online = members.filter(m => m.is_online);
+  const offline = members.filter(m => !m.is_online);
+  const sortedMembers = [...online, ...offline];
+
+  let html = `<div style="font-size:.8rem;color:var(--text-secondary);margin-bottom:.75rem;">${members.length} عضو — ${online.length} آنلاین</div>`;
+
+  sortedMembers.forEach(u => {
+    const initial = (u.name||'؟')[0];
+    const pic = u.pic && u.pic !== 'default.jpg'
+      ? `<img src="/static/uploads/profile_pics/${esc(u.pic)}" alt="">`
+      : `<span>${initial}</span>`;
+
+    let badge = '';
+    if (u.role === 'admin') badge += `<span class="member-role-badge role-admin">ادمین</span> `;
+    if (u.is_muted) badge += `<span class="member-role-badge role-muted">بی‌صدا</span> `;
+    if (u.is_banned) badge += `<span class="member-role-badge role-banned">محروم</span> `;
+
+    let adminActions = '';
+    if ((IS_ADMIN || IS_GROUP_ADMIN) && u.id !== CURRENT_USER_ID) {
+      adminActions = `<div class="member-actions">
+        <button class="member-action-btn" onclick="doMuteUser(${u.id})">${u.is_muted ? 'آنمیوت' : 'میوت'}</button>
+        <button class="member-action-btn danger" onclick="doBanUser(${u.id})">${u.is_banned ? 'آنبن' : 'بن'}</button>
+        ${IS_ADMIN ? `<button class="member-action-btn" onclick="doMakeAdmin(${u.id})">${u.role === 'admin' ? 'گرفتن ادمین' : 'دادن ادمین'}</button>` : ''}
+        <button class="member-action-btn" onclick="closeModal('members-modal');loadChat(${u.id})">پیام</button>
+      </div>`;
     }
 
-    let html = `<div style="margin-bottom:.75rem; font-size:.82rem; color:var(--text-secondary);">
-        ${users.length} عضو در سیستم
+    html += `<div class="member-item">
+      <div class="member-avatar">
+        ${pic}
+        ${u.is_online ? '<span class="member-dot"></span>' : ''}
+      </div>
+      <div class="member-info">
+        <div class="member-name">${esc(u.name)} ${badge}</div>
+        <div class="member-sub">#${esc(u.student_id||'')} · ${u.is_online ? '<span style="color:var(--success);font-weight:600;">آنلاین</span>' : 'آفلاین'}</div>
+        ${adminActions}
+      </div>
     </div>`;
+  });
 
-    users.forEach(user => {
-        const initial = (user.name || '؟')[0];
-        const avatarHtml = user.pic && user.pic !== 'default.jpg'
-            ? `<img src="/static/uploads/profile_pics/${escapeHtml(user.pic)}" alt="${escapeHtml(user.name)}">`
-            : `<span>${initial}</span>`;
+  container.innerHTML = html;
+}
 
-        const onlineDot = user.is_online
-            ? `<span class="member-online-dot"></span>`
-            : '';
+function doMuteUser(uid) {
+  fetch(`/api/group/mute/${uid}`, {method:'POST'})
+    .then(r=>r.json()).then(d => { showToast(d.is_muted ? 'کاربر میوت شد' : 'میوت برداشته شد', 'success'); openMembersModal(); })
+    .catch(()=>{});
+}
 
-        const statusText = user.is_online
-            ? `<span class="member-status online">آنلاین</span>`
-            : `<span class="member-status">آفلاین</span>`;
+function doBanUser(uid) {
+  fetch(`/api/group/ban/${uid}`, {method:'POST'})
+    .then(r=>r.json()).then(d => { showToast(d.is_banned ? 'کاربر بن شد' : 'بن برداشته شد', 'success'); openMembersModal(); })
+    .catch(()=>{});
+}
 
-        html += `<a href="/profile/${user.id}" class="member-item">
-            <div class="member-avatar">
-                ${avatarHtml}
-                ${onlineDot}
-            </div>
-            <div class="member-info">
-                <span class="member-name">${escapeHtml(user.name)}</span>
-                ${statusText}
-            </div>
-        </a>`;
-    });
+function doMakeAdmin(uid) {
+  fetch(`/api/group/make_admin/${uid}`, {method:'POST'})
+    .then(r=>r.json()).then(d => { showToast(d.role === 'admin' ? 'ادمین شد' : 'ادمین گرفته شد', 'success'); openMembersModal(); })
+    .catch(()=>{});
+}
 
-    container.innerHTML = html;
+// ═══════════════════════════════════════════════
+//  GROUP SETTINGS
+// ═══════════════════════════════════════════════
+function openGroupSettings() {
+  fetch('/api/group/settings').then(r=>r.json()).then(d => {
+    const tog = document.getElementById('readonly-toggle');
+    if (tog) tog.checked = d.is_readonly;
+    openModal('group-settings-modal');
+  }).catch(()=> openModal('group-settings-modal'));
+}
+
+function toggleGroupReadonly(checked) {
+  fetch('/api/group/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({is_readonly: checked})})
+    .then(r=>r.json()).then(d => { showToast(checked ? 'گروه فقط خواندنی شد' : 'حالت فقط خواندنی برداشته شد', 'success'); })
+    .catch(()=>{});
+}
+
+// ═══════════════════════════════════════════════
+//  PRIVACY
+// ═══════════════════════════════════════════════
+function openPrivacyModal() {
+  fetch('/api/privacy_settings').then(r=>r.json()).then(d => {
+    const lss = document.getElementById('last-seen-select');
+    const pps = document.getElementById('profile-pic-select');
+    const wms = document.getElementById('who-can-msg-select');
+    if (lss) lss.value = d.last_seen_visibility || 'all';
+    if (pps) pps.value = d.profile_pic_visibility || 'all';
+    if (wms) wms.value = d.who_can_message || 'all';
+    openModal('privacy-modal');
+  }).catch(()=> openModal('privacy-modal'));
+}
+
+function savePrivacy(key, value) {
+  fetch('/api/privacy_settings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({[key]: value})})
+    .then(r=>r.json()).then(d => { if (d.status === 'success') showToast('تنظیمات ذخیره شد', 'success'); })
+    .catch(()=>{});
+}
+
+// ═══════════════════════════════════════════════
+//  NEW CHAT
+// ═══════════════════════════════════════════════
+let userSearchTimer;
+function openNewChatModal() {
+  openModal('new-chat-modal');
+  document.getElementById('user-search-input').value = '';
+  document.getElementById('user-search-results').innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:1.5rem;font-size:.88rem;">برای شروع تایپ کنید</div>';
+}
+
+function searchUsersDebounced(q) {
+  clearTimeout(userSearchTimer);
+  userSearchTimer = setTimeout(() => searchUsers(q), 350);
+}
+
+function searchUsers(q) {
+  if (!q) return;
+  fetch('/api/all_users').then(r=>r.json()).then(users => {
+    const filtered = users.filter(u =>
+      u.name.includes(q) || (u.student_id||'').includes(q)
+    );
+    const c = document.getElementById('user-search-results');
+    if (!filtered.length) { c.innerHTML = '<div style="text-align:center;color:var(--text-secondary);padding:1rem;font-size:.85rem;">کاربری یافت نشد</div>'; return; }
+    c.innerHTML = filtered.map(u => `
+      <div class="user-result-item" onclick="closeModal('new-chat-modal');loadChat(${u.id})">
+        <div class="member-avatar" style="width:38px;height:38px;font-size:.9rem;border-radius:50%;">
+          ${u.pic && u.pic !== 'default.jpg' ? `<img src="/static/uploads/profile_pics/${esc(u.pic)}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : (u.name||'؟')[0]}
+          ${u.is_online ? '<span class="member-dot"></span>' : ''}
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:.9rem;">${esc(u.name)}</div>
+          <div style="font-size:.75rem;color:var(--text-secondary);">#${esc(u.student_id||'')} · ${u.is_online ? '<span style="color:var(--success);">آنلاین</span>' : 'آفلاین'}</div>
+        </div>
+      </div>`).join('');
+  }).catch(()=>{});
+}
+
+// ═══════════════════════════════════════════════
+//  DROPDOWN & MODAL HELPERS
+// ═══════════════════════════════════════════════
+function toggleDropdown(msgId) {
+  const dd = document.getElementById('dd-' + msgId);
+  if (!dd) return;
+  const isOpen = dd.classList.contains('open');
+  closeAllDropdowns();
+  if (!isOpen) dd.classList.add('open');
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.action-dropdown.open').forEach(d => d.classList.remove('open'));
 }
 
 function openModal(id) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; }
 }
 
 function closeModal(id) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.classList.remove('open');
-        document.body.style.overflow = '';
-    }
+  const el = document.getElementById(id);
+  if (el) { el.classList.remove('open'); document.body.style.overflow = ''; }
 }
 
 function handleOverlayClick(event, id) {
-    if (event.target.id === id) closeModal(id);
+  if (event.target.id === id) closeModal(id);
 }
 
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-        ['members-modal'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el && el.classList.contains('open')) closeModal(id);
-        });
-    }
+// Global click: close emoji picker and dropdowns
+document.addEventListener('click', e => {
+  const picker = document.getElementById('emoji-picker');
+  if (!picker.contains(e.target)) picker.style.display = 'none';
+  closeAllDropdowns();
+  document.getElementById('msg-context-menu').style.display = 'none';
+  if (!e.target.closest('#group-msg-input')) {
+    document.getElementById('mention-suggestions').style.display = 'none';
+  }
 });
 
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
-        background: ${type === 'error' ? 'var(--error)' : 'var(--primary-color)'};
-        color: white; padding: .7rem 1.5rem; border-radius: 24px;
-        font-size: .88rem; z-index: 9999; box-shadow: 0 4px 16px rgba(0,0,0,.2);
-        animation: fadeIn .25s ease;
-    `;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3500);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['members-modal','forward-modal','edit-modal','delete-modal','new-chat-modal','group-settings-modal','privacy-modal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.classList.contains('open')) closeModal(id);
+    });
+    document.getElementById('emoji-picker').style.display = 'none';
+    closeAllDropdowns();
+  }
+});
+
+// ═══════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════
+function esc(str) {
+  if (!str && str !== 0) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    {% if active_chat_user %}
-        loadChat({{ active_chat_user.id }});
-    {% else %}
-        document.getElementById('empty-view').style.display = 'flex';
-    {% endif %}
+let toastTimeout;
+function showToast(msg, type='info') {
+  clearTimeout(toastTimeout);
+  const old = document.querySelector('.toast');
+  if (old) old.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.background = type === 'error' ? 'var(--error)' : type === 'success' ? '#2e7d32' : 'var(--primary-color)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  toastTimeout = setTimeout(() => t.remove(), 3200);
+}
+
+// ═══════════════════════════════════════════════
+//  INIT ON LOAD
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Load all users into allUsers cache
+  fetch('/api/all_users').then(r=>r.json()).then(u => { allUsers = u; }).catch(()=>{});
+
+  {% if active_chat_user %}
+    currentView = 'private';
+    privateRecipientId = {{ active_chat_user.id }};
+    document.getElementById('private-view').style.display = 'flex';
+    const cEl = document.getElementById('convo-{{ active_chat_user.id }}');
+    if (cEl) cEl.classList.add('active');
+    initPrivateView({{ active_chat_user.id }}, true);
+  {% else %}
+    document.getElementById('empty-view').style.display = 'flex';
+  {% endif %}
 });
 </script>
 {% endblock %}

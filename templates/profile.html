@@ -24,19 +24,15 @@
     <!-- ===== کارت هدر پروفایل ===== -->
     <div class="profile-header-card">
 
-        <!-- آپلود عکس پروفایل -->
-        <!-- این فرم مجزا از فرم ویرایش اطلاعات است تا CSRF token مخصوص
-             خودش را داشته باشد و با submit() مستقیم مشکل‌ساز نشود -->
         {% if can_edit %}
+        <!-- فرم مجزا برای آپلود عکس — تا CSRF token خودش را داشته باشد -->
         <form action="{{ url_for('update_profile') }}" method="POST"
               enctype="multipart/form-data" id="profile-pic-form">
-            <!-- hidden_tag فیلد csrf_token را به طور خودکار رندر می‌کند -->
             {{ update_profile_form.hidden_tag() }}
         {% endif %}
 
             <div class="profile-pic-wrapper">
                 {% if user.profile_pic and user.profile_pic != 'default.jpg' %}
-                    <!-- پارامتر t= کش مرورگر را پس از تغییر عکس باطل می‌کند -->
                     <img src="{{ url_for('static', filename='uploads/profile_pics/' + user.profile_pic) }}?t={{ range(9999)|random }}"
                          class="profile-pic-img" alt="{{ user.full_name }}">
                 {% else %}
@@ -45,9 +41,7 @@
                 {% endif %}
 
                 {% if can_edit %}
-                <!-- label روی input مخفی کلیک می‌کند؛ پس از انتخاب فایل،
-                     تابع JS فرم را submit می‌کند — این روش CSRF-safe است -->
-                <label for="file-upload" class="profile-pic-edit-btn" title="تغییر عکس">
+                <label for="file-upload" class="profile-pic-edit-btn" title="تغییر عکس پروفایل">
                     <i class="material-icons">camera_alt</i>
                     <input id="file-upload" type="file" name="profile_pic"
                            accept="image/png,image/jpg,image/jpeg,image/gif"
@@ -71,9 +65,15 @@
             {% if user.major %}
             <span class="profile-major-badge">{{ user.major }}</span>
             {% endif %}
+            {% if user.is_admin %}
+            <span class="profile-admin-badge">
+                <i class="material-icons" style="font-size:.85rem;">admin_panel_settings</i>
+                مدیر سیستم
+            </span>
+            {% endif %}
         </div>
 
-        <!-- دکمه پیام (فقط برای مشاهده پروفایل دیگران) -->
+        <!-- دکمه پیام خصوصی (فقط برای مشاهده پروفایل دیگران) -->
         {% if not can_edit %}
         <div class="profile-actions">
             <a href="{{ url_for('chat_main', user_id=user.id) }}" class="btn btn-custom">
@@ -88,15 +88,11 @@
         {% endif %}
     </div>
 
-    <!-- ===== بخش ویرایش (فقط برای صاحب حساب) ===== -->
+    <!-- ===== بخش ویرایش — فقط برای صاحب حساب ===== -->
     {% if can_edit %}
     <div class="profile-edit-card">
 
-        <!-- تب‌ها -->
-        <!-- مشکل قبلی: event.target.closest('.profile-tab') اگر کاربر روی آیکون
-             کلیک می‌کرد، ممکن بود .profile-tab را پیدا نکند (چون closest از خود
-             المان کلیک‌شده به بالا می‌رود، اما ممکن است در DOM بالای .profile-tab
-             نباشد). راه‌حل: پاس دادن this که همیشه خود div.profile-tab است. -->
+        <!-- نوار تب‌ها: اطلاعات | امنیت | حریم خصوصی -->
         <div class="profile-tabs-bar">
             <button class="profile-tab active" id="ptab-info"
                     onclick="switchProfileTab('info', this)">
@@ -105,17 +101,17 @@
             </button>
             <button class="profile-tab" id="ptab-security"
                     onclick="switchProfileTab('security', this)">
-                <i class="material-icons">security</i>
+                <i class="material-icons">lock</i>
                 <span>امنیت</span>
             </button>
-            <button class="profile-tab" id="ptab-danger"
-                    onclick="switchProfileTab('danger', this)">
-                <i class="material-icons">warning</i>
-                <span>خطرناک</span>
+            <button class="profile-tab" id="ptab-privacy"
+                    onclick="switchProfileTab('privacy', this)">
+                <i class="material-icons">privacy_tip</i>
+                <span>حریم خصوصی</span>
             </button>
         </div>
 
-        <!-- تب اطلاعات حساب -->
+        <!-- ─── تب ۱: اطلاعات حساب ─── -->
         <div id="tab-info" class="profile-tab-content active">
             <form method="POST" action="{{ url_for('update_profile') }}">
                 {{ update_profile_form.hidden_tag() }}
@@ -142,6 +138,21 @@
                     {{ update_profile_form.major(class="form-select") }}
                 </div>
 
+                <!-- شماره دانشجویی — فقط نمایشی، قابل تغییر نیست -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="material-icons form-label-icon">badge</i>
+                        شماره دانشجویی
+                    </label>
+                    <div class="readonly-field">
+                        <span>{{ user.student_id }}</span>
+                        <span class="readonly-badge">
+                            <i class="material-icons" style="font-size:.8rem;">lock</i>
+                            غیرقابل تغییر
+                        </span>
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-custom">
                     <i class="material-icons">save</i>
                     ذخیره تغییرات
@@ -149,11 +160,17 @@
             </form>
         </div>
 
-        <!-- تب امنیت -->
+        <!-- ─── تب ۲: امنیت / تغییر رمز عبور ─── -->
         <div id="tab-security" class="profile-tab-content">
-            <form method="POST" action="{{ url_for('update_password') }}">
+            <div class="security-info-banner">
+                <i class="material-icons">info_outline</i>
+                <span>برای تغییر رمز عبور، ابتدا رمز فعلی خود را وارد کنید، سپس رمز جدید را دو بار تکرار کنید.</span>
+            </div>
+
+            <form method="POST" action="{{ url_for('update_password') }}" id="pw-form" novalidate>
                 {{ update_password_form.hidden_tag() }}
 
+                <!-- رمز فعلی -->
                 <div class="form-group">
                     <label class="form-label">
                         <i class="material-icons form-label-icon">lock</i>
@@ -162,7 +179,8 @@
                     <div class="input-with-toggle">
                         {{ update_password_form.current_password(
                             class="form-control",
-                            id="pw-current"
+                            id="pw-current",
+                            placeholder="رمز عبور فعلی خود را وارد کنید"
                         ) }}
                         <button type="button" class="toggle-pw-btn"
                                 onclick="togglePw('pw-current', this)" tabindex="-1">
@@ -177,6 +195,7 @@
                     {% endif %}
                 </div>
 
+                <!-- رمز جدید -->
                 <div class="form-group">
                     <label class="form-label">
                         <i class="material-icons form-label-icon">lock_open</i>
@@ -185,13 +204,19 @@
                     <div class="input-with-toggle">
                         {{ update_password_form.new_password(
                             class="form-control",
-                            id="pw-new"
+                            id="pw-new",
+                            placeholder="حداقل ۶ کاراکتر"
                         ) }}
                         <button type="button" class="toggle-pw-btn"
                                 onclick="togglePw('pw-new', this)" tabindex="-1">
                             <i class="material-icons">visibility</i>
                         </button>
                     </div>
+                    <!-- نوار قدرت رمز عبور -->
+                    <div class="pw-strength-bar" id="pw-strength-bar">
+                        <div class="pw-strength-fill" id="pw-strength-fill"></div>
+                    </div>
+                    <div class="pw-strength-label" id="pw-strength-label"></div>
                     {% if update_password_form.new_password.errors %}
                         <div class="field-error">
                             <i class="material-icons">error_outline</i>
@@ -200,6 +225,7 @@
                     {% endif %}
                 </div>
 
+                <!-- تأیید رمز جدید -->
                 <div class="form-group">
                     <label class="form-label">
                         <i class="material-icons form-label-icon">lock_open</i>
@@ -208,13 +234,16 @@
                     <div class="input-with-toggle">
                         {{ update_password_form.confirm_new_password(
                             class="form-control",
-                            id="pw-confirm"
+                            id="pw-confirm",
+                            placeholder="رمز جدید را دوباره وارد کنید"
                         ) }}
                         <button type="button" class="toggle-pw-btn"
                                 onclick="togglePw('pw-confirm', this)" tabindex="-1">
                             <i class="material-icons">visibility</i>
                         </button>
                     </div>
+                    <!-- نشانگر تطابق رمز -->
+                    <div class="pw-match-indicator" id="pw-match-indicator"></div>
                     {% if update_password_form.confirm_new_password.errors %}
                         <div class="field-error">
                             <i class="material-icons">error_outline</i>
@@ -223,33 +252,84 @@
                     {% endif %}
                 </div>
 
-                <button type="submit" class="btn btn-custom">
+                <button type="submit" class="btn btn-custom" onclick="return validatePwForm()">
                     <i class="material-icons">key</i>
                     تغییر رمز عبور
                 </button>
             </form>
         </div>
 
-        <!-- تب خطرناک -->
-        <div id="tab-danger" class="profile-tab-content">
-            <div class="danger-zone-card">
-                <div class="danger-zone-header">
-                    <i class="material-icons">warning_amber</i>
-                    <h3>حذف حساب کاربری</h3>
-                </div>
-                <p class="danger-zone-desc">
-                    با حذف حساب کاربری، تمام اطلاعات شما شامل پیام‌ها، برنامه کلاسی و رزروها
-                    به طور کامل و غیرقابل بازگشت پاک خواهد شد.
-                </p>
-                <form method="POST" action="{{ url_for('delete_account') }}"
-                      onsubmit="return confirm('آیا کاملاً مطمئن هستید؟\nاین عملیات غیرقابل بازگشت است.')">
-                    {{ delete_account_form.hidden_tag() }}
-                    <button type="submit" class="btn btn-delete">
-                        <i class="material-icons">delete_forever</i>
-                        حذف حساب من
-                    </button>
-                </form>
+        <!-- ─── تب ۳: حریم خصوصی ─── -->
+        <div id="tab-privacy" class="profile-tab-content">
+            <div class="privacy-section-title">
+                <i class="material-icons">visibility</i>
+                <span>کنترل دسترسی به اطلاعات شما</span>
             </div>
+
+            <div class="privacy-options">
+
+                <!-- آخرین بازدید -->
+                <div class="privacy-option-row">
+                    <div class="privacy-option-info">
+                        <div class="privacy-option-label">
+                            <i class="material-icons">schedule</i>
+                            آخرین بازدید
+                        </div>
+                        <p class="privacy-option-desc">چه کسی می‌تواند زمان آخرین فعالیت شما را ببیند؟</p>
+                    </div>
+                    <div class="privacy-select-wrapper">
+                        <select class="privacy-select" id="priv-last-seen"
+                                onchange="savePrivacy('last_seen_visibility', this.value)">
+                            <option value="all">همه</option>
+                            <option value="none">هیچ‌کس</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="privacy-divider"></div>
+
+                <!-- عکس پروفایل -->
+                <div class="privacy-option-row">
+                    <div class="privacy-option-info">
+                        <div class="privacy-option-label">
+                            <i class="material-icons">account_circle</i>
+                            عکس پروفایل
+                        </div>
+                        <p class="privacy-option-desc">چه کسی می‌تواند عکس پروفایل شما را ببیند؟</p>
+                    </div>
+                    <div class="privacy-select-wrapper">
+                        <select class="privacy-select" id="priv-profile-pic"
+                                onchange="savePrivacy('profile_pic_visibility', this.value)">
+                            <option value="all">همه</option>
+                            <option value="none">هیچ‌کس</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="privacy-divider"></div>
+
+                <!-- پیام خصوصی -->
+                <div class="privacy-option-row">
+                    <div class="privacy-option-info">
+                        <div class="privacy-option-label">
+                            <i class="material-icons">message</i>
+                            دریافت پیام خصوصی
+                        </div>
+                        <p class="privacy-option-desc">چه کسی می‌تواند برای شما پیام مستقیم ارسال کند؟</p>
+                    </div>
+                    <div class="privacy-select-wrapper">
+                        <select class="privacy-select" id="priv-who-can-msg"
+                                onchange="savePrivacy('who_can_message', this.value)">
+                            <option value="all">همه</option>
+                            <option value="none">هیچ‌کس</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- نشانگر وضعیت ذخیره -->
+            <div class="privacy-save-status" id="privacy-save-status"></div>
         </div>
 
     </div><!-- /profile-edit-card -->
@@ -257,136 +337,128 @@
 
 </div><!-- /profile-container -->
 
+<!-- ==================== Styles ==================== -->
 <style>
-
 .profile-container {
     max-width: 780px;
     margin: 2rem auto;
     padding: 0 1rem 3rem;
 }
 
+/* ─── Alert ─── */
 .profile-alert {
     display: flex; align-items: center; gap: .6rem;
     padding: .85rem 1.1rem;
-    border-radius: 10px;
-    margin-bottom: 1rem;
+    border-radius: 10px; margin-bottom: 1rem;
     font-size: .9rem; font-weight: 500;
 }
 .profile-alert i { font-size: 1.1rem; flex-shrink: 0; }
-.profile-alert-success {
-    background: rgba(46,125,50,.1);
-    border: 1px solid rgba(46,125,50,.25);
-    color: var(--success);
-}
-.profile-alert-error {
-    background: rgba(183,28,28,.08);
-    border: 1px solid rgba(183,28,28,.2);
-    color: var(--error);
-}
-.profile-alert-info {
-    background: rgba(2,136,209,.08);
-    border: 1px solid rgba(2,136,209,.2);
-    color: var(--info);
-}
+.profile-alert-success { background: rgba(46,125,50,.1); border: 1px solid rgba(46,125,50,.25); color: var(--success); }
+.profile-alert-error   { background: rgba(183,28,28,.08); border: 1px solid rgba(183,28,28,.2); color: var(--error); }
+.profile-alert-info    { background: rgba(2,136,209,.08); border: 1px solid rgba(2,136,209,.2); color: var(--info, #0288d1); }
 
+/* ─── Header Card ─── */
 .profile-header-card {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: var(--shadow-sm);
+    background: var(--surface); border-radius: 16px;
+    padding: 2rem; box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
     margin-bottom: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 1rem;
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center; gap: 1rem;
 }
-
-/* عکس پروفایل */
-.profile-pic-wrapper {
-    position: relative;
-    width: 120px; height: 120px;
-}
+.profile-pic-wrapper { position: relative; width: 120px; height: 120px; }
 .profile-pic-img {
-    width: 100%; height: 100%;
-    border-radius: 50%; object-fit: cover;
+    width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
     border: 4px solid var(--primary-light);
     box-shadow: 0 4px 16px rgba(0,131,143,.2);
 }
 .profile-pic-edit-btn {
-    position: absolute;
-    bottom: 2px; right: 2px;
+    position: absolute; bottom: 2px; right: 2px;
     background: var(--primary-color); color: white;
-    width: 34px; height: 34px;
-    border-radius: 50%;
+    width: 34px; height: 34px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.2);
     transition: transform .2s, background .2s;
     border: 2px solid var(--surface);
 }
 .profile-pic-edit-btn:hover { transform: scale(1.1); background: var(--primary-dark); }
 .profile-pic-edit-btn i { font-size: 1rem; }
 
-/* اطلاعات کاربر */
 .profile-user-info { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
 .profile-user-name { font-size: 1.5rem; font-weight: 700; margin: 0; }
-.profile-student-id {
-    display: flex; align-items: center; gap: .3rem;
-    color: var(--text-secondary); font-size: .9rem;
-}
+.profile-student-id { display: flex; align-items: center; gap: .3rem; color: var(--text-secondary); font-size: .9rem; }
 .profile-student-id i { font-size: 1rem; }
 .profile-major-badge {
-    background: rgba(0,131,143,.12);
-    color: var(--primary-dark);
-    border: 1px solid rgba(0,131,143,.2);
-    padding: .25rem .85rem;
+    background: rgba(0,131,143,.12); color: var(--primary-dark);
+    border: 1px solid rgba(0,131,143,.2); padding: .25rem .85rem;
     border-radius: 20px; font-size: .82rem; font-weight: 600;
 }
-
+.profile-admin-badge {
+    display: inline-flex; align-items: center; gap: .25rem;
+    background: rgba(245,124,0,.12); color: #e65100;
+    border: 1px solid rgba(245,124,0,.25); padding: .2rem .75rem;
+    border-radius: 20px; font-size: .78rem; font-weight: 700;
+}
 .profile-actions { display: flex; gap: .6rem; flex-wrap: wrap; justify-content: center; margin-top: .5rem; }
 
+/* ─── Edit Card ─── */
 .profile-edit-card {
-    background: var(--surface);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
+    background: var(--surface); border-radius: 16px;
+    overflow: hidden; box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
 }
-
 .profile-tabs-bar {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--background);
-    padding: 0 .5rem;
-    gap: .25rem;
+    display: flex; border-bottom: 1px solid var(--border-color);
+    background: var(--background); padding: 0 .5rem; gap: .25rem;
 }
 .profile-tab {
     display: flex; align-items: center; gap: .4rem;
-    padding: 1rem 1.25rem;
-    cursor: pointer;
-    font-weight: 600; font-size: .88rem;
-    color: var(--text-secondary);
-    border: none; background: transparent;
-    font-family: inherit;
+    padding: 1rem 1.25rem; cursor: pointer;
+    font-weight: 600; font-size: .88rem; color: var(--text-secondary);
+    border: none; background: transparent; font-family: inherit;
     border-bottom: 2px solid transparent;
     transition: color .2s, border-color .2s, background .2s;
     border-radius: 6px 6px 0 0;
 }
 .profile-tab:hover { color: var(--primary-color); background: rgba(0,131,143,.04); }
-.profile-tab.active {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
-    background: var(--surface);
-}
+.profile-tab.active { color: var(--primary-color); border-bottom-color: var(--primary-color); background: var(--surface); }
 .profile-tab i { font-size: 1.1rem; pointer-events: none; }
 .profile-tab span { pointer-events: none; }
 
-/* محتوای تب */
+/* ─── Tab Content ─── */
 .profile-tab-content { display: none; padding: 2rem; animation: profileFadeIn .3s ease; }
 .profile-tab-content.active { display: block; }
-@keyframes profileFadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+@keyframes profileFadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─── Form Elements ─── */
+.form-label { display: flex; align-items: center; gap: .3rem; font-weight: 600; font-size: .9rem; margin-bottom: .45rem; }
+.form-label-icon { font-size: .95rem; color: var(--primary-color); }
+.field-error { display: flex; align-items: center; gap: .3rem; color: var(--error); font-size: .82rem; margin-top: .35rem; }
+.field-error i { font-size: .9rem; }
+
+/* فیلد فقط نمایشی */
+.readonly-field {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--background); border: 1px solid var(--border-color);
+    border-radius: 8px; padding: .7rem 1rem;
+    color: var(--text-secondary); font-size: .9rem;
+}
+.readonly-badge {
+    display: inline-flex; align-items: center; gap: .2rem;
+    font-size: .75rem; color: var(--text-secondary);
+    background: var(--border-color); padding: .15rem .5rem;
+    border-radius: 20px;
+}
+
+/* ─── Password Tab ─── */
+.security-info-banner {
+    display: flex; align-items: flex-start; gap: .5rem;
+    background: rgba(2,136,209,.07); border: 1px solid rgba(2,136,209,.2);
+    border-radius: 10px; padding: .85rem 1rem;
+    font-size: .85rem; color: var(--text-secondary);
+    margin-bottom: 1.5rem; line-height: 1.6;
+}
+.security-info-banner i { font-size: 1.1rem; color: #0288d1; flex-shrink: 0; margin-top: .05rem; }
 
 .input-with-toggle { position: relative; display: flex; align-items: center; }
 .input-with-toggle .form-control { padding-left: 2.75rem; width: 100%; }
@@ -400,93 +472,273 @@
 .toggle-pw-btn:hover { color: var(--primary-color); }
 .toggle-pw-btn i { font-size: 1.15rem; }
 
-.form-label { display: flex; align-items: center; gap: .3rem; font-weight: 600; font-size: .9rem; margin-bottom: .45rem; }
-.form-label-icon { font-size: .95rem; color: var(--primary-color); }
-
-.field-error {
-    display: flex; align-items: center; gap: .3rem;
-    color: var(--error); font-size: .82rem; margin-top: .35rem;
+/* نوار قدرت رمز */
+.pw-strength-bar {
+    height: 4px; background: var(--border-color);
+    border-radius: 4px; margin-top: .5rem; overflow: hidden;
+    display: none;
 }
-.field-error i { font-size: .9rem; }
+.pw-strength-fill { height: 100%; border-radius: 4px; transition: width .3s, background .3s; }
+.pw-strength-label { font-size: .78rem; margin-top: .25rem; font-weight: 600; display: none; }
 
-.danger-zone-card {
-    background: rgba(183,28,28,.04);
-    border: 1px solid rgba(183,28,28,.25);
-    border-radius: 12px; padding: 1.5rem;
+/* نشانگر تطابق */
+.pw-match-indicator {
+    font-size: .8rem; margin-top: .3rem; font-weight: 600;
+    display: flex; align-items: center; gap: .25rem;
+    min-height: 1.2rem;
 }
-.danger-zone-header {
+
+/* ─── Privacy Tab ─── */
+.privacy-section-title {
     display: flex; align-items: center; gap: .5rem;
-    color: var(--error); margin-bottom: .75rem;
+    font-size: .95rem; font-weight: 700; color: var(--primary-color);
+    margin-bottom: 1.5rem;
 }
-.danger-zone-header i { font-size: 1.4rem; }
-.danger-zone-header h3 { font-size: 1.05rem; margin: 0; }
-.danger-zone-desc {
-    font-size: .88rem; color: var(--text-secondary);
-    margin-bottom: 1.25rem; line-height: 1.7;
+.privacy-section-title i { font-size: 1.2rem; }
+.privacy-options { border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
+.privacy-option-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.1rem 1.25rem; gap: 1rem;
+    background: var(--surface); flex-wrap: wrap;
 }
-.btn-delete {
-    display: inline-flex; align-items: center; gap: .4rem;
-    background: var(--error); color: white;
-    padding: .65rem 1.35rem; border-radius: 8px;
-    border: none; cursor: pointer; font-family: inherit;
-    font-size: .9rem; font-weight: 600;
-    transition: opacity .2s, transform .15s;
+.privacy-option-info { flex: 1; min-width: 160px; }
+.privacy-option-label {
+    display: flex; align-items: center; gap: .4rem;
+    font-weight: 600; font-size: .9rem; color: var(--text-primary);
+    margin-bottom: .2rem;
 }
-.btn-delete:hover { opacity: .88; transform: translateY(-1px); }
+.privacy-option-label i { font-size: 1.05rem; color: var(--primary-color); }
+.privacy-option-desc { font-size: .8rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+.privacy-divider { height: 1px; background: var(--border-color); }
+
+.privacy-select-wrapper { flex-shrink: 0; }
+.privacy-select {
+    padding: .5rem 1rem; border-radius: 8px;
+    border: 1.5px solid var(--border-color);
+    background: var(--background); color: var(--text-primary);
+    font-family: inherit; font-size: .88rem; font-weight: 600;
+    cursor: pointer; transition: border-color .2s;
+    min-width: 120px;
+}
+.privacy-select:focus { outline: none; border-color: var(--primary-color); }
+
+.privacy-save-status {
+    margin-top: 1rem; font-size: .85rem; font-weight: 600;
+    min-height: 1.5rem; display: flex; align-items: center; gap: .35rem;
+}
+.privacy-save-status.saving { color: var(--text-secondary); }
+.privacy-save-status.saved  { color: var(--success); }
+.privacy-save-status.error  { color: var(--error); }
 
 @media (max-width: 600px) {
     .profile-tab span { display: none; }
     .profile-tab { padding: .85rem .75rem; }
+    .privacy-option-row { flex-direction: column; align-items: flex-start; }
 }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-
+/* =====================================================
+   Tab Switcher
+   ===================================================== */
 function switchProfileTab(tabName, btn) {
-    document.querySelectorAll('.profile-tab-content').forEach(function(el) {
-        el.classList.remove('active');
-    });
-    document.querySelectorAll('.profile-tab').forEach(function(el) {
-        el.classList.remove('active');
-    });
-
+    document.querySelectorAll('.profile-tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.profile-tab').forEach(el => el.classList.remove('active'));
     const content = document.getElementById('tab-' + tabName);
     if (content) content.classList.add('active');
-
     if (btn) btn.classList.add('active');
 }
 
+/* =====================================================
+   آپلود عکس پروفایل
+   ===================================================== */
 function submitProfilePic() {
     const form = document.getElementById('profile-pic-form');
     if (!form) return;
-    if (typeof form.requestSubmit === 'function') {
-        form.requestSubmit();
-    } else {
-        form.submit();
-    }
+    // requestSubmit اعتبارسنجی HTML5 را هم فعال می‌کند
+    if (typeof form.requestSubmit === 'function') form.requestSubmit();
+    else form.submit();
 }
 
+/* =====================================================
+   Toggle نمایش / پنهان رمز عبور
+   ===================================================== */
 function togglePw(inputId, btn) {
     const input = document.getElementById(inputId);
     if (!input) return;
     const icon = btn.querySelector('i');
-    if (input.type === 'password') {
-        input.type = 'text';
-        if (icon) icon.textContent = 'visibility_off';
-    } else {
-        input.type = 'password';
-        if (icon) icon.textContent = 'visibility';
-    }
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    if (icon) icon.textContent = isHidden ? 'visibility_off' : 'visibility';
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    // بررسی وجود خطا در فیلدهای رمز عبور
+/* =====================================================
+   نوار قدرت رمز عبور
+   ===================================================== */
+function calcPasswordStrength(pw) {
+    let score = 0;
+    if (pw.length >= 6)  score++;
+    if (pw.length >= 10) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    return score; // 0-5
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const pwNew     = document.getElementById('pw-new');
+    const pwConfirm = document.getElementById('pw-confirm');
+    const bar       = document.getElementById('pw-strength-bar');
+    const fill      = document.getElementById('pw-strength-fill');
+    const label     = document.getElementById('pw-strength-label');
+    const matchEl   = document.getElementById('pw-match-indicator');
+
+    if (pwNew) {
+        pwNew.addEventListener('input', function () {
+            const val = this.value;
+            if (!val) { bar.style.display = 'none'; label.style.display = 'none'; return; }
+            bar.style.display = 'block';
+            label.style.display = 'block';
+            const score = calcPasswordStrength(val);
+            const configs = [
+                { w: '15%',  bg: '#ef5350', text: 'خیلی ضعیف' },
+                { w: '30%',  bg: '#ff7043', text: 'ضعیف' },
+                { w: '55%',  bg: '#ffa726', text: 'متوسط' },
+                { w: '80%',  bg: '#66bb6a', text: 'قوی' },
+                { w: '100%', bg: '#2e7d32', text: 'خیلی قوی' },
+            ];
+            const cfg = configs[Math.max(0, score - 1)] || configs[0];
+            fill.style.width = cfg.w;
+            fill.style.background = cfg.bg;
+            label.style.color = cfg.bg;
+            label.textContent = cfg.text;
+
+            // بررسی تطابق اگر فیلد تأیید قبلاً پر شده
+            if (pwConfirm && pwConfirm.value) checkMatch();
+        });
+    }
+
+    if (pwConfirm) {
+        pwConfirm.addEventListener('input', checkMatch);
+    }
+
+    function checkMatch() {
+        if (!pwNew || !pwConfirm || !matchEl) return;
+        if (!pwConfirm.value) { matchEl.innerHTML = ''; return; }
+        if (pwNew.value === pwConfirm.value) {
+            matchEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;color:var(--success)">check_circle</i><span style="color:var(--success)">رمزها مطابقت دارند</span>';
+        } else {
+            matchEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;color:var(--error)">cancel</i><span style="color:var(--error)">رمزها مطابقت ندارند</span>';
+        }
+    }
+
+    // اگر سرور خطای رمز عبور برگرداند، تب امنیت باز باشد
     const hasPwError = document.querySelector('#tab-security .field-error');
     if (hasPwError) {
         switchProfileTab('security', document.getElementById('ptab-security'));
     }
+
+    // بارگذاری تنظیمات حریم خصوصی از سرور
+    loadPrivacySettings();
 });
+
+/* =====================================================
+   اعتبارسنجی فرم رمز عبور قبل از submit
+   ===================================================== */
+function validatePwForm() {
+    const curr    = document.getElementById('pw-current');
+    const newPw   = document.getElementById('pw-new');
+    const confirm = document.getElementById('pw-confirm');
+
+    if (!curr.value.trim()) {
+        showProfileToast('رمز عبور فعلی را وارد کنید', 'error');
+        curr.focus(); return false;
+    }
+    if (!newPw.value.trim() || newPw.value.length < 6) {
+        showProfileToast('رمز عبور جدید باید حداقل ۶ کاراکتر داشته باشد', 'error');
+        newPw.focus(); return false;
+    }
+    if (newPw.value !== confirm.value) {
+        showProfileToast('رمزهای جدید با هم مطابقت ندارند', 'error');
+        confirm.focus(); return false;
+    }
+    return true;
+}
+
+/* =====================================================
+   تنظیمات حریم خصوصی
+   ===================================================== */
+function loadPrivacySettings() {
+    const lsEl  = document.getElementById('priv-last-seen');
+    const ppEl  = document.getElementById('priv-profile-pic');
+    const msgEl = document.getElementById('priv-who-can-msg');
+    if (!lsEl) return;   // کاربر صاحب حساب نیست
+
+    fetch('/api/privacy_settings')
+        .then(r => r.json())
+        .then(data => {
+            if (data.last_seen_visibility)  lsEl.value  = data.last_seen_visibility;
+            if (data.profile_pic_visibility) ppEl.value  = data.profile_pic_visibility;
+            if (data.who_can_message)        msgEl.value = data.who_can_message;
+        })
+        .catch(() => {});
+}
+
+let privacySaveTimer = null;
+
+function savePrivacy(key, value) {
+    const statusEl = document.getElementById('privacy-save-status');
+    statusEl.className = 'privacy-save-status saving';
+    statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;animation:privSpin 1s linear infinite;display:inline-block;">sync</i> در حال ذخیره...';
+
+    // debounce — اگر تغییر سریع بود، فقط آخرین را ذخیره کن
+    clearTimeout(privacySaveTimer);
+    privacySaveTimer = setTimeout(function () {
+        const payload = { [key]: value };
+        fetch('/api/privacy_settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                statusEl.className = 'privacy-save-status saved';
+                statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;">check_circle</i> ذخیره شد';
+                setTimeout(() => { statusEl.innerHTML = ''; statusEl.className = 'privacy-save-status'; }, 2500);
+            } else throw new Error(data.error || 'خطا');
+        })
+        .catch(() => {
+            statusEl.className = 'privacy-save-status error';
+            statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;">error</i> خطا در ذخیره';
+        });
+    }, 400);
+}
+
+/* =====================================================
+   Toast
+   ===================================================== */
+function showProfileToast(msg, type) {
+    const old = document.getElementById('profile-toast');
+    if (old) old.remove();
+    const t = document.createElement('div');
+    t.id = 'profile-toast';
+    const bg = type === 'success'
+        ? 'linear-gradient(135deg, var(--success), #1b5e20)'
+        : 'linear-gradient(135deg, var(--error), #b71c1c)';
+    t.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:${bg};color:white;padding:.8rem 1.75rem;border-radius:24px;font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);display:flex;align-items:center;gap:.5rem;font-family:inherit;`;
+    t.innerHTML = `<i class="material-icons" style="font-size:1.1rem;">${type === 'success' ? 'check_circle' : 'error'}</i>${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3200);
+}
+
+/* =====================================================
+   CSS Animation برای spinner
+   ===================================================== */
+const s = document.createElement('style');
+s.textContent = `@keyframes privSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`;
+document.head.appendChild(s);
 </script>
 {% endblock %}

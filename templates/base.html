@@ -12,7 +12,7 @@
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <!-- Dark Mode Script -->
+    <!-- Dark Mode Script (اجرا قبل از رندر برای جلوگیری از flash) -->
     <script>
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'dark' || (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -28,24 +28,70 @@
             
             <ul class="navbar-nav">
                 {% if current_user %}
-                    <li><a href="{{ url_for('dashboard') }}" class="nav-link"><i class="material-icons">dashboard</i> داشبورد</a></li>
+                    <!-- داشبورد -->
+                    <li>
+                        <a href="{{ url_for('dashboard') }}" class="nav-link">
+                            <i class="material-icons">dashboard</i>
+                            داشبورد
+                        </a>
+                    </li>
                     
-                    <!-- Chat Dropdown -->
+                    <!-- پیام‌رسان (Dropdown) -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="chatDropdown" role="button" onclick="toggleDropdown('chat-menu')">
-                            <i class="material-icons">chat</i> پیام‌رسان
+                        <a class="nav-link dropdown-toggle" href="#" id="chatDropdown" role="button"
+                           onclick="toggleDropdown('chat-menu')">
+                            <i class="material-icons">chat</i>
+                            پیام‌رسان
                         </a>
                         <div class="dropdown-menu-nav" id="chat-menu">
-                            <a class="dropdown-item" href="{{ url_for('chat_main') }}"><i class="material-icons">forum</i> پیام‌های خصوصی</a>
-                            <a class="dropdown-item" href="{{ url_for('chat_main') }}#group" onclick="localStorage.setItem('loadChat', 'group')"><i class="material-icons">groups</i> گروه عمومی</a>
-                            <a class="dropdown-item" href="{{ url_for('chat_main') }}#channel" onclick="localStorage.setItem('loadChat', 'channel')"><i class="material-icons">campaign</i> کانال</a>
+                            <a class="dropdown-item" href="{{ url_for('chat_main') }}">
+                                <i class="material-icons">forum</i>
+                                پیام‌های خصوصی
+                            </a>
+                            <a class="dropdown-item"
+                               href="{{ url_for('chat_main') }}#group"
+                               onclick="localStorage.setItem('loadChat', 'group')">
+                                <i class="material-icons">groups</i>
+                                گروه عمومی
+                            </a>
+                            <a class="dropdown-item"
+                               href="{{ url_for('chat_main') }}#channel"
+                               onclick="localStorage.setItem('loadChat', 'channel')">
+                                <i class="material-icons">campaign</i>
+                                کانال
+                            </a>
                         </div>
                     </li>
 
+                    <!-- ددلاین — مورد ۹: بخش جدید ددلاین با تقویم شمسی -->
+                    <li>
+                        <a href="{{ url_for('deadline_page') }}" class="nav-link nav-link-deadline">
+                            <i class="material-icons">event_note</i>
+                            ددلاین
+                        </a>
+                    </li>
+
+                    <!-- منابع درسی — مورد ۱۰: بخش جدید اشتراک‌گذاری فایل -->
+                    <li>
+                        <a href="{{ url_for('resources_page') }}" class="nav-link nav-link-resources">
+                            <i class="material-icons">library_books</i>
+                            منابع درسی
+                        </a>
+                    </li>
+
                     {% if is_admin %}
-                        <li><a href="{{ url_for('admin_dashboard') }}" class="nav-link" style="color: #ffeb3b;"><i class="material-icons">admin_panel_settings</i> مدیریت</a></li>
+                        <!-- پنل مدیریت — فقط برای ادمین -->
+                        <li>
+                            <a href="{{ url_for('admin_dashboard') }}" class="nav-link"
+                               style="color: #ffeb3b;">
+                                <i class="material-icons">admin_panel_settings</i>
+                                مدیریت
+                            </a>
+                        </li>
                     {% endif %}
+
                 {% else %}
+                    <!-- حالت مهمان -->
                     <li><a href="{{ url_for('index') }}" class="nav-link">صفحه اصلی</a></li>
                     <li><a href="{{ url_for('about') }}" class="nav-link">درباره ما</a></li>
                     <li><a href="{{ url_for('show_auth_page') }}" class="nav-link">ورود / ثبت‌نام</a></li>
@@ -53,18 +99,21 @@
             </ul>
             
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <!-- Dark Mode Toggle -->
-                <button id="theme-toggle" class="nav-link" style="background: none; border: none; cursor: pointer;">
+                <!-- تغییر تم روشن/تاریک -->
+                <button id="theme-toggle" class="nav-link"
+                        style="background: none; border: none; cursor: pointer;"
+                        title="تغییر تم">
                     <i class="material-icons" id="theme-icon">light_mode</i>
                 </button>
 
                 {% if current_user %}
-                    <!-- User Dropdown Menu -->
+                    <!-- منوی کاربر (Dropdown) -->
                     <div class="user-dropdown">
                         <div class="user-info">
                             <div class="user-avatar-nav">
                                 {% if current_user.pic and current_user.pic != 'default.jpg' %}
-                                    <img src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.pic) }}" alt="Avatar">
+                                    <img src="{{ url_for('static', filename='uploads/profile_pics/' + current_user.pic) }}"
+                                         alt="Avatar">
                                 {% else %}
                                     {{ current_user.name[0] }}
                                 {% endif %}
@@ -78,6 +127,10 @@
                                 <i class="material-icons">person</i>
                                 پروفایل من
                             </a>
+                            {#
+                                مورد ۸: قابلیت حذف اکانت کاملاً برداشته شده —
+                                هیچ لینک یا دکمه‌ای برای delete account وجود ندارد.
+                            #}
                             <a href="{{ url_for('logout') }}" class="dropdown-item danger">
                                 <i class="material-icons">exit_to_app</i>
                                 خروج
@@ -94,8 +147,21 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}" style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; {% if category == 'success' %}background-color: rgba(46, 125, 50, 0.1); color: var(--success);{% elif category == 'error' %}background-color: rgba(183, 28, 28, 0.1); color: var(--error);{% else %}background-color: rgba(2, 136, 209, 0.1); color: var(--info);{% endif %}">
-                        <i class="material-icons">{% if category == 'success' %}check_circle{% elif category == 'error' %}error{% else %}info{% endif %}</i>
+                    <div class="alert alert-{{ category }}"
+                         style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem;
+                                display: flex; align-items: center; gap: 0.5rem;
+                                {% if category == 'success' %}
+                                    background-color: rgba(46,125,50,0.1); color: var(--success);
+                                {% elif category == 'error' %}
+                                    background-color: rgba(183,28,28,0.1); color: var(--error);
+                                {% else %}
+                                    background-color: rgba(2,136,209,0.1); color: var(--info);
+                                {% endif %}">
+                        <i class="material-icons">
+                            {% if category == 'success' %}check_circle
+                            {% elif category == 'error' %}error
+                            {% else %}info{% endif %}
+                        </i>
                         {{ message }}
                     </div>
                 {% endfor %}
@@ -103,7 +169,7 @@
         {% endwith %}
     </div>
     
-    <!-- Main Content -->
+    <!-- محتوای اصلی صفحه -->
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>
@@ -134,23 +200,22 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-        // Theme Toggler
+        /* =====================================================
+           تم روشن / تاریک
+           ===================================================== */
         const toggleBtn = document.getElementById('theme-toggle');
         const htmlElement = document.documentElement;
         const themeIcon = document.getElementById('theme-icon');
 
         function updateIcon() {
-            if (htmlElement.getAttribute('data-theme') === 'dark') {
-                themeIcon.textContent = 'dark_mode';
-            } else {
-                themeIcon.textContent = 'light_mode';
-            }
+            themeIcon.textContent = htmlElement.getAttribute('data-theme') === 'dark'
+                ? 'dark_mode'
+                : 'light_mode';
         }
         updateIcon();
 
         toggleBtn.addEventListener('click', () => {
-            const currentTheme = htmlElement.getAttribute('data-theme');
-            if (currentTheme === 'dark') {
+            if (htmlElement.getAttribute('data-theme') === 'dark') {
                 htmlElement.removeAttribute('data-theme');
                 localStorage.setItem('theme', 'light');
             } else {
@@ -160,7 +225,9 @@
             updateIcon();
         });
 
-        // Dropdown Toggler for Navbar
+        /* =====================================================
+           مدیریت dropdown های navbar
+           ===================================================== */
         function toggleDropdown(id) {
             const menu = document.getElementById(id);
             if (menu.style.display === 'block') {
@@ -170,22 +237,44 @@
             }
         }
 
-        // Close dropdown if clicked outside
-        window.onclick = function(event) {
+        /* بستن dropdown در صورت کلیک خارج از آن */
+        window.addEventListener('click', function(event) {
             if (!event.target.matches('.dropdown-toggle')) {
                 document.querySelectorAll('.dropdown-menu-nav').forEach(menu => {
                     menu.style.display = 'none';
                 });
             }
-        }
+        });
+
+        /* =====================================================
+           مشخص کردن لینک فعال در navbar بر اساس URL جاری
+           این کمک می‌کند کاربر بداند در کدام بخش است.
+           ===================================================== */
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+                if (link.getAttribute('href') && link.getAttribute('href') !== '#') {
+                    // مقایسه دقیق مسیر (نه starts-with تا داشبورد همیشه active نباشه)
+                    if (currentPath === link.getAttribute('href') ||
+                        (currentPath.startsWith(link.getAttribute('href')) &&
+                         link.getAttribute('href') !== '/')) {
+                        link.classList.add('active');
+                    }
+                }
+            });
+        });
     </script>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>
 
 <style>
-    /* Navbar Dropdown Styling */
+    /* =====================================================
+       Navbar Dropdown — chat menu
+       ===================================================== */
     .nav-item { position: relative; }
+
     .dropdown-menu-nav {
         display: none;
         position: absolute;
@@ -199,6 +288,7 @@
         border: 1px solid var(--border-color);
         padding: 0.5rem 0;
     }
+
     .dropdown-menu-nav .dropdown-item {
         padding: 0.75rem 1rem;
         display: flex;
@@ -206,8 +296,21 @@
         gap: 0.5rem;
         color: var(--text-primary);
         transition: background 0.2s;
+        text-decoration: none;
     }
+
     .dropdown-menu-nav .dropdown-item:hover {
         background-color: var(--background);
+    }
+
+    /* =====================================================
+       لینک‌های جدید navbar (ددلاین و منابع درسی)
+       با همان ظاهر nav-link اصلی، بدون تغییر در UI
+       ===================================================== */
+
+    /* حالت active برای لینک جاری */
+    .navbar-nav .nav-link.active {
+        color: var(--primary-color);
+        font-weight: 600;
     }
 </style>

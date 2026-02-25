@@ -73,7 +73,6 @@
                 </div>
             </div>
 
-            <!-- راهنمای رنگ -->
             <div class="legend-row">
                 <div class="legend-item">
                     <span class="legend-dot" style="background:var(--primary-color);"></span>
@@ -145,14 +144,12 @@
                             <a href="{{ url_for('handle_reservation', req_id=req.id, action='approve') }}"
                                class="btn btn-approve"
                                onclick="return confirm('آیا این درخواست تأیید شود؟')">
-                                <i class="material-icons">check_circle</i>
-                                تأیید
+                                <i class="material-icons">check_circle</i> تأیید
                             </a>
                             <a href="{{ url_for('handle_reservation', req_id=req.id, action='reject') }}"
                                class="btn btn-reject"
                                onclick="return confirm('آیا این درخواست رد شود؟')">
-                                <i class="material-icons">cancel</i>
-                                رد
+                                <i class="material-icons">cancel</i> رد
                             </a>
                         </div>
                     </div>
@@ -178,18 +175,40 @@
                 </div>
             </div>
 
+            <!-- راهنمای منطق لغو -->
+            <div class="cancel-logic-hint">
+                <div class="cancel-logic-item cancel-logic-specific">
+                    <i class="material-icons">class</i>
+                    <div>
+                        <strong>لغو کلاس خاص</strong>
+                        <p>اگر نام استاد + نام درس + ساعت مشخص باشد، فقط همان کلاس لغو می‌شود.</p>
+                    </div>
+                </div>
+                <div class="cancel-logic-divider"><i class="material-icons">compare_arrows</i></div>
+                <div class="cancel-logic-item cancel-logic-all">
+                    <i class="material-icons">person_off</i>
+                    <div>
+                        <strong>لغو تمام کلاس‌های استاد در یک روز</strong>
+                        <p>اگر نام استاد + تاریخ باشد (بدون ساعت)، تمام کلاس‌های آن استاد در آن روز لغو می‌شوند.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- فرم ثبت لغو -->
-            <form action="{{ url_for('add_cancelled_class') }}" method="POST" class="cancelled-form">
-                <!-- CSRF Token ضروری برای جلوگیری از خطای 400/500 -->
+            <form action="{{ url_for('add_cancelled_class') }}" method="POST" class="cancelled-form" id="cancel-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <!-- فیلدهای مخفی برای تاریخ‌های شمسی (بعد از انتخاب از تقویم پر می‌شوند) -->
+                <input type="hidden" name="cancel_date_j" id="cancel_date_j_input">
+                <input type="hidden" name="start_date_j"  id="start_date_j_input">
+                <input type="hidden" name="end_date_j"    id="end_date_j_input">
 
                 <div class="form-two-col">
                     <div class="form-group">
                         <label class="form-label">
                             <i class="material-icons form-label-icon">person</i>
-                            نام استاد
+                            نام استاد <span class="required-star">*</span>
                         </label>
-                        <input type="text" name="professor" class="form-control"
+                        <input type="text" name="professor" id="cancel-professor" class="form-control"
                                placeholder="مثال: دکتر محمدی" required>
                     </div>
                     <div class="form-group">
@@ -197,8 +216,38 @@
                             <i class="material-icons form-label-icon">menu_book</i>
                             نام درس
                         </label>
-                        <input type="text" name="course" class="form-control"
-                               placeholder="مثال: ریاضی مهندسی" required>
+                        <input type="text" name="course" id="cancel-course" class="form-control"
+                               placeholder="اگر خالی بماند، تمام دروس استاد">
+                    </div>
+                </div>
+
+                <!-- ساعت تشکیل کلاس -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="material-icons form-label-icon">schedule</i>
+                        ساعت کلاس
+                        <span class="form-label-hint">(اگر خالی بماند → تمام کلاس‌های استاد در آن روز)</span>
+                    </label>
+                    <div class="time-slots-row">
+                        <label class="time-slot-chip">
+                            <input type="radio" name="time_slot" value="">
+                            <span>همه</span>
+                        </label>
+                        {% if class_time_slots %}
+                            {% for ts in class_time_slots %}
+                            <label class="time-slot-chip">
+                                <input type="radio" name="time_slot" value="{{ ts }}">
+                                <span>{{ ts }}</span>
+                            </label>
+                            {% endfor %}
+                        {% else %}
+                            {% for ts in ['08:00-10:00','10:00-12:00','12:00-14:00','14:00-16:00','16:00-18:00','18:00-20:00'] %}
+                            <label class="time-slot-chip">
+                                <input type="radio" name="time_slot" value="{{ ts }}">
+                                <span>{{ ts }}</span>
+                            </label>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
 
@@ -208,48 +257,89 @@
                         توضیحات
                     </label>
                     <input type="text" name="desc" class="form-control"
-                           placeholder="مثال: کلاس با جلسه تمرین جابجا شد">
+                           placeholder="مثال: کلاس جبرانی دارد — با جلسه تمرین جابجا شد">
                 </div>
 
+                <!-- بخش تاریخ شمسی -->
                 <div class="cancel-date-section">
                     <p class="cancel-date-hint">
-                        <i class="material-icons">help_outline</i>
-                        یا یک تاریخ دقیق یا یک بازه زمانی وارد کنید:
+                        <i class="material-icons">calendar_month</i>
+                        <strong>تاریخ لغو را از تقویم شمسی انتخاب کنید:</strong>
+                        (یا تاریخ دقیق یا بازه زمانی)
                     </p>
+
                     <div class="form-three-col">
+                        <!-- تاریخ دقیق -->
                         <div class="form-group">
                             <label class="form-label">
                                 <i class="material-icons form-label-icon">event</i>
                                 تاریخ دقیق لغو
                             </label>
-                            <input type="date" name="date" class="form-control">
+                            <div class="jalali-input-wrapper" id="picker-cancel">
+                                <input type="text" class="form-control jalali-input"
+                                       id="cancel_date_display" readonly
+                                       placeholder="انتخاب تاریخ..."
+                                       onclick="openJalaliPicker('cancel')">
+                                <i class="material-icons jalali-input-icon">calendar_today</i>
+                                <button type="button" class="jalali-clear-btn"
+                                        onclick="clearJalaliDate('cancel')"
+                                        title="پاک کردن">
+                                    <i class="material-icons">close</i>
+                                </button>
+                            </div>
                         </div>
+
+                        <!-- از تاریخ -->
                         <div class="form-group">
                             <label class="form-label">
                                 <i class="material-icons form-label-icon">date_range</i>
                                 از تاریخ
                             </label>
-                            <input type="date" name="start_date" class="form-control">
+                            <div class="jalali-input-wrapper" id="picker-start">
+                                <input type="text" class="form-control jalali-input"
+                                       id="start_date_display" readonly
+                                       placeholder="انتخاب تاریخ..."
+                                       onclick="openJalaliPicker('start')">
+                                <i class="material-icons jalali-input-icon">date_range</i>
+                                <button type="button" class="jalali-clear-btn"
+                                        onclick="clearJalaliDate('start')"
+                                        title="پاک کردن">
+                                    <i class="material-icons">close</i>
+                                </button>
+                            </div>
                         </div>
+
+                        <!-- تا تاریخ -->
                         <div class="form-group">
                             <label class="form-label">
                                 <i class="material-icons form-label-icon">date_range</i>
                                 تا تاریخ
                             </label>
-                            <input type="date" name="end_date" class="form-control">
+                            <div class="jalali-input-wrapper" id="picker-end">
+                                <input type="text" class="form-control jalali-input"
+                                       id="end_date_display" readonly
+                                       placeholder="انتخاب تاریخ..."
+                                       onclick="openJalaliPicker('end')">
+                                <i class="material-icons jalali-input-icon">date_range</i>
+                                <button type="button" class="jalali-clear-btn"
+                                        onclick="clearJalaliDate('end')"
+                                        title="پاک کردن">
+                                    <i class="material-icons">close</i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div style="margin-top:1.25rem;">
-                    <button type="submit" class="btn btn-custom">
+                    <button type="submit" class="btn btn-custom" onclick="return validateCancelForm()">
                         <i class="material-icons">add_circle_outline</i>
                         ثبت لغو کلاس
                     </button>
                 </div>
             </form>
 
-            <!-- لیست لغوهای ثبت‌شده -->
+            <!-- ===== لیست لغوها ===== -->
             <div class="cancelled-list-section">
                 <h3 class="cancelled-list-title">
                     <i class="material-icons">list</i>
@@ -265,13 +355,30 @@
                     <div class="cancelled-item-card" id="cancel-card-{{ c.id }}">
                         <div class="cancelled-item-header">
                             <div class="cancelled-item-info">
-                                <span class="cancelled-course">{{ c.course_name or 'بدون نام' }}</span>
+                                <div class="cancelled-item-top">
+                                    {% if c.course_name %}
+                                        <span class="cancelled-course">{{ c.course_name }}</span>
+                                    {% else %}
+                                        <span class="cancelled-course muted">تمام کلاس‌ها</span>
+                                    {% endif %}
+                                    {% if c.time_slot %}
+                                        <span class="cancelled-timeslot-badge">
+                                            <i class="material-icons" style="font-size:.78rem;">schedule</i>
+                                            {{ c.time_slot }}
+                                        </span>
+                                    {% else %}
+                                        <span class="cancelled-timeslot-badge all-day">
+                                            <i class="material-icons" style="font-size:.78rem;">wb_sunny</i>
+                                            تمام روز
+                                        </span>
+                                    {% endif %}
+                                </div>
                                 <span class="cancelled-prof">
                                     <i class="material-icons" style="font-size:.85rem;">person</i>
                                     {{ c.professor_name or 'نامشخص' }}
                                 </span>
                             </div>
-                            <div style="display:flex; align-items:center; gap:.5rem;">
+                            <div style="display:flex; align-items:center; gap:.5rem; flex-shrink:0;">
                                 <span class="cancelled-date-badge">
                                     {% if c.cancel_date %}
                                         <i class="material-icons" style="font-size:.85rem;">event</i>
@@ -284,7 +391,6 @@
                                         نامشخص
                                     {% endif %}
                                 </span>
-                                <!-- دکمه حذف -->
                                 <button class="delete-cancel-btn"
                                         onclick="deleteCancelledClass({{ c.id }}, this)"
                                         title="حذف">
@@ -314,6 +420,7 @@
 
 </div><!-- /dashboard-container -->
 
+<!-- ===== Modal: تعریف کلاس خالی ===== -->
 <div id="master-modal" class="modal-overlay" onclick="handleOverlayClick(event,'master-modal')">
     <div class="modal-card" onclick="event.stopPropagation()">
         <div class="modal-card-header">
@@ -325,12 +432,10 @@
                 <i class="material-icons">close</i>
             </button>
         </div>
-
-        <div class="slot-info-display" id="master-slot-info-display">
+        <div class="slot-info-display">
             <i class="material-icons">schedule</i>
             <span id="master-slot-info-text">—</span>
         </div>
-
         <div class="form-group">
             <label class="form-label">
                 <i class="material-icons form-label-icon">meeting_room</i>
@@ -343,7 +448,6 @@
         <p style="font-size:.8rem; color:var(--text-secondary); margin-top:-.5rem; margin-bottom:1rem;">
             برای پاک کردن، فیلد را خالی بگذارید و ذخیره کنید.
         </p>
-
         <div class="modal-actions">
             <button class="btn btn-custom" onclick="saveSlotData()">
                 <i class="material-icons">save</i> ذخیره
@@ -353,367 +457,352 @@
     </div>
 </div>
 
-<style>
+<!-- ===== Jalali Datepicker Popup ===== -->
+<div id="jalali-picker-popup" class="jalali-popup-overlay" onclick="closeJalaliPopup(event)">
+    <div class="jalali-picker" onclick="event.stopPropagation()">
+        <div class="jalali-picker-header">
+            <button type="button" class="jalali-nav-btn" onclick="changeJalaliMonth(-1)">
+                <i class="material-icons">chevron_right</i>
+            </button>
+            <div class="jalali-month-year">
+                <span id="jalali-month-label">—</span>
+                <span id="jalali-year-label">—</span>
+            </div>
+            <button type="button" class="jalali-nav-btn" onclick="changeJalaliMonth(1)">
+                <i class="material-icons">chevron_left</i>
+            </button>
+        </div>
+        <div class="jalali-weekdays">
+            <span>ش</span><span>ی</span><span>د</span><span>س</span>
+            <span>چ</span><span>پ</span><span>ج</span>
+        </div>
+        <div class="jalali-days-grid" id="jalali-days-grid"></div>
+        <div class="jalali-picker-footer">
+            <button type="button" class="jalali-today-btn" onclick="goToToday()">
+                <i class="material-icons">today</i> امروز
+            </button>
+            <button type="button" class="jalali-close-btn" onclick="document.getElementById('jalali-picker-popup').classList.remove('open')">
+                بستن
+            </button>
+        </div>
+    </div>
+</div>
 
+<!-- ==================== Styles ==================== -->
+<style>
+/* ────── Admin Tab Bar ────── */
 .admin-tabs-bar {
-    display: flex; gap: .5rem;
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 14px; padding: .5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-sm);
+    display:flex; gap:.5rem;
+    background:var(--surface);
+    border:1px solid var(--border-color);
+    border-radius:14px; padding:.5rem;
+    margin-bottom:1.5rem;
+    box-shadow:var(--shadow-sm);
 }
 .dash-tab {
-    flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem;
-    padding: .75rem 1rem;
-    border: none; background: transparent;
-    border-radius: 10px; cursor: pointer;
-    font-family: inherit; font-size: .9rem; font-weight: 500;
-    color: var(--text-secondary); transition: all .25s;
-    position: relative;
+    flex:1; display:flex; align-items:center; justify-content:center; gap:.4rem;
+    padding:.75rem 1rem;
+    border:none; background:transparent;
+    border-radius:10px; cursor:pointer;
+    font-family:inherit; font-size:.9rem; font-weight:500;
+    color:var(--text-secondary); transition:all .25s; position:relative;
 }
-.dash-tab:hover { background: var(--background); color: var(--primary-color); }
+.dash-tab:hover { background:var(--background); color:var(--primary-color); }
 .dash-tab.active {
-    background: var(--primary-color);
-    color: white;
-    box-shadow: 0 4px 12px rgba(0,131,143,.3);
+    background:var(--primary-color); color:white;
+    box-shadow:0 4px 12px rgba(0,131,143,.3);
 }
 .tab-badge {
-    background: var(--error); color: white;
-    border-radius: 20px; padding: .05rem .5rem;
-    font-size: .72rem; font-weight: 700;
+    background:var(--error); color:white;
+    border-radius:20px; padding:.05rem .5rem;
+    font-size:.72rem; font-weight:700;
 }
-.dash-tab.active .tab-badge { background: rgba(255,255,255,.3); }
-@media (max-width:600px) {
-    .dash-tab span { display: none; }
-    .dash-tab { padding: .75rem; }
-}
+.dash-tab.active .tab-badge { background:rgba(255,255,255,.3); }
+@media (max-width:600px) { .dash-tab span { display:none; } .dash-tab { padding:.75rem; } }
 
-.tab-content { display: none; animation: fadeInTab .3s ease; }
-.tab-content.active { display: block; }
-@keyframes fadeInTab { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+/* ────── Tab Content ────── */
+.tab-content { display:none; animation:fadeInTab .3s ease; }
+.tab-content.active { display:block; }
+@keyframes fadeInTab { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
+/* ────── Section Card ────── */
 .section-card {
-    background: var(--surface);
-    border-radius: 16px; padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
-    margin-bottom: 1.5rem;
+    background:var(--surface); border-radius:16px; padding:1.5rem;
+    box-shadow:var(--shadow-sm); border:1px solid var(--border-color); margin-bottom:1.5rem;
 }
 .section-card-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1rem; flex-wrap: wrap; gap: .75rem;
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:1rem; flex-wrap:wrap; gap:.75rem;
 }
-.section-card-title {
-    display: flex; align-items: center; gap: .5rem;
-    color: var(--primary-color);
-}
-.section-card-title h2 { font-size: 1.15rem; font-weight: 700; margin: 0; }
-.section-card-title i { font-size: 1.4rem; }
+.section-card-title { display:flex; align-items:center; gap:.5rem; color:var(--primary-color); }
+.section-card-title h2 { font-size:1.15rem; font-weight:700; margin:0; }
+.section-card-title i { font-size:1.4rem; }
 
 .section-hint {
-    font-size: .85rem; color: var(--text-secondary);
-    background: var(--background); border-radius: 8px;
-    padding: .5rem .85rem; margin-bottom: 1.25rem;
+    font-size:.85rem; color:var(--text-secondary);
+    background:var(--background); border-radius:8px;
+    padding:.5rem .85rem; margin-bottom:1.25rem;
 }
-.section-hint code {
-    background: rgba(0,0,0,.07); padding: .1rem .3rem;
-    border-radius: 4px; font-size: .85em;
-}
+.section-hint code { background:rgba(0,0,0,.07); padding:.1rem .3rem; border-radius:4px; font-size:.85em; }
 
-.schedule-wrapper { overflow-x: auto; }
+/* ────── Schedule Grid ────── */
+.schedule-wrapper { overflow-x:auto; }
 .schedule-grid {
-    display: grid;
-    grid-template-columns: 70px repeat(5, 1fr);
-    gap: 1px;
-    background: var(--border-color);
-    border: 1px solid var(--border-color);
-    border-radius: 10px; overflow: hidden;
-    min-width: 560px;
+    display:grid; grid-template-columns:70px repeat(5,1fr);
+    gap:1px; background:var(--border-color);
+    border:1px solid var(--border-color); border-radius:10px; overflow:hidden; min-width:560px;
 }
-.schedule-header {
-    background: var(--background);
-    padding: .75rem .5rem; text-align: center;
-    font-weight: 700; font-size: .85rem; color: var(--text-secondary);
-}
-.corner-cell { background: var(--background); }
-.schedule-time {
-    background: var(--background);
-    padding: .75rem .25rem; text-align: center;
-    font-size: .8rem; font-weight: 600; color: var(--text-secondary);
-    display: flex; align-items: center; justify-content: center;
-}
-.schedule-cell {
-    background: var(--surface);
-    min-height: 70px; padding: .4rem;
-    position: relative; vertical-align: top;
-}
-.clickable-cell { cursor: pointer; transition: background .18s; }
-.clickable-cell:hover { background: rgba(0,131,143,.06); }
-.clickable-cell:hover::after {
-    content: '+';
-    position: absolute; top:50%; left:50%;
-    transform: translate(-50%,-50%);
-    font-size: 1.6rem; color: var(--primary-color);
-    opacity: .3; font-weight: 300; pointer-events: none;
-}
-.master-cell.has-data:hover::after { display: none; }
-.master-cell.has-data {
-    background: rgba(0,131,143,.1);
-    border-right: 3px solid var(--primary-color);
-}
-.master-cell-content {
-    font-size: .8rem; font-weight: 600;
-    color: var(--primary-color);
-    line-height: 1.4;
-}
-.master-cell-room-pill {
-    display: inline-block;
-    background: rgba(0,131,143,.15);
-    color: var(--primary-dark);
-    padding: .15rem .45rem;
-    border-radius: 20px;
-    font-size: .72rem;
-    margin: 1px;
-}
+.schedule-header { background:var(--background); padding:.75rem .5rem; text-align:center; font-weight:700; font-size:.85rem; color:var(--text-secondary); }
+.corner-cell { background:var(--background); }
+.schedule-time { background:var(--background); padding:.75rem .25rem; text-align:center; font-size:.8rem; font-weight:600; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; }
+.schedule-cell { background:var(--surface); min-height:70px; padding:.4rem; position:relative; }
+.clickable-cell { cursor:pointer; transition:background .18s; }
+.clickable-cell:hover { background:rgba(0,131,143,.06); }
+.clickable-cell:hover::after { content:'+'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.6rem; color:var(--primary-color); opacity:.3; font-weight:300; pointer-events:none; }
+.master-cell.has-data:hover::after { display:none; }
+.master-cell.has-data { background:rgba(0,131,143,.1); border-right:3px solid var(--primary-color); }
+.master-cell-content { font-size:.8rem; font-weight:600; color:var(--primary-color); line-height:1.4; }
+.master-cell-room-pill { display:inline-block; background:rgba(0,131,143,.15); color:var(--primary-dark); padding:.15rem .45rem; border-radius:20px; font-size:.72rem; margin:1px; }
+.legend-row { display:flex; gap:1.5rem; margin-top:1rem; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:.4rem; font-size:.82rem; color:var(--text-secondary); }
+.legend-dot { width:12px; height:12px; border-radius:50%; }
 
-.legend-row {
-    display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap;
-}
-.legend-item { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-secondary); }
-.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+/* ────── Requests ────── */
+.requests-count-badge { background:rgba(183,28,28,.1); color:var(--error); padding:.3rem .85rem; border-radius:20px; font-size:.82rem; font-weight:700; border:1px solid rgba(183,28,28,.2); }
+.requests-grid { display:grid; gap:1rem; }
+.request-card { border:1px solid var(--border-color); border-radius:12px; overflow:hidden; background:var(--surface); transition:box-shadow .2s, border-color .2s; }
+.request-card:hover { box-shadow:var(--shadow-md); border-color:rgba(0,131,143,.3); }
+.req-card-header { display:flex; justify-content:space-between; align-items:center; padding:.85rem 1rem; background:var(--background); border-bottom:1px solid var(--border-color); gap:.75rem; flex-wrap:wrap; }
+.req-user-info { display:flex; align-items:center; gap:.7rem; }
+.req-user-avatar { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,var(--primary-color),var(--primary-dark)); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1rem; flex-shrink:0; }
+.req-user-details { display:flex; flex-direction:column; gap:.1rem; }
+.req-user-name { font-weight:700; font-size:.95rem; }
+.req-student-id { font-size:.78rem; color:var(--text-secondary); }
+.req-room-badge { display:flex; align-items:center; gap:.3rem; background:var(--primary-color); color:white; padding:.3rem .85rem; border-radius:20px; font-size:.85rem; font-weight:600; }
+.req-card-body { padding:.85rem 1rem; border-bottom:1px solid var(--border-color); }
+.req-meta { display:flex; gap:1.25rem; flex-wrap:wrap; margin-bottom:.6rem; }
+.req-meta-item { display:flex; align-items:center; gap:.3rem; font-size:.83rem; color:var(--text-secondary); }
+.req-meta-item i { font-size:.95rem; }
+.req-reason { display:flex; align-items:flex-start; gap:.4rem; font-size:.88rem; color:var(--text-primary); }
+.req-reason i { font-size:.95rem; color:var(--primary-color); flex-shrink:0; margin-top:2px; }
+.req-card-actions { display:flex; gap:.6rem; justify-content:flex-end; padding:.75rem 1rem; }
+.btn-approve { display:inline-flex; align-items:center; gap:.3rem; background:var(--success); color:white; padding:.55rem 1.2rem; border-radius:8px; text-decoration:none; font-size:.88rem; font-weight:600; transition:opacity .2s,transform .15s; border:none; cursor:pointer; font-family:inherit; }
+.btn-approve:hover { opacity:.9; transform:translateY(-1px); }
+.btn-reject { display:inline-flex; align-items:center; gap:.3rem; background:transparent; color:var(--error); padding:.55rem 1.2rem; border-radius:8px; border:1.5px solid var(--error); text-decoration:none; font-size:.88rem; font-weight:600; transition:background .2s,transform .15s; cursor:pointer; font-family:inherit; }
+.btn-reject:hover { background:rgba(183,28,28,.07); transform:translateY(-1px); }
 
-.requests-count-badge {
-    background: rgba(183,28,28,.1); color: var(--error);
-    padding: .3rem .85rem; border-radius: 20px;
-    font-size: .82rem; font-weight: 700;
-    border: 1px solid rgba(183,28,28,.2);
+/* ────── Cancel Logic Hint ────── */
+.cancel-logic-hint {
+    display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; align-items:stretch;
 }
-.requests-grid { display: grid; gap: 1rem; }
+.cancel-logic-item {
+    flex:1; min-width:200px; display:flex; gap:.75rem; align-items:flex-start;
+    padding:1rem; border-radius:12px; border:1.5px solid;
+}
+.cancel-logic-item i { font-size:1.5rem; flex-shrink:0; margin-top:.1rem; }
+.cancel-logic-item strong { display:block; font-size:.92rem; margin-bottom:.25rem; }
+.cancel-logic-item p { font-size:.8rem; margin:0; line-height:1.5; opacity:.85; }
+.cancel-logic-specific { border-color:rgba(0,131,143,.3); background:rgba(0,131,143,.05); color:var(--primary-dark); }
+.cancel-logic-all { border-color:rgba(183,28,28,.3); background:rgba(183,28,28,.04); color:#b71c1c; }
+.cancel-logic-divider { display:flex; align-items:center; color:var(--text-secondary); font-size:1.5rem; }
 
-.request-card {
-    border: 1px solid var(--border-color);
-    border-radius: 12px; overflow: hidden;
-    background: var(--surface);
-    transition: box-shadow .2s, border-color .2s;
-}
-.request-card:hover { box-shadow: var(--shadow-md); border-color: rgba(0,131,143,.3); }
+/* ────── Cancel Form ────── */
+.cancelled-form { background:var(--background); border-radius:12px; padding:1.5rem; border:1px solid var(--border-color); }
+.form-two-col { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:1rem; }
+.form-three-col { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; }
+.cancel-date-section { background:rgba(0,131,143,.04); border:1px dashed rgba(0,131,143,.2); border-radius:8px; padding:1rem; margin-top:.75rem; }
+.cancel-date-hint { display:flex; align-items:center; gap:.35rem; font-size:.84rem; color:var(--text-secondary); margin-bottom:.75rem; }
+.cancel-date-hint i { font-size:.95rem; color:var(--primary-color); }
+.form-label { display:flex; align-items:center; gap:.3rem; font-weight:600; font-size:.88rem; margin-bottom:.4rem; flex-wrap:wrap; }
+.form-label-icon { font-size:.95rem; color:var(--primary-color); }
+.form-label-hint { font-weight:400; font-size:.78rem; color:var(--text-secondary); }
+.required-star { color:var(--error); margin-right:.15rem; }
 
-.req-card-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: .85rem 1rem;
-    background: var(--background);
-    border-bottom: 1px solid var(--border-color);
-    gap: .75rem; flex-wrap: wrap;
+/* ────── Time Slot Chips ────── */
+.time-slots-row { display:flex; flex-wrap:wrap; gap:.5rem; }
+.time-slot-chip { cursor:pointer; }
+.time-slot-chip input[type="radio"] { display:none; }
+.time-slot-chip span {
+    display:inline-flex; align-items:center; padding:.35rem .9rem;
+    border-radius:20px; font-size:.83rem; font-weight:600;
+    border:1.5px solid var(--border-color);
+    background:var(--surface);
+    color:var(--text-secondary);
+    transition:all .18s; cursor:pointer; user-select:none;
 }
-.req-user-info { display: flex; align-items: center; gap: .7rem; }
-.req-user-avatar {
-    width: 38px; height: 38px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 1rem;
-    flex-shrink: 0;
+.time-slot-chip input:checked + span {
+    border-color:var(--primary-color);
+    background:rgba(0,131,143,.12);
+    color:var(--primary-color);
 }
-.req-user-details { display: flex; flex-direction: column; gap: .1rem; }
-.req-user-name { font-weight: 700; font-size: .95rem; }
-.req-student-id { font-size: .78rem; color: var(--text-secondary); }
+.time-slot-chip:hover span { border-color:var(--primary-color); color:var(--primary-color); }
 
-.req-room-badge {
-    display: flex; align-items: center; gap: .3rem;
-    background: var(--primary-color); color: white;
-    padding: .3rem .85rem; border-radius: 20px;
-    font-size: .85rem; font-weight: 600;
+/* ────── Jalali Input ────── */
+.jalali-input-wrapper { position:relative; display:flex; align-items:center; }
+.jalali-input-wrapper .form-control.jalali-input {
+    padding-left: 4.5rem;
+    cursor:pointer;
 }
+.jalali-input-icon {
+    position:absolute; right:.85rem;
+    color:var(--primary-color); font-size:1.1rem; pointer-events:none;
+}
+.jalali-clear-btn {
+    position:absolute; left:.5rem;
+    background:none; border:none; cursor:pointer;
+    color:var(--text-secondary); padding:.15rem;
+    border-radius:50%; display:flex; align-items:center;
+    transition:color .2s; line-height:1; font-size:0;
+}
+.jalali-clear-btn i { font-size:.95rem; }
+.jalali-clear-btn:hover { color:var(--error); }
+.jalali-clear-btn.hidden { display:none; }
 
-.req-card-body {
-    padding: .85rem 1rem;
-    border-bottom: 1px solid var(--border-color);
+/* ────── Jalali Picker Popup ────── */
+.jalali-popup-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.35); backdrop-filter:blur(2px);
+    z-index:3000; align-items:center; justify-content:center;
 }
-.req-meta { display: flex; gap: 1.25rem; flex-wrap: wrap; margin-bottom: .6rem; }
-.req-meta-item {
-    display: flex; align-items: center; gap: .3rem;
-    font-size: .83rem; color: var(--text-secondary);
+.jalali-popup-overlay.open { display:flex; }
+.jalali-picker {
+    background:var(--surface); border-radius:16px;
+    box-shadow:0 16px 48px rgba(0,0,0,.2);
+    padding:1.25rem; width:320px;
+    animation:fadeInTab .2s ease;
+    border:1px solid var(--border-color);
 }
-.req-meta-item i { font-size: .95rem; }
-.req-reason {
-    display: flex; align-items: flex-start; gap: .4rem;
-    font-size: .88rem; color: var(--text-primary);
+.jalali-picker-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:1rem;
 }
-.req-reason i { font-size: .95rem; color: var(--primary-color); flex-shrink: 0; margin-top: 2px; }
+.jalali-month-year {
+    display:flex; gap:.5rem; font-weight:700; font-size:1rem;
+    color:var(--text-primary);
+}
+.jalali-nav-btn {
+    background:none; border:1px solid var(--border-color);
+    border-radius:8px; cursor:pointer; padding:.2rem;
+    color:var(--text-secondary); display:flex; align-items:center;
+    transition:all .18s;
+}
+.jalali-nav-btn:hover { background:var(--background); color:var(--primary-color); border-color:var(--primary-color); }
+.jalali-weekdays {
+    display:grid; grid-template-columns:repeat(7,1fr);
+    text-align:center; margin-bottom:.4rem;
+}
+.jalali-weekdays span {
+    font-size:.78rem; font-weight:700; color:var(--text-secondary);
+    padding:.3rem 0;
+}
+.jalali-days-grid {
+    display:grid; grid-template-columns:repeat(7,1fr);
+    gap:2px;
+}
+.jalali-day {
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+    border-radius:8px; cursor:pointer; font-size:.88rem;
+    border:none; background:none; font-family:inherit; color:var(--text-primary);
+    transition:background .15s, color .15s;
+}
+.jalali-day:hover { background:rgba(0,131,143,.12); color:var(--primary-color); }
+.jalali-day.selected {
+    background:var(--primary-color); color:white; font-weight:700;
+    box-shadow:0 2px 8px rgba(0,131,143,.3);
+}
+.jalali-day.today {
+    border:1.5px solid var(--primary-color); color:var(--primary-color); font-weight:600;
+}
+.jalali-day.today.selected { color:white; }
+.jalali-day.other-month { color:var(--border-color); cursor:default; }
+.jalali-day.other-month:hover { background:none; }
+.jalali-day.empty { background:none; cursor:default; }
+.jalali-picker-footer {
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:1rem; padding-top:.75rem;
+    border-top:1px solid var(--border-color);
+}
+.jalali-today-btn {
+    display:flex; align-items:center; gap:.3rem;
+    background:none; border:none; cursor:pointer;
+    color:var(--primary-color); font-size:.85rem; font-weight:600;
+    font-family:inherit; padding:.3rem .6rem; border-radius:8px;
+    transition:background .15s;
+}
+.jalali-today-btn:hover { background:rgba(0,131,143,.08); }
+.jalali-close-btn {
+    background:var(--background); border:1px solid var(--border-color);
+    border-radius:8px; cursor:pointer; padding:.3rem .85rem;
+    font-size:.85rem; font-weight:600; color:var(--text-secondary);
+    font-family:inherit; transition:all .15s;
+}
+.jalali-close-btn:hover { border-color:var(--primary-color); color:var(--primary-color); }
 
-.req-card-actions {
-    display: flex; gap: .6rem; justify-content: flex-end;
-    padding: .75rem 1rem;
-}
-.btn-approve {
-    display: inline-flex; align-items: center; gap: .3rem;
-    background: var(--success); color: white;
-    padding: .55rem 1.2rem; border-radius: 8px;
-    text-decoration: none; font-size: .88rem; font-weight: 600;
-    transition: opacity .2s, transform .15s;
-    border: none; cursor: pointer; font-family: inherit;
-}
-.btn-approve:hover { opacity: .9; transform: translateY(-1px); }
-.btn-reject {
-    display: inline-flex; align-items: center; gap: .3rem;
-    background: transparent; color: var(--error);
-    padding: .55rem 1.2rem; border-radius: 8px;
-    border: 1.5px solid var(--error);
-    text-decoration: none; font-size: .88rem; font-weight: 600;
-    transition: background .2s, transform .15s;
-    cursor: pointer; font-family: inherit;
-}
-.btn-reject:hover { background: rgba(183,28,28,.07); transform: translateY(-1px); }
-
-.cancelled-form {
-    background: var(--background);
-    border-radius: 12px; padding: 1.5rem;
-    border: 1px solid var(--border-color);
-}
-.form-two-col {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem; margin-bottom: 1rem;
-}
-.form-three-col {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1rem;
-}
-.cancel-date-section {
-    background: rgba(0,131,143,.04);
-    border: 1px dashed rgba(0,131,143,.2);
-    border-radius: 8px; padding: 1rem;
-    margin-top: .75rem;
-}
-.cancel-date-hint {
-    display: flex; align-items: center; gap: .35rem;
-    font-size: .82rem; color: var(--text-secondary);
-    margin-bottom: .75rem;
-}
-.cancel-date-hint i { font-size: .95rem; }
-.form-label { display: flex; align-items: center; gap: .3rem; font-weight: 600; font-size: .88rem; margin-bottom: .4rem; }
-.form-label-icon { font-size: .95rem; color: var(--primary-color); }
-
-.cancelled-list-section { margin-top: 2rem; }
+/* ────── Cancelled List ────── */
+.cancelled-list-section { margin-top:2rem; }
 .cancelled-list-title {
-    display: flex; align-items: center; gap: .5rem;
-    font-size: 1rem; color: var(--text-primary);
-    margin-bottom: 1rem;
-    padding-bottom: .75rem;
-    border-bottom: 1px solid var(--border-color);
+    display:flex; align-items:center; gap:.5rem; font-size:1rem; color:var(--text-primary);
+    margin-bottom:1rem; padding-bottom:.75rem; border-bottom:1px solid var(--border-color);
 }
-.cancelled-list-title i { color: var(--primary-color); }
-.list-count {
-    background: var(--primary-color); color: white;
-    border-radius: 20px; padding: .1rem .55rem;
-    font-size: .75rem; font-weight: 700;
-}
-.cancelled-items-grid { display: grid; gap: .75rem; }
-
+.cancelled-list-title i { color:var(--primary-color); }
+.list-count { background:var(--primary-color); color:white; border-radius:20px; padding:.1rem .55rem; font-size:.75rem; font-weight:700; }
+.cancelled-items-grid { display:grid; gap:.75rem; }
 .cancelled-item-card {
-    border: 1px solid var(--border-color);
-    border-right: 4px solid var(--error);
-    border-radius: 10px; padding: .85rem 1rem;
-    background: rgba(183,28,28,.02);
-    transition: box-shadow .2s;
+    border:1px solid var(--border-color); border-right:4px solid var(--error);
+    border-radius:10px; padding:.85rem 1rem;
+    background:rgba(183,28,28,.02); transition:box-shadow .2s;
 }
-.cancelled-item-card:hover { box-shadow: var(--shadow-sm); }
+.cancelled-item-card:hover { box-shadow:var(--shadow-sm); }
+.cancelled-item-header { display:flex; justify-content:space-between; align-items:center; gap:.75rem; flex-wrap:wrap; }
+.cancelled-item-info { display:flex; flex-direction:column; gap:.3rem; }
+.cancelled-item-top { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+.cancelled-course { font-weight:700; font-size:.95rem; }
+.cancelled-course.muted { color:var(--text-secondary); font-style:italic; }
+.cancelled-prof { display:flex; align-items:center; gap:.25rem; font-size:.82rem; color:var(--text-secondary); }
+.cancelled-date-badge { display:flex; align-items:center; gap:.25rem; font-size:.8rem; color:var(--error); background:rgba(183,28,28,.08); padding:.2rem .65rem; border-radius:20px; white-space:nowrap; }
+.cancelled-timeslot-badge { display:inline-flex; align-items:center; gap:.2rem; font-size:.75rem; font-weight:600; padding:.15rem .55rem; border-radius:20px; }
+.cancelled-timeslot-badge:not(.all-day) { background:rgba(0,131,143,.1); color:var(--primary-dark); }
+.cancelled-timeslot-badge.all-day { background:rgba(245,124,0,.1); color:#e65100; }
+.cancelled-item-desc { display:flex; align-items:center; gap:.3rem; font-size:.82rem; color:var(--text-secondary); margin-top:.5rem; padding-top:.5rem; border-top:1px dashed var(--border-color); }
+.delete-cancel-btn { background:transparent; border:1px solid var(--border-color); color:var(--text-secondary); cursor:pointer; border-radius:8px; padding:.3rem .5rem; display:flex; align-items:center; transition:color .2s,border-color .2s,background .2s; font-size:.9rem; }
+.delete-cancel-btn:hover { color:var(--error); border-color:var(--error); background:rgba(183,28,28,.07); }
 
-.cancelled-item-header {
-    display: flex; justify-content: space-between;
-    align-items: center; gap: .75rem; flex-wrap: wrap;
-}
-.cancelled-item-info { display: flex; flex-direction: column; gap: .2rem; }
-.cancelled-course { font-weight: 700; font-size: .95rem; }
-.cancelled-prof {
-    display: flex; align-items: center; gap: .25rem;
-    font-size: .82rem; color: var(--text-secondary);
-}
-.cancelled-date-badge {
-    display: flex; align-items: center; gap: .25rem;
-    font-size: .8rem; color: var(--error);
-    background: rgba(183,28,28,.08);
-    padding: .2rem .65rem; border-radius: 20px;
-    white-space: nowrap;
-}
-.cancelled-item-desc {
-    display: flex; align-items: center; gap: .3rem;
-    font-size: .82rem; color: var(--text-secondary);
-    margin-top: .5rem;
-    padding-top: .5rem;
-    border-top: 1px dashed var(--border-color);
-}
-
-.delete-cancel-btn {
-    background: transparent; border: 1px solid var(--border-color);
-    color: var(--text-secondary); cursor: pointer;
-    border-radius: 8px; padding: .3rem .5rem;
-    display: flex; align-items: center;
-    transition: color .2s, border-color .2s, background .2s;
-    font-size: .9rem;
-}
-.delete-cancel-btn:hover {
-    color: var(--error); border-color: var(--error);
-    background: rgba(183,28,28,.07);
-}
-
-.empty-state-full {
-    text-align: center; padding: 3rem 1rem;
-    color: var(--text-secondary);
-}
-.empty-state-full i { font-size: 3.5rem; margin-bottom: .75rem; display: block; }
-.empty-state-full h3 { margin-bottom: .5rem; color: var(--text-primary); }
-
+/* ────── Modals ────── */
 .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.4); backdrop-filter: blur(3px);
-    z-index: 2000;
-    align-items: center; justify-content: center;
-    padding: 1rem;
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.4); backdrop-filter:blur(3px);
+    z-index:2000; align-items:center; justify-content:center; padding:1rem;
 }
-.modal-overlay.open { display: flex; animation: fadeInTab .2s ease; }
-
+.modal-overlay.open { display:flex; animation:fadeInTab .2s ease; }
 .modal-card {
-    background: var(--surface);
-    border-radius: 16px; padding: 1.5rem;
-    width: 100%; max-width: 440px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.2);
-    max-height: 90vh; overflow-y: auto;
+    background:var(--surface); border-radius:16px; padding:1.5rem;
+    width:100%; max-width:440px;
+    box-shadow:0 20px 60px rgba(0,0,0,.2);
+    max-height:90vh; overflow-y:auto;
 }
-.modal-card-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1.25rem;
-}
-.modal-card-header h3 { font-size: 1.1rem; color: var(--text-primary); margin: 0; }
-.modal-close-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-secondary); padding: .25rem;
-    border-radius: 50%; display: flex; align-items: center;
-    transition: background .2s;
-}
-.modal-close-btn:hover { background: var(--background); color: var(--text-primary); }
+.modal-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; }
+.modal-card-header h3 { font-size:1.1rem; color:var(--text-primary); margin:0; }
+.modal-close-btn { background:none; border:none; cursor:pointer; color:var(--text-secondary); padding:.25rem; border-radius:50%; display:flex; align-items:center; transition:background .2s; }
+.modal-close-btn:hover { background:var(--background); color:var(--text-primary); }
+.slot-info-display { display:flex; align-items:center; gap:.5rem; background:rgba(0,131,143,.07); border:1px solid rgba(0,131,143,.2); border-radius:10px; padding:.7rem 1rem; margin-bottom:1.25rem; font-weight:600; color:var(--primary-color); font-size:.9rem; }
+.slot-info-display i { font-size:1.1rem; }
+.modal-actions { display:flex; gap:.6rem; margin-top:1.25rem; }
 
-.slot-info-display {
-    display: flex; align-items: center; gap: .5rem;
-    background: rgba(0,131,143,.07);
-    border: 1px solid rgba(0,131,143,.2);
-    border-radius: 10px; padding: .7rem 1rem;
-    margin-bottom: 1.25rem;
-    font-weight: 600; color: var(--primary-color);
-    font-size: .9rem;
-}
-.slot-info-display i { font-size: 1.1rem; }
+/* ────── Empty State ────── */
+.empty-state-full { text-align:center; padding:3rem 1rem; color:var(--text-secondary); }
+.empty-state-full i { font-size:3.5rem; margin-bottom:.75rem; display:block; }
+.empty-state-full h3 { margin-bottom:.5rem; color:var(--text-primary); }
 
-.modal-actions { display: flex; gap: .6rem; margin-top: 1.25rem; }
+@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
+/* =====================================================
+   Tab Manager
+   ===================================================== */
 function openAdminTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
@@ -721,214 +810,356 @@ function openAdminTab(id, btn) {
     if (btn) btn.classList.add('active');
 }
 
+/* =====================================================
+   Master Schedule
+   ===================================================== */
 const masterData = [
     {% for item in slots %}
-    {
-        day: {{ item.day | tojson }},
-        time_slot: {{ item.time_slot | tojson }},
-        rooms: {{ item.rooms | tojson }}
-    }{% if not loop.last %},{% endif %}
+    { day: {{ item.day|tojson }}, time_slot: {{ item.time_slot|tojson }}, rooms: {{ item.rooms|tojson }} }{% if not loop.last %},{% endif %}
     {% endfor %}
 ];
 
-document.addEventListener('DOMContentLoaded', function() {
-    masterData.forEach(function(item) {
+document.addEventListener('DOMContentLoaded', function () {
+    masterData.forEach(function (item) {
         const cell = document.querySelector(
             `.master-cell[data-day="${item.day}"][data-time="${item.time_slot}"]`
         );
-        if (!cell) return;
-        cell.dataset.rooms = item.rooms;
-        renderMasterCell(cell, item.rooms);
+        if (cell) { cell.dataset.rooms = item.rooms; renderMasterCell(cell, item.rooms); }
     });
 });
 
 function renderMasterCell(cell, rooms) {
-    if (!rooms || !rooms.trim()) {
-        cell.innerHTML = '';
-        cell.classList.remove('has-data');
-        return;
-    }
-    const roomList = rooms.split(',').map(r => r.trim()).filter(r => r);
-    let html = '<div class="master-cell-content">';
-    roomList.forEach(function(room) {
-        html += `<span class="master-cell-room-pill">${room}</span>`;
-    });
-    html += '</div>';
-    cell.innerHTML = html;
+    if (!rooms || !rooms.trim()) { cell.innerHTML = ''; cell.classList.remove('has-data'); return; }
+    const roomList = rooms.split(',').map(r => r.trim()).filter(Boolean);
+    cell.innerHTML = '<div class="master-cell-content">' +
+        roomList.map(r => `<span class="master-cell-room-pill">${r}</span>`).join('') +
+        '</div>';
     cell.classList.add('has-data');
 }
 
 let activeCell = null;
-
 function editMasterSlot(cell) {
     activeCell = cell;
-    const day = cell.dataset.day;
-    const time = cell.dataset.time;
-    const dayNames = {
-        'saturday': 'شنبه', 'sunday': 'یکشنبه',
-        'monday': 'دوشنبه', 'tuesday': 'سه‌شنبه', 'wednesday': 'چهارشنبه'
-    };
+    const dayNames = { saturday:'شنبه', sunday:'یکشنبه', monday:'دوشنبه', tuesday:'سه‌شنبه', wednesday:'چهارشنبه' };
     document.getElementById('master-slot-info-text').textContent =
-        (dayNames[day] || day) + ' — ساعت ' + time.replace('-', ' تا ');
+        (dayNames[cell.dataset.day] || cell.dataset.day) + ' — ساعت ' + cell.dataset.time.replace('-', ' تا ');
     document.getElementById('master-rooms-input').value = cell.dataset.rooms || '';
-
     openModal('master-modal');
     setTimeout(() => document.getElementById('master-rooms-input').focus(), 150);
 }
 
 function saveSlotData() {
     const rooms = document.getElementById('master-rooms-input').value.trim();
-    if (activeCell) {
-        activeCell.dataset.rooms = rooms;
-        renderMasterCell(activeCell, rooms);
-    }
+    if (activeCell) { activeCell.dataset.rooms = rooms; renderMasterCell(activeCell, rooms); }
     closeModal('master-modal');
 }
 
 function saveMasterSchedule() {
     const payload = [];
-    document.querySelectorAll('.master-cell').forEach(function(cell) {
+    document.querySelectorAll('.master-cell').forEach(function (cell) {
         if (cell.dataset.rooms && cell.dataset.rooms.trim()) {
-            payload.push({
-                day: cell.dataset.day,
-                time_slot: cell.dataset.time,
-                rooms: cell.dataset.rooms.trim()
-            });
+            payload.push({ day: cell.dataset.day, time_slot: cell.dataset.time, rooms: cell.dataset.rooms.trim() });
         }
     });
-
     const saveBtn = document.querySelector('[onclick="saveMasterSchedule()"]');
-    const originalHTML = saveBtn.innerHTML;
+    const orig = saveBtn.innerHTML;
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<i class="material-icons" style="animation:spin 1s linear infinite;display:inline-block;">sync</i> در حال ذخیره...';
-
     fetch('/admin/save_master_schedule', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
     })
-    .then(function(res) {
-        if (!res.ok) {
-            return res.json().then(function(errData) {
-                throw new Error(errData.message || 'خطای سرور ' + res.status);
-            });
-        }
-        return res.json();
+    .then(r => r.ok ? r.json() : r.json().then(d => { throw new Error(d.message || 'خطای سرور'); }))
+    .then(resp => {
+        if (resp.status === 'success') showToast('برنامه کلاس‌های خالی با موفقیت ذخیره شد ✓', 'success');
+        else throw new Error(resp.message || 'خطای ناشناخته');
     })
-    .then(function(resp) {
-        if (resp.status === 'success') {
-            showToast('برنامه کلاس‌های خالی با موفقیت ذخیره شد ✓', 'success');
-        } else {
-            throw new Error(resp.message || 'خطای ناشناخته');
-        }
-    })
-    .catch(function(err) {
-        showToast('خطا در ذخیره‌سازی: ' + err.message, 'error');
-        console.error('saveMasterSchedule error:', err);
-    })
-    .finally(function() {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = originalHTML;
-    });
+    .catch(err => showToast('خطا در ذخیره‌سازی: ' + err.message, 'error'))
+    .finally(() => { saveBtn.disabled = false; saveBtn.innerHTML = orig; });
 }
 
+/* =====================================================
+   Delete Cancelled Class
+   ===================================================== */
 function deleteCancelledClass(classId, btn) {
     if (!confirm('آیا این لغو کلاس حذف شود؟')) return;
-
     btn.disabled = true;
     btn.innerHTML = '<i class="material-icons" style="animation:spin 1s linear infinite;display:inline-block;font-size:.9rem;">sync</i>';
-
-    fetch('/admin/delete_cancelled_class/' + classId, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(function(res) {
-        if (!res.ok) return res.json().then(function(d) { throw new Error(d.message || 'خطا'); });
-        return res.json();
-    })
-    .then(function(resp) {
+    fetch('/admin/delete_cancelled_class/' + classId, { method: 'POST' })
+    .then(r => r.json())
+    .then(resp => {
         if (resp.status === 'success') {
             const card = document.getElementById('cancel-card-' + classId);
-            if (card) {
-                card.style.transition = 'opacity .3s, transform .3s';
-                card.style.opacity = '0';
-                card.style.transform = 'translateX(-10px)';
-                setTimeout(function() { card.remove(); }, 300);
-            }
+            if (card) { card.style.transition = 'opacity .3s,transform .3s'; card.style.opacity = '0'; card.style.transform = 'translateX(-10px)'; setTimeout(() => card.remove(), 300); }
             showToast('لغو کلاس با موفقیت حذف شد', 'success');
-        } else {
-            throw new Error(resp.message || 'خطا در حذف');
-        }
+        } else throw new Error(resp.message || 'خطا');
     })
-    .catch(function(err) {
-        showToast('خطا: ' + err.message, 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="material-icons">delete_outline</i>';
-    });
+    .catch(err => { showToast('خطا: ' + err.message, 'error'); btn.disabled = false; btn.innerHTML = '<i class="material-icons">delete_outline</i>'; });
 }
 
-function openModal(id) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.classList.add('open');
-        document.body.style.overflow = 'hidden';
+/* =====================================================
+   Modal helpers
+   ===================================================== */
+function openModal(id) { const el = document.getElementById(id); if (el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; } }
+function closeModal(id) { const el = document.getElementById(id); if (el) { el.classList.remove('open'); document.body.style.overflow = ''; } }
+function handleOverlayClick(event, id) { if (event.target.id === id) closeModal(id); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal('master-modal'); });
+
+/* =====================================================
+   Jalali Calendar Utilities
+   Algorithm: https://jdf.scr.ir/
+   ===================================================== */
+
+/**
+ * Converts Gregorian date to Jalali.
+ * Returns [jy, jm, jd]
+ */
+function gregorianToJalali(gy, gm, gd) {
+    const g_d_no = [0,31,59+(gy%4===0&&(gy%100!==0||gy%400===0)?1:0),90,120,151,181,212,243,273,304,334];
+    let jy, jm, jd, j_day_no, g_day_no, leap;
+    g_day_no = 365*(gy-1600)+(Math.floor((gy-1600)/4))-Math.floor((gy-1600)/100)+Math.floor((gy-1600)/400);
+    g_day_no += g_d_no[gm-1] + (gd-1);
+    j_day_no = g_day_no - 79;
+    const j_np = Math.floor(j_day_no / 12053);
+    j_day_no %= 12053;
+    jy = 979 + 33*j_np + 4*Math.floor(j_day_no/1461);
+    j_day_no %= 1461;
+    if (j_day_no >= 366) { jy += Math.floor((j_day_no-1)/365); j_day_no = (j_day_no-1) % 365; }
+    for (let i=0; i<11 && j_day_no >= [31,31,31,31,31,31,30,30,30,30,30][i]; ++i) {
+        j_day_no -= [31,31,31,31,31,31,30,30,30,30,30][i]; jy += i===0?0:0; /* noop */ jm = i+2;
+    }
+    // correct jm
+    const months=[31,31,31,31,31,31,30,30,30,30,30,29];
+    jm=1;
+    for(let i=0;i<12;i++){
+        if(j_day_no<months[i]){jm=i+1;jd=j_day_no+1;break;}
+        j_day_no-=months[i];
+    }
+    return [jy, jm, jd];
+}
+
+/**
+ * Converts Jalali date to Gregorian.
+ * Returns [gy, gm, gd]
+ */
+function jalaliToGregorian(jy, jm, jd) {
+    jy += 1595;
+    let days = -355779 + (365+Math.floor(jy/4))*jy + Math.floor((jy/128+2)/3)*29 +
+               Math.floor(((jm+Math.floor((jm-1)/6))*30)+Math.max(Math.floor((jm-1)/6),0)*(jm-7)*-1+(jm<=6?jm:jm-1)*0) + jd;
+    // simpler direct method:
+    const jdCon = jy*365+Math.floor((jy-474+474)/2820)*683+Math.floor(((jy-474+474)%2820)*365+(Math.floor(((jy-474+474)%2820)*365/2820))*682)+
+                  Math.floor((jm<=6?jm-1:jm-1)*30+(jm>6?(jm-7)*1:0))+jd+1948319.5;
+    return julianToGregorian(jdCon);
+}
+
+function julianToGregorian(jd) {
+    jd = Math.floor(jd+0.5);
+    let a = jd + 32044;
+    let b = Math.floor((4*a+3)/146097);
+    let c = a - Math.floor(b*146097/4);
+    let d = Math.floor((4*c+3)/1461);
+    let e = c - Math.floor(d*1461/4);
+    let m = Math.floor((5*e+2)/153);
+    let day = e - Math.floor((153*m+2)/5)+1;
+    let month = m + 3 - 12*Math.floor(m/10);
+    let year = b*100 + d - 4800 + Math.floor(m/10);
+    return [year, month, day];
+}
+
+/* cleaner algorithm using a known epoch approach */
+function jToG(jy, jm, jd) {
+    // Confirmed working algorithm
+    const gDays = [ 0,31,59,90,120,151,181,212,243,273,304,334 ];
+    let gy = jy + 621;
+    let gm, gd;
+    let jDayOfYear = (jm - 1) * 30 + Math.min(jm - 1, 6) + (jd - 1);
+    // Calculate March equinox offset for year jy
+    // Using lookup table approach for simplicity and accuracy
+    let leap_j = ((jy - (jy > 0 ? 474 : 473)) % 2820 + 474 + 38) * 682;
+    // Simple approach: count days from Jalali epoch
+    let epoch = 1948438.5; // Jalali epoch (1/1/1 = Julian 1948438.5)
+    // days from jy/1/1
+    let yCycleNo = Math.floor((jy - 474) / 2820);
+    let yRem = (jy - 474) % 2820;
+    if (yRem < 0) yRem += 2820;
+    let d = epoch - 1 + 1029983 * yCycleNo + Math.floor((yRem * 682 + 110) / 2816) * (yRem < 2816/682 ? 0 : 1);
+    d += 365 * yRem + Math.floor((682 * yRem + 110) / 2816);
+    // month days
+    for (let i = 1; i < jm; i++) d += (i <= 6) ? 31 : 30;
+    d += jd;
+    // convert Julian day to Gregorian
+    let j = Math.floor(d) + 32082;
+    let y4 = Math.floor((4*j+3)/1461);
+    let r  = j - Math.floor(1461*y4/4);
+    let m5 = Math.floor((5*r+2)/153);
+    gd = r - Math.floor((153*m5+2)/5) + 1;
+    gm = m5 + 3 - 12*Math.floor(m5/10);
+    gy = y4 - 4800 + Math.floor(m5/10);
+    return [gy, gm, gd];
+}
+
+/**
+ * Get number of days in a Jalali month.
+ */
+function jalaliMonthDays(jy, jm) {
+    if (jm <= 6) return 31;
+    if (jm <= 11) return 30;
+    // Month 12: 29 or 30 (leap year check)
+    return isJalaliLeap(jy) ? 30 : 29;
+}
+
+function isJalaliLeap(jy) {
+    const leaps = [1,5,9,13,17,22,26,30];
+    return leaps.includes(((jy - (jy > 0 ? 474 : 473)) % 2820 + 474 + 38) % 2820 % 474 % 29);
+}
+
+/**
+ * Get weekday (0=Saturday ... 6=Friday) for Jalali date.
+ */
+function jalaliWeekday(jy, jm, jd) {
+    const [gy, gm, gd] = jToG(jy, jm, jd);
+    const date = new Date(gy, gm - 1, gd);
+    // JS: 0=Sunday, we want 0=Saturday
+    return (date.getDay() + 1) % 7;
+}
+
+const JALALI_MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+
+/* =====================================================
+   Datepicker State
+   ===================================================== */
+let pickerTarget = null;   // 'cancel' | 'start' | 'end'
+let pickerYear   = 1400;
+let pickerMonth  = 1;
+let pickerSelected = { cancel: null, start: null, end: null }; // {jy,jm,jd} or null
+
+// Get today's Jalali date on load
+const _now = new Date();
+const [todayJY, todayJM, todayJD] = gregorianToJalali(_now.getFullYear(), _now.getMonth()+1, _now.getDate());
+
+function openJalaliPicker(target) {
+    pickerTarget = target;
+    if (pickerSelected[target]) {
+        pickerYear  = pickerSelected[target].jy;
+        pickerMonth = pickerSelected[target].jm;
+    } else {
+        pickerYear  = todayJY;
+        pickerMonth = todayJM;
+    }
+    renderJalaliCalendar();
+    document.getElementById('jalali-picker-popup').classList.add('open');
+}
+
+function closeJalaliPopup(evt) {
+    if (evt && evt.target.id === 'jalali-picker-popup') {
+        document.getElementById('jalali-picker-popup').classList.remove('open');
     }
 }
 
-function closeModal(id) {
-    const el = document.getElementById(id);
-    if (el) {
-        el.classList.remove('open');
-        document.body.style.overflow = '';
+function goToToday() {
+    pickerYear  = todayJY;
+    pickerMonth = todayJM;
+    renderJalaliCalendar();
+}
+
+function changeJalaliMonth(dir) {
+    pickerMonth += dir;
+    if (pickerMonth > 12) { pickerMonth = 1;  pickerYear++; }
+    if (pickerMonth < 1)  { pickerMonth = 12; pickerYear--; }
+    renderJalaliCalendar();
+}
+
+function renderJalaliCalendar() {
+    document.getElementById('jalali-month-label').textContent = JALALI_MONTHS[pickerMonth - 1];
+    document.getElementById('jalali-year-label').textContent  = pickerYear;
+    const grid    = document.getElementById('jalali-days-grid');
+    const days    = jalaliMonthDays(pickerYear, pickerMonth);
+    const firstWd = jalaliWeekday(pickerYear, pickerMonth, 1); // 0=شنبه
+    const sel     = pickerSelected[pickerTarget];
+    grid.innerHTML = '';
+    // blank slots before day 1
+    for (let i = 0; i < firstWd; i++) {
+        const blank = document.createElement('button');
+        blank.type = 'button';
+        blank.className = 'jalali-day empty';
+        grid.appendChild(blank);
+    }
+    for (let d = 1; d <= days; d++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'jalali-day';
+        btn.textContent = toPersianNum(d);
+        const isToday = (pickerYear === todayJY && pickerMonth === todayJM && d === todayJD);
+        const isSelected = sel && sel.jy === pickerYear && sel.jm === pickerMonth && sel.jd === d;
+        if (isToday)    btn.classList.add('today');
+        if (isSelected) btn.classList.add('selected');
+        btn.onclick = () => selectJalaliDay(d);
+        grid.appendChild(btn);
     }
 }
 
-function handleOverlayClick(event, id) {
-    if (event.target.id === id) closeModal(id);
+function selectJalaliDay(jd) {
+    pickerSelected[pickerTarget] = { jy: pickerYear, jm: pickerMonth, jd: jd };
+    const jalaliStr = `${pickerYear}/${String(pickerMonth).padStart(2,'0')}/${String(jd).padStart(2,'0')}`;
+    const displayStr = `${pickerYear}/${String(pickerMonth).padStart(2,'0')}/${String(jd).padStart(2,'0')} — ${JALALI_MONTHS[pickerMonth-1]}`;
+    // update hidden inputs
+    const displayMap = { cancel: 'cancel_date_display', start: 'start_date_display', end: 'end_date_display' };
+    const hiddenMap  = { cancel: 'cancel_date_j_input', start: 'start_date_j_input', end: 'end_date_j_input' };
+    document.getElementById(displayMap[pickerTarget]).value = displayStr;
+    document.getElementById(hiddenMap[pickerTarget]).value  = jalaliStr;
+    // show clear button
+    const wrappers = { cancel: 'picker-cancel', start: 'picker-start', end: 'picker-end' };
+    const clearBtn = document.getElementById(wrappers[pickerTarget]).querySelector('.jalali-clear-btn');
+    if (clearBtn) clearBtn.classList.remove('hidden');
+    renderJalaliCalendar();
+    // auto close after short delay
+    setTimeout(() => document.getElementById('jalali-picker-popup').classList.remove('open'), 200);
 }
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeModal('master-modal');
-});
+function clearJalaliDate(target) {
+    pickerSelected[target] = null;
+    const displayMap = { cancel: 'cancel_date_display', start: 'start_date_display', end: 'end_date_display' };
+    const hiddenMap  = { cancel: 'cancel_date_j_input', start: 'start_date_j_input', end: 'end_date_j_input' };
+    document.getElementById(displayMap[target]).value = '';
+    document.getElementById(hiddenMap[target]).value  = '';
+    const wrappers = { cancel: 'picker-cancel', start: 'picker-start', end: 'picker-end' };
+    const clearBtn = document.getElementById(wrappers[target]).querySelector('.jalali-clear-btn');
+    if (clearBtn) clearBtn.classList.add('hidden');
+}
+
+function toPersianNum(n) {
+    return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+}
+
+function validateCancelForm() {
+    const prof = document.getElementById('cancel-professor').value.trim();
+    if (!prof) { showToast('نام استاد الزامی است', 'error'); return false; }
+    const hasDate = document.getElementById('cancel_date_j_input').value ||
+                    document.getElementById('start_date_j_input').value;
+    if (!hasDate) { showToast('حداقل یک تاریخ (تاریخ دقیق یا بازه) وارد کنید', 'error'); return false; }
+    return true;
+}
+
 
 function showToast(message, type) {
     const existing = document.getElementById('admin-toast');
     if (existing) existing.remove();
-
     const toast = document.createElement('div');
     toast.id = 'admin-toast';
     const bgColor = type === 'success'
         ? 'linear-gradient(135deg, var(--success), #1b5e20)'
         : 'linear-gradient(135deg, var(--error), #b71c1c)';
-
-    toast.style.cssText = `
-        position: fixed; bottom: 1.5rem; left: 50%;
-        transform: translateX(-50%);
-        background: ${bgColor};
-        color: white; padding: .8rem 1.75rem;
-        border-radius: 24px;
-        font-size: .9rem; font-weight: 600;
-        z-index: 9999;
-        box-shadow: 0 6px 20px rgba(0,0,0,.25);
-        display: flex; align-items: center; gap: .5rem;
-        animation: fadeInTab .25s ease;
-        font-family: inherit;
-    `;
-    const icon = type === 'success' ? 'check_circle' : 'error';
-    toast.innerHTML = `<i class="material-icons" style="font-size:1.1rem;">${icon}</i>${message}`;
+    toast.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:${bgColor};color:white;padding:.8rem 1.75rem;border-radius:24px;font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);display:flex;align-items:center;gap:.5rem;animation:fadeInTab .25s ease;font-family:inherit;`;
+    toast.innerHTML = `<i class="material-icons" style="font-size:1.1rem;">${type === 'success' ? 'check_circle' : 'error'}</i>${message}`;
     document.body.appendChild(toast);
-    setTimeout(function() {
-        toast.style.transition = 'opacity .3s';
-        toast.style.opacity = '0';
-        setTimeout(function() { toast.remove(); }, 300);
-    }, 3500);
+    setTimeout(() => { toast.style.transition = 'opacity .3s'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
-const spinStyle = document.createElement('style');
-spinStyle.textContent = `@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`;
-document.head.appendChild(spinStyle);
+/* Initialize: hide all clear buttons initially */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.jalali-clear-btn').forEach(b => b.classList.add('hidden'));
+    // Set "همه" radio as default
+    const allRadio = document.querySelector('.time-slot-chip input[value=""]');
+    if (allRadio) allRadio.checked = true;
+});
 </script>
 {% endblock %}

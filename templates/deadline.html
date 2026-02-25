@@ -1,0 +1,1314 @@
+{% extends "base.html" %}
+
+{% block title %}ددلاین‌ها | یونی نت{% endblock %}
+
+{% block content %}
+<div class="deadline-page">
+
+    <!-- ===== Header ===== -->
+    <div class="deadline-header">
+        <div class="deadline-header-info">
+            <div class="deadline-header-icon">
+                <i class="material-icons">event_note</i>
+            </div>
+            <div>
+                <h1 class="deadline-title">ددلاین‌های من</h1>
+                <p class="deadline-subtitle" id="today-jalali-label">در حال بارگذاری...</p>
+            </div>
+        </div>
+        <button class="btn btn-custom add-deadline-top-btn" onclick="openAddModal()">
+            <i class="material-icons">add</i>
+            <span>ددلاین جدید</span>
+        </button>
+    </div>
+
+    <!-- ===== Main Layout ===== -->
+    <div class="deadline-layout">
+
+        <!-- ────── Left: Calendar + Upcoming ────── -->
+        <div class="deadline-left">
+
+            <!-- Calendar Card -->
+            <div class="calendar-card">
+                <div class="calendar-header">
+                    <button class="cal-nav-btn" onclick="changeMonth(-1)" title="ماه قبل">
+                        <i class="material-icons">chevron_right</i>
+                    </button>
+                    <div class="cal-month-title">
+                        <span id="cal-month-name">—</span>
+                        <span id="cal-year">—</span>
+                    </div>
+                    <button class="cal-nav-btn" onclick="changeMonth(1)" title="ماه بعد">
+                        <i class="material-icons">chevron_left</i>
+                    </button>
+                </div>
+
+                <div class="calendar-weekdays">
+                    <span>ش</span><span>ی</span><span>د</span>
+                    <span>س</span><span>چ</span><span>پ</span><span>ج</span>
+                </div>
+
+                <div class="calendar-grid" id="calendar-grid"></div>
+
+                <div class="calendar-legend">
+                    <div class="cal-legend-item">
+                        <span class="cal-legend-dot today-dot"></span><span>امروز</span>
+                    </div>
+                    <div class="cal-legend-item">
+                        <span class="cal-legend-dot deadline-dot"></span><span>دارای ددلاین</span>
+                    </div>
+                    <div class="cal-legend-item">
+                        <span class="cal-legend-dot near-dot"></span><span>نزدیک (کمتر از ۷ روز)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming / Near Deadlines -->
+            <div class="upcoming-card" id="upcoming-card">
+                <div class="upcoming-header">
+                    <i class="material-icons">warning_amber</i>
+                    <h3>ددلاین‌های نزدیک</h3>
+                    <span class="upcoming-badge" id="upcoming-count">0</span>
+                </div>
+                <div id="upcoming-list" class="upcoming-list">
+                    <div class="empty-upcoming">
+                        <i class="material-icons">check_circle_outline</i>
+                        <span>هیچ ددلاین نزدیکی ندارید</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ────── Right: Selected Day Details ────── -->
+        <div class="deadline-right">
+
+            <!-- Day Detail Card -->
+            <div class="day-detail-card" id="day-detail-card">
+                <div class="day-detail-header">
+                    <div class="day-detail-date" id="day-detail-date">
+                        <div class="day-number" id="day-num">—</div>
+                        <div class="day-info">
+                            <span id="day-month-name">روزی انتخاب نشده</span>
+                            <span id="day-year-label" class="day-year"></span>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="openAddModal()" id="add-to-day-btn">
+                        <i class="material-icons">add</i> افزودن
+                    </button>
+                </div>
+
+                <div id="day-deadlines-list" class="day-deadlines-list">
+                    <div class="select-day-hint">
+                        <i class="material-icons">touch_app</i>
+                        <p>روی یک روز در تقویم کلیک کنید</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Deadlines List -->
+            <div class="all-deadlines-card">
+                <div class="all-deadlines-header">
+                    <div style="display:flex; align-items:center; gap:.5rem;">
+                        <i class="material-icons" style="color:var(--primary-color);">list_alt</i>
+                        <h3>همه ددلاین‌ها</h3>
+                    </div>
+                    <div class="filter-chips">
+                        <button class="filter-chip active" onclick="filterDeadlines('all', this)">همه</button>
+                        <button class="filter-chip" onclick="filterDeadlines('exam', this)">امتحان</button>
+                        <button class="filter-chip" onclick="filterDeadlines('project', this)">پروژه</button>
+                        <button class="filter-chip" onclick="filterDeadlines('assignment', this)">تکلیف</button>
+                    </div>
+                </div>
+                <div id="all-deadlines-list" class="all-deadlines-list">
+                    <div class="loading-state">
+                        <i class="material-icons spin-icon">sync</i>
+                        <span>در حال بارگذاری...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== Add/Edit Deadline Modal ==================== -->
+<div id="deadline-modal" class="dl-modal-overlay" onclick="if(event.target===this)closeDeadlineModal()">
+    <div class="dl-modal-card">
+        <div class="dl-modal-header">
+            <h3 id="modal-title-label">
+                <i class="material-icons">add_task</i> ددلاین جدید
+            </h3>
+            <button class="dl-modal-close" onclick="closeDeadlineModal()">
+                <i class="material-icons">close</i>
+            </button>
+        </div>
+
+        <div class="dl-modal-body">
+            <!-- عنوان -->
+            <div class="dl-form-group">
+                <label class="dl-form-label">
+                    <i class="material-icons">title</i> عنوان <span class="req">*</span>
+                </label>
+                <input type="text" id="dl-title" class="dl-form-input"
+                       placeholder="مثال: پروژه پایانی برنامه‌سازی">
+            </div>
+
+            <!-- نوع ددلاین -->
+            <div class="dl-form-group">
+                <label class="dl-form-label">
+                    <i class="material-icons">category</i> نوع
+                </label>
+                <div class="dl-type-chips">
+                    <label class="dl-type-chip">
+                        <input type="radio" name="dl-type" value="project" checked>
+                        <span><i class="material-icons">engineering</i> پروژه</span>
+                    </label>
+                    <label class="dl-type-chip">
+                        <input type="radio" name="dl-type" value="exam">
+                        <span><i class="material-icons">quiz</i> امتحان</span>
+                    </label>
+                    <label class="dl-type-chip">
+                        <input type="radio" name="dl-type" value="assignment">
+                        <span><i class="material-icons">assignment</i> تکلیف</span>
+                    </label>
+                    <label class="dl-type-chip">
+                        <input type="radio" name="dl-type" value="other">
+                        <span><i class="material-icons">more_horiz</i> سایر</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- تاریخ -->
+            <div class="dl-form-group">
+                <label class="dl-form-label">
+                    <i class="material-icons">event</i> تاریخ ددلاین <span class="req">*</span>
+                </label>
+                <div class="dl-date-display" id="dl-date-display" onclick="openDatePickerForModal()">
+                    <i class="material-icons">calendar_month</i>
+                    <span id="dl-date-label">انتخاب تاریخ...</span>
+                </div>
+                <input type="hidden" id="dl-date-hidden">
+            </div>
+
+            <!-- توضیحات -->
+            <div class="dl-form-group">
+                <label class="dl-form-label">
+                    <i class="material-icons">notes</i> توضیحات
+                </label>
+                <textarea id="dl-desc" class="dl-form-input dl-textarea"
+                          placeholder="توضیحات اضافی (اختیاری)..." rows="3"></textarea>
+            </div>
+
+            <!-- رنگ -->
+            <div class="dl-form-group">
+                <label class="dl-form-label">
+                    <i class="material-icons">palette</i> رنگ
+                </label>
+                <div class="color-palette">
+                    <button type="button" class="color-swatch active" data-color="#00838F"
+                            style="background:#00838F" onclick="selectColor(this)"></button>
+                    <button type="button" class="color-swatch" data-color="#E53935"
+                            style="background:#E53935" onclick="selectColor(this)"></button>
+                    <button type="button" class="color-swatch" data-color="#43A047"
+                            style="background:#43A047" onclick="selectColor(this)"></button>
+                    <button type="button" class="color-swatch" data-color="#FB8C00"
+                            style="background:#FB8C00" onclick="selectColor(this)"></button>
+                    <button type="button" class="color-swatch" data-color="#8E24AA"
+                            style="background:#8E24AA" onclick="selectColor(this)"></button>
+                    <button type="button" class="color-swatch" data-color="#1565C0"
+                            style="background:#1565C0" onclick="selectColor(this)"></button>
+                    <button type="button" class="color-swatch" data-color="#6D4C41"
+                            style="background:#6D4C41" onclick="selectColor(this)"></button>
+                    <button type="button" class="color-swatch" data-color="#37474F"
+                            style="background:#37474F" onclick="selectColor(this)"></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="dl-modal-footer">
+            <button class="btn btn-custom" onclick="saveDeadline()" id="save-deadline-btn">
+                <i class="material-icons">save</i> ذخیره
+            </button>
+            <button class="btn btn-outline" onclick="closeDeadlineModal()">انصراف</button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== Mini Date Picker (for modal) ==================== -->
+<div id="mini-date-picker" class="mini-picker-overlay" onclick="if(event.target===this)closeMiniPicker()">
+    <div class="mini-picker-card">
+        <div class="mini-picker-header">
+            <button type="button" class="cal-nav-btn" onclick="changeMiniMonth(-1)">
+                <i class="material-icons">chevron_right</i>
+            </button>
+            <div class="cal-month-title">
+                <span id="mini-month-name">—</span>
+                <span id="mini-year">—</span>
+            </div>
+            <button type="button" class="cal-nav-btn" onclick="changeMiniMonth(1)">
+                <i class="material-icons">chevron_left</i>
+            </button>
+        </div>
+        <div class="calendar-weekdays">
+            <span>ش</span><span>ی</span><span>د</span>
+            <span>س</span><span>چ</span><span>پ</span><span>ج</span>
+        </div>
+        <div class="calendar-grid mini-grid" id="mini-picker-grid"></div>
+        <div class="mini-picker-footer">
+            <button type="button" class="mini-today-btn" onclick="miniGoToToday()">
+                <i class="material-icons">today</i> امروز
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== Share Deadline Modal ==================== -->
+<div id="share-modal" class="dl-modal-overlay" onclick="if(event.target===this)closeShareModal()">
+    <div class="dl-modal-card share-modal-card">
+        <div class="dl-modal-header">
+            <h3><i class="material-icons">share</i> اشتراک‌گذاری ددلاین</h3>
+            <button class="dl-modal-close" onclick="closeShareModal()">
+                <i class="material-icons">close</i>
+            </button>
+        </div>
+        <div class="dl-modal-body">
+            <div class="share-deadline-preview" id="share-preview"></div>
+            <div class="share-options">
+                <button class="share-option-btn share-group-btn" onclick="shareDeadline('group')">
+                    <i class="material-icons">group</i>
+                    <span>اشتراک در گروه کلاسی</span>
+                    <i class="material-icons arrow-icon">arrow_back</i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== Styles ===================== -->
+<style>
+/* ─── Page Layout ─── */
+.deadline-page { max-width: 1200px; margin: 0 auto; padding-bottom: 3rem; }
+
+.deadline-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;
+}
+.deadline-header-info { display: flex; align-items: center; gap: 1rem; }
+.deadline-header-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 16px rgba(0,131,143,.3);
+}
+.deadline-header-icon i { color: white; font-size: 1.6rem; }
+.deadline-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 .15rem; }
+.deadline-subtitle { font-size: .88rem; color: var(--text-secondary); margin: 0; }
+
+.add-deadline-top-btn { display: flex; align-items: center; gap: .4rem; }
+
+/* ─── Two-Column Layout ─── */
+.deadline-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .deadline-layout { grid-template-columns: 1fr; }
+}
+
+/* ─── Calendar Card ─── */
+.calendar-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.25rem;
+}
+
+.calendar-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.1rem;
+}
+.cal-month-title {
+    display: flex; gap: .4rem; font-weight: 800; font-size: 1.1rem;
+    color: var(--text-primary);
+}
+.cal-nav-btn {
+    width: 34px; height: 34px; border-radius: 10px;
+    border: 1px solid var(--border-color); background: var(--background);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); transition: all .18s;
+}
+.cal-nav-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(0,131,143,.06); }
+
+.calendar-weekdays {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    text-align: center; margin-bottom: .4rem;
+}
+.calendar-weekdays span {
+    font-size: .78rem; font-weight: 700; color: var(--text-secondary);
+    padding: .3rem 0;
+}
+
+.calendar-grid {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    gap: 3px;
+}
+
+.cal-day {
+    aspect-ratio: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border-radius: 10px; cursor: pointer;
+    font-size: .9rem; font-weight: 500;
+    border: none; background: none; font-family: inherit;
+    color: var(--text-primary); position: relative;
+    transition: background .15s, color .15s, transform .1s;
+    gap: 2px;
+}
+.cal-day:hover:not(.empty-day) { background: rgba(0,131,143,.1); color: var(--primary-color); transform: scale(1.05); }
+.cal-day.selected-day { background: var(--primary-color); color: white; box-shadow: 0 3px 10px rgba(0,131,143,.35); }
+.cal-day.today-day { font-weight: 800; }
+.cal-day.today-day:not(.selected-day) {
+    background: rgba(0,131,143,.12);
+    color: var(--primary-color);
+    border: 1.5px solid var(--primary-color);
+}
+.cal-day.has-deadline:not(.selected-day) .cal-day-num { position: relative; }
+.cal-day.empty-day { cursor: default; color: transparent; pointer-events: none; }
+
+/* نقطه‌های ددلاین روی روز */
+.cal-day-dots {
+    display: flex; gap: 2px; justify-content: center;
+    min-height: 5px;
+}
+.cal-day-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    flex-shrink: 0;
+}
+.cal-day.selected-day .cal-day-dot { background: rgba(255,255,255,.8) !important; }
+
+.calendar-legend {
+    display: flex; gap: 1rem; margin-top: 1rem; padding-top: .75rem;
+    border-top: 1px solid var(--border-color); flex-wrap: wrap;
+}
+.cal-legend-item { display: flex; align-items: center; gap: .35rem; font-size: .75rem; color: var(--text-secondary); }
+.cal-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.today-dot { background: var(--primary-color); border: 1.5px solid var(--primary-color); }
+.deadline-dot { background: var(--primary-color); }
+.near-dot { background: var(--error); }
+
+/* ─── Upcoming Card ─── */
+.upcoming-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 18px; padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+.upcoming-header {
+    display: flex; align-items: center; gap: .5rem;
+    margin-bottom: 1rem; padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.upcoming-header i { color: #f57c00; font-size: 1.3rem; }
+.upcoming-header h3 { font-size: .95rem; font-weight: 700; margin: 0; flex: 1; }
+.upcoming-badge {
+    background: var(--error); color: white;
+    border-radius: 20px; padding: .05rem .55rem;
+    font-size: .72rem; font-weight: 700;
+}
+.upcoming-list { display: flex; flex-direction: column; gap: .75rem; }
+.empty-upcoming {
+    display: flex; align-items: center; gap: .5rem;
+    color: var(--text-secondary); font-size: .84rem; padding: .5rem 0;
+}
+.empty-upcoming i { color: var(--success); }
+
+/* ── Countdown Ring Item ── */
+.countdown-item {
+    display: flex; align-items: center; gap: .85rem;
+    padding: .65rem .75rem;
+    border-radius: 12px; background: var(--background);
+    border: 1px solid var(--border-color);
+    transition: box-shadow .18s;
+}
+.countdown-item:hover { box-shadow: var(--shadow-sm); }
+.countdown-ring-wrap { flex-shrink: 0; position: relative; width: 48px; height: 48px; }
+.countdown-ring-wrap svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--border-color); stroke-width: 3.5; }
+.ring-fg { fill: none; stroke-width: 3.5; stroke-linecap: round; transition: stroke-dashoffset .6s ease; }
+.ring-label {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: .75rem; font-weight: 800;
+    line-height: 1;
+}
+.countdown-info { flex: 1; min-width: 0; }
+.countdown-title { font-size: .88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.countdown-meta { font-size: .75rem; color: var(--text-secondary); margin-top: .15rem; }
+.countdown-type-badge {
+    font-size: .7rem; padding: .1rem .45rem;
+    border-radius: 20px; font-weight: 600; white-space: nowrap;
+}
+
+/* ─── Day Detail Card ─── */
+.day-detail-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 18px; padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.25rem;
+}
+.day-detail-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem; padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.day-detail-date { display: flex; align-items: center; gap: .75rem; }
+.day-number {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 800;
+    box-shadow: 0 3px 10px rgba(0,131,143,.3);
+}
+.day-info { display: flex; flex-direction: column; }
+.day-info span:first-child { font-size: 1rem; font-weight: 700; }
+.day-year { font-size: .82rem; color: var(--text-secondary); }
+
+.day-deadlines-list { display: flex; flex-direction: column; gap: .6rem; min-height: 80px; }
+
+.select-day-hint {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: .5rem; color: var(--text-secondary); padding: 1.5rem 0;
+    font-size: .88rem;
+}
+.select-day-hint i { font-size: 2rem; color: var(--border-color); }
+
+.btn-sm { padding: .35rem .8rem; font-size: .82rem; }
+
+/* ─── Deadline Item Card ─── */
+.dl-item {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .7rem .85rem;
+    border-radius: 12px; border: 1px solid var(--border-color);
+    background: var(--background);
+    transition: box-shadow .18s, border-color .18s;
+    position: relative;
+}
+.dl-item:hover { box-shadow: var(--shadow-sm); border-color: rgba(0,131,143,.2); }
+.dl-item-color { width: 5px; height: 38px; border-radius: 10px; flex-shrink: 0; }
+.dl-item-info { flex: 1; min-width: 0; }
+.dl-item-title { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-item-meta { display: flex; align-items: center; gap: .5rem; margin-top: .2rem; flex-wrap: wrap; }
+.dl-item-date { font-size: .76rem; color: var(--text-secondary); }
+.dl-item-days { font-size: .72rem; padding: .1rem .45rem; border-radius: 20px; font-weight: 700; }
+.dl-item-actions { display: flex; gap: .3rem; flex-shrink: 0; }
+.dl-action-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1px solid var(--border-color); background: none;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); transition: all .18s; font-size: 0;
+}
+.dl-action-btn i { font-size: 1rem; }
+.dl-action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(0,131,143,.06); }
+.dl-action-btn.delete-btn:hover { border-color: var(--error); color: var(--error); background: rgba(183,28,28,.06); }
+.dl-action-btn.done-btn.is-done { background: rgba(46,125,50,.1); border-color: var(--success); color: var(--success); }
+.dl-item.is-done .dl-item-title { text-decoration: line-through; opacity: .6; }
+
+/* ─── All Deadlines Card ─── */
+.all-deadlines-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 18px; padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+.all-deadlines-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem; flex-wrap: wrap; gap: .75rem;
+}
+.all-deadlines-header h3 { font-size: .95rem; font-weight: 700; margin: 0; }
+.filter-chips { display: flex; gap: .4rem; flex-wrap: wrap; }
+.filter-chip {
+    padding: .28rem .75rem; border-radius: 20px;
+    border: 1.5px solid var(--border-color); background: none;
+    font-family: inherit; font-size: .78rem; font-weight: 600;
+    color: var(--text-secondary); cursor: pointer; transition: all .18s;
+}
+.filter-chip:hover { border-color: var(--primary-color); color: var(--primary-color); }
+.filter-chip.active { background: var(--primary-color); border-color: var(--primary-color); color: white; }
+.all-deadlines-list { display: flex; flex-direction: column; gap: .6rem; min-height: 60px; }
+
+/* ─── Loading / Empty ─── */
+.loading-state {
+    display: flex; align-items: center; gap: .6rem;
+    color: var(--text-secondary); padding: 1rem 0; font-size: .88rem;
+}
+.spin-icon { animation: spin 1s linear infinite; }
+.empty-dl-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: .5rem; color: var(--text-secondary); padding: 2rem 0;
+    font-size: .88rem;
+}
+.empty-dl-state i { font-size: 2.5rem; color: var(--border-color); }
+
+/* ─── Modal ─── */
+.dl-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+    z-index: 2000; align-items: center; justify-content: center; padding: 1rem;
+}
+.dl-modal-overlay.open { display: flex; animation: fadeUp .25s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+.dl-modal-card {
+    background: var(--surface); border-radius: 20px; padding: 1.75rem;
+    width: 100%; max-width: 480px; box-shadow: 0 24px 64px rgba(0,0,0,.2);
+    max-height: 92vh; overflow-y: auto;
+    border: 1px solid var(--border-color);
+}
+.share-modal-card { max-width: 400px; }
+
+.dl-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+.dl-modal-header h3 {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: 1.1rem; font-weight: 800; margin: 0;
+    color: var(--primary-color);
+}
+.dl-modal-header h3 i { font-size: 1.25rem; }
+.dl-modal-close {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1px solid var(--border-color); background: var(--background);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); transition: all .18s;
+}
+.dl-modal-close:hover { border-color: var(--error); color: var(--error); }
+
+.dl-modal-body { display: flex; flex-direction: column; gap: 1.1rem; }
+.dl-modal-footer { display: flex; gap: .75rem; margin-top: 1.5rem; }
+
+.dl-form-group { display: flex; flex-direction: column; gap: .45rem; }
+.dl-form-label {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .88rem; font-weight: 700; color: var(--text-primary);
+}
+.dl-form-label i { font-size: .95rem; color: var(--primary-color); }
+.req { color: var(--error); margin-right: .1rem; }
+.dl-form-input {
+    border: 1.5px solid var(--border-color); border-radius: 10px;
+    padding: .65rem .9rem; font-family: inherit; font-size: .9rem;
+    background: var(--background); color: var(--text-primary);
+    transition: border-color .18s, box-shadow .18s;
+    outline: none; width: 100%; box-sizing: border-box;
+    resize: none;
+}
+.dl-form-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0,131,143,.12); }
+
+/* Type Chips */
+.dl-type-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+.dl-type-chip { cursor: pointer; }
+.dl-type-chip input { display: none; }
+.dl-type-chip span {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .4rem .85rem; border-radius: 20px;
+    border: 1.5px solid var(--border-color); background: var(--background);
+    font-size: .82rem; font-weight: 600; color: var(--text-secondary);
+    cursor: pointer; transition: all .18s;
+}
+.dl-type-chip span i { font-size: .95rem; }
+.dl-type-chip input:checked + span {
+    border-color: var(--primary-color);
+    background: rgba(0,131,143,.12); color: var(--primary-color);
+}
+.dl-type-chip:hover span { border-color: var(--primary-color); color: var(--primary-color); }
+
+/* Date Display */
+.dl-date-display {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .65rem .9rem; border-radius: 10px;
+    border: 1.5px dashed var(--border-color); cursor: pointer;
+    background: var(--background); color: var(--text-secondary);
+    transition: border-color .18s, color .18s;
+    font-size: .9rem;
+}
+.dl-date-display:hover { border-color: var(--primary-color); color: var(--primary-color); }
+.dl-date-display.has-date { border-style: solid; border-color: var(--primary-color); color: var(--text-primary); font-weight: 600; }
+.dl-date-display i { color: var(--primary-color); }
+
+/* Color Palette */
+.color-palette { display: flex; gap: .5rem; flex-wrap: wrap; }
+.color-swatch {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 3px solid transparent; cursor: pointer;
+    transition: transform .18s, border-color .18s;
+    outline: none;
+}
+.color-swatch:hover { transform: scale(1.15); }
+.color-swatch.active { border-color: var(--text-primary); transform: scale(1.15); }
+
+/* Mini Date Picker */
+.mini-picker-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.4); backdrop-filter: blur(3px);
+    z-index: 3000; align-items: center; justify-content: center; padding: 1rem;
+}
+.mini-picker-overlay.open { display: flex; animation: fadeUp .2s ease; }
+.mini-picker-card {
+    background: var(--surface); border-radius: 16px; padding: 1.25rem;
+    width: 300px; box-shadow: 0 16px 48px rgba(0,0,0,.2);
+    border: 1px solid var(--border-color);
+}
+.mini-grid { gap: 2px; }
+.mini-picker-footer { display: flex; justify-content: center; margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border-color); }
+.mini-today-btn {
+    display: flex; align-items: center; gap: .3rem;
+    background: none; border: none; cursor: pointer;
+    color: var(--primary-color); font-size: .85rem; font-weight: 600;
+    font-family: inherit; padding: .3rem .6rem; border-radius: 8px;
+    transition: background .15s;
+}
+.mini-today-btn:hover { background: rgba(0,131,143,.08); }
+
+/* Share Modal */
+.share-deadline-preview {
+    background: var(--background); border-radius: 12px; padding: 1rem;
+    border: 1px solid var(--border-color); margin-bottom: 1.25rem;
+    font-size: .9rem; line-height: 1.6;
+}
+.share-options { display: flex; flex-direction: column; gap: .6rem; }
+.share-option-btn {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .85rem 1rem; border-radius: 12px;
+    border: 1.5px solid var(--border-color); background: var(--background);
+    cursor: pointer; font-family: inherit; font-size: .9rem; font-weight: 600;
+    color: var(--text-primary); transition: all .18s; text-align: right;
+}
+.share-option-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(0,131,143,.05); }
+.share-option-btn i:first-child { font-size: 1.4rem; color: var(--primary-color); }
+.share-option-btn span { flex: 1; }
+.arrow-icon { font-size: 1rem !important; color: var(--text-secondary) !important; }
+.share-group-btn:hover .arrow-icon { color: var(--primary-color) !important; }
+
+@keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+</style>
+
+<!-- ===================== Script ===================== -->
+<script>
+/* ═══════════════════════════════════════════════════════
+   ۱. Jalali Utilities (تبدیل تاریخ بدون dependency)
+   ═══════════════════════════════════════════════════════ */
+
+const JALALI_MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور',
+                       'مهر','آبان','آذر','دی','بهمن','اسفند'];
+const JALALI_WEEKDAYS = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
+
+/** Gregorian → Jalali → [jy, jm, jd] */
+function gToJ(gy, gm, gd) {
+    const gDaysInMonth = [0,31,59,90,120,151,181,212,243,273,304,334];
+    let g_day_no = 365*(gy-1600) + Math.floor((gy-1600)/4) -
+                   Math.floor((gy-1600)/100) + Math.floor((gy-1600)/400);
+    g_day_no += gDaysInMonth[gm-1] + gd - 1;
+    if (gm > 2 && gy%4===0 && (gy%100!==0 || gy%400===0)) g_day_no++;
+
+    let j_day_no = g_day_no - 79;
+    const j_np = Math.floor(j_day_no / 12053);
+    j_day_no %= 12053;
+    let jy = 979 + 33*j_np + 4*Math.floor(j_day_no/1461);
+    j_day_no %= 1461;
+    if (j_day_no >= 366) { jy += Math.floor((j_day_no-1)/365); j_day_no = (j_day_no-1)%365; }
+    const jMoDays = [31,31,31,31,31,31,30,30,30,30,30,29];
+    let jm = 1, jd = 1;
+    for (let i=0; i<12; i++) {
+        if (j_day_no < jMoDays[i]) { jm=i+1; jd=j_day_no+1; break; }
+        j_day_no -= jMoDays[i];
+    }
+    return [jy, jm, jd];
+}
+
+/** Jalali → Gregorian → [gy, gm, gd] */
+function jToG(jy, jm, jd) {
+    const jMoDays = [31,31,31,31,31,31,30,30,30,30,30,29];
+    let jDayNo = 0;
+    for (let i=0; i<jm-1; i++) jDayNo += jMoDays[i];
+    jDayNo += jd - 1;
+    let jy2 = jy - 979;
+    let gDayNo = 365*jy2 + Math.floor(jy2/4) - Math.floor(jy2/100) + Math.floor(jy2/400) +
+                 Math.floor((jy2%400)/4)*1 + 79 + jDayNo;
+    // correct for Julian -> proleptic
+    gDayNo += Math.floor(jy2/33)*8 + Math.floor(((jy2%33)+3)/4);
+
+    // days since 1600/01/01
+    const base = 365*1600 + Math.floor(1600/4) - Math.floor(1600/100) + Math.floor(1600/400);
+    gDayNo -= base; // days from year 0
+
+    // convert absolute day number to Gregorian
+    // Use a known epoch: 1970-01-01 = day 719468
+    // simpler: just use Date
+    const epoch = new Date(1600,0,1);
+    const ms = gDayNo * 86400000;
+    const result = new Date(epoch.getTime() + ms);
+    return [result.getFullYear(), result.getMonth()+1, result.getDate()];
+}
+
+/** Days in a Jalali month */
+function jDaysInMonth(jy, jm) {
+    if (jm <= 6) return 31;
+    if (jm <= 11) return 30;
+    // leap year check
+    const leapYears = [1,5,9,13,17,22,26,30];
+    const rem = ((jy - (jy > 0 ? 474 : 473)) % 2820 + 474 + 38) * 682 % 2816;
+    return leapYears.includes(rem % 474 % 29) ? 30 : 29;
+}
+
+/**
+ * Weekday of Jalali date: 0=Saturday, 6=Friday
+ * (Persian week starts on Saturday)
+ */
+function jWeekday(jy, jm, jd) {
+    const [gy, gm, gd] = jToG(jy, jm, jd);
+    const d = new Date(gy, gm-1, gd).getDay(); // 0=Sun
+    return (d + 1) % 7; // 0=Sat, 6=Fri
+}
+
+/** Format a Jalali date as string */
+function formatJalali(jy, jm, jd) {
+    return `${jy}/${String(jm).padStart(2,'0')}/${String(jd).padStart(2,'0')}`;
+}
+
+/** Today in Jalali */
+const _today = new Date();
+const [TODAY_JY, TODAY_JM, TODAY_JD] = gToJ(_today.getFullYear(), _today.getMonth()+1, _today.getDate());
+
+/** Convert number to Persian digits */
+function toPers(n) {
+    return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۲. State
+   ═══════════════════════════════════════════════════════ */
+
+let allDeadlines   = [];      // raw data from API
+let calYear        = TODAY_JY;
+let calMonth       = TODAY_JM;
+let selectedDay    = null;    // {jy,jm,jd} currently selected
+let editingId      = null;    // null = new, number = editing
+let selectedColor  = '#00838F';
+let filterType     = 'all';
+
+// mini picker (for modal)
+let miniYear   = TODAY_JY;
+let miniMonth  = TODAY_JM;
+let miniSelected = null;  // {jy,jm,jd}
+
+/* ═══════════════════════════════════════════════════════
+   ۳. Calendar Rendering
+   ═══════════════════════════════════════════════════════ */
+
+function renderCalendar() {
+    document.getElementById('cal-month-name').textContent = JALALI_MONTHS[calMonth-1];
+    document.getElementById('cal-year').textContent = toPers(calYear);
+
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+    const days   = jDaysInMonth(calYear, calMonth);
+    const firstWd = jWeekday(calYear, calMonth, 1);  // 0=Sat
+
+    // پر کردن خانه‌های خالی قبل از روز اول
+    for (let i=0; i<firstWd; i++) {
+        const blank = document.createElement('button');
+        blank.className = 'cal-day empty-day';
+        blank.disabled = true;
+        grid.appendChild(blank);
+    }
+
+    for (let d=1; d<=days; d++) {
+        const btn = document.createElement('button');
+        btn.className = 'cal-day';
+
+        const isToday    = (calYear===TODAY_JY && calMonth===TODAY_JM && d===TODAY_JD);
+        const isSelected = selectedDay && selectedDay.jy===calYear && selectedDay.jm===calMonth && selectedDay.jd===d;
+
+        if (isToday)    btn.classList.add('today-day');
+        if (isSelected) btn.classList.add('selected-day');
+
+        // ددلاین‌های این روز
+        const [gy, gm, gd] = jToG(calYear, calMonth, d);
+        const dateStr = `${gy}-${String(gm).padStart(2,'0')}-${String(gd).padStart(2,'0')}`;
+        const dayDeadlines = allDeadlines.filter(dl => dl.due_date === dateStr);
+
+        const numDiv = document.createElement('span');
+        numDiv.textContent = toPers(d);
+
+        const dotsDiv = document.createElement('div');
+        dotsDiv.className = 'cal-day-dots';
+
+        dayDeadlines.slice(0,3).forEach(dl => {
+            const near = dl.days_left >= 0 && dl.days_left <= 7;
+            const dot = document.createElement('span');
+            dot.className = 'cal-day-dot';
+            dot.style.background = near ? 'var(--error)' : dl.color;
+            dotsDiv.appendChild(dot);
+        });
+
+        if (dayDeadlines.length > 0) btn.classList.add('has-deadline');
+
+        btn.appendChild(numDiv);
+        btn.appendChild(dotsDiv);
+        btn.onclick = () => selectDay(calYear, calMonth, d);
+        grid.appendChild(btn);
+    }
+}
+
+function changeMonth(dir) {
+    calMonth += dir;
+    if (calMonth > 12) { calMonth=1; calYear++; }
+    if (calMonth < 1)  { calMonth=12; calYear--; }
+    renderCalendar();
+}
+
+function selectDay(jy, jm, jd) {
+    selectedDay = {jy, jm, jd};
+    renderCalendar();
+    renderDayDetail();
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۴. Day Detail Panel
+   ═══════════════════════════════════════════════════════ */
+
+function renderDayDetail() {
+    if (!selectedDay) return;
+    const {jy, jm, jd} = selectedDay;
+
+    document.getElementById('day-num').textContent = toPers(jd);
+    document.getElementById('day-month-name').textContent = JALALI_MONTHS[jm-1];
+    document.getElementById('day-year-label').textContent = toPers(jy);
+
+    const [gy, gm, gd] = jToG(jy, jm, jd);
+    const dateStr = `${gy}-${String(gm).padStart(2,'0')}-${String(gd).padStart(2,'0')}`;
+    const dayDeadlines = allDeadlines.filter(dl => dl.due_date === dateStr);
+
+    const list = document.getElementById('day-deadlines-list');
+    if (dayDeadlines.length === 0) {
+        list.innerHTML = `
+            <div class="select-day-hint">
+                <i class="material-icons">event_available</i>
+                <p>ددلاینی برای این روز وجود ندارد</p>
+            </div>`;
+        return;
+    }
+    list.innerHTML = dayDeadlines.map(dl => renderDeadlineItem(dl)).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۵. Deadline Item HTML
+   ═══════════════════════════════════════════════════════ */
+
+const TYPE_LABELS = { project:'پروژه', exam:'امتحان', assignment:'تکلیف', other:'سایر' };
+const TYPE_ICONS  = { project:'engineering', exam:'quiz', assignment:'assignment', other:'more_horiz' };
+
+function renderDeadlineItem(dl) {
+    const nearClass  = (dl.days_left >= 0 && dl.days_left <= 7) ? 'background:rgba(183,28,28,.12);color:var(--error)' : 'background:rgba(0,131,143,.1);color:var(--primary-color)';
+    const daysLabel  = dl.is_done ? '<span class="dl-item-days" style="background:rgba(46,125,50,.1);color:var(--success)">✓ انجام شد</span>'
+                     : dl.days_left < 0 ? '<span class="dl-item-days" style="background:rgba(183,28,28,.12);color:var(--error)">منقضی شده</span>'
+                     : dl.days_left === 0 ? '<span class="dl-item-days" style="background:rgba(183,28,28,.2);color:var(--error)">امروز!</span>'
+                     : `<span class="dl-item-days" style="${nearClass}">${toPers(dl.days_left)} روز مانده</span>`;
+
+    return `
+    <div class="dl-item ${dl.is_done ? 'is-done' : ''}" id="dl-item-${dl.id}">
+        <div class="dl-item-color" style="background:${dl.color}"></div>
+        <div class="dl-item-info">
+            <div class="dl-item-title">${escHtml(dl.title)}</div>
+            <div class="dl-item-meta">
+                <span class="countdown-type-badge" style="background:${dl.color}22;color:${dl.color}">
+                    <i class="material-icons" style="font-size:.75rem;vertical-align:middle;">${TYPE_ICONS[dl.deadline_type]||'more_horiz'}</i>
+                    ${TYPE_LABELS[dl.deadline_type]||'سایر'}
+                </span>
+                <span class="dl-item-date">${dl.due_date_j}</span>
+                ${daysLabel}
+            </div>
+        </div>
+        <div class="dl-item-actions">
+            <button class="dl-action-btn done-btn ${dl.is_done?'is-done':''}"
+                    onclick="toggleDone(${dl.id})" title="${dl.is_done?'علامت نشده':'علامت‌گذاری'}">
+                <i class="material-icons">${dl.is_done?'check_circle':'radio_button_unchecked'}</i>
+            </button>
+            <button class="dl-action-btn" onclick="openShareModalFor(${dl.id})" title="اشتراک‌گذاری">
+                <i class="material-icons">share</i>
+            </button>
+            <button class="dl-action-btn" onclick="openEditModal(${dl.id})" title="ویرایش">
+                <i class="material-icons">edit</i>
+            </button>
+            <button class="dl-action-btn delete-btn" onclick="deleteDeadline(${dl.id})" title="حذف">
+                <i class="material-icons">delete_outline</i>
+            </button>
+        </div>
+    </div>`;
+}
+
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۶. All Deadlines List & Filter
+   ═══════════════════════════════════════════════════════ */
+
+function renderAllDeadlines() {
+    const list = document.getElementById('all-deadlines-list');
+    let data = [...allDeadlines];
+    if (filterType !== 'all') data = data.filter(dl => dl.deadline_type === filterType);
+    data.sort((a,b) => a.due_date.localeCompare(b.due_date));
+    if (data.length === 0) {
+        list.innerHTML = `<div class="empty-dl-state"><i class="material-icons">event_busy</i><span>ددلاینی یافت نشد</span></div>`;
+        return;
+    }
+    list.innerHTML = data.map(dl => renderDeadlineItem(dl)).join('');
+}
+
+function filterDeadlines(type, btn) {
+    filterType = type;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    renderAllDeadlines();
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۷. Countdown Rings (ددلاین‌های نزدیک)
+   ═══════════════════════════════════════════════════════ */
+
+function renderUpcoming() {
+    const near = allDeadlines.filter(dl => !dl.is_done && dl.days_left >= 0 && dl.days_left <= 7);
+    near.sort((a,b) => a.days_left - b.days_left);
+
+    const badge = document.getElementById('upcoming-count');
+    const list  = document.getElementById('upcoming-list');
+    badge.textContent = toPers(near.length);
+
+    if (near.length === 0) {
+        list.innerHTML = `
+            <div class="empty-upcoming">
+                <i class="material-icons">check_circle_outline</i>
+                <span>هیچ ددلاین نزدیکی ندارید</span>
+            </div>`;
+        return;
+    }
+
+    list.innerHTML = near.map(dl => {
+        // محاسبه stroke برای حلقه
+        // circumference برای r=18: 2*π*18 ≈ 113.1
+        const r = 18, cx = 24, cy = 24;
+        const circ = 2 * Math.PI * r;
+        // سهم باقی‌مانده: days_left/7 از دایره (اما حداقل ۱/۷)
+        const fraction = Math.max(dl.days_left, 0) / 7;
+        const dashoffset = circ * (1 - fraction);
+
+        // رنگ حلقه
+        const ringColor = dl.days_left <= 2 ? '#E53935' : dl.days_left <= 4 ? '#FB8C00' : '#43A047';
+
+        return `
+        <div class="countdown-item">
+            <div class="countdown-ring-wrap">
+                <svg width="48" height="48" viewBox="0 0 48 48">
+                    <circle class="ring-bg" cx="${cx}" cy="${cy}" r="${r}"
+                            stroke-dasharray="${circ}" stroke-dashoffset="0"/>
+                    <circle class="ring-fg" cx="${cx}" cy="${cy}" r="${r}"
+                            stroke="${ringColor}"
+                            stroke-dasharray="${circ}"
+                            stroke-dashoffset="${dashoffset}"/>
+                </svg>
+                <div class="ring-label" style="color:${ringColor}">${toPers(dl.days_left)}</div>
+            </div>
+            <div class="countdown-info">
+                <div class="countdown-title">${escHtml(dl.title)}</div>
+                <div class="countdown-meta">
+                    <span class="countdown-type-badge" style="background:${dl.color}22;color:${dl.color}">
+                        ${TYPE_LABELS[dl.deadline_type]||'سایر'}
+                    </span>
+                    &nbsp;${dl.due_date_j}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۸. API Calls
+   ═══════════════════════════════════════════════════════ */
+
+async function loadDeadlines() {
+    try {
+        const res = await fetch('/api/deadlines');
+        if (!res.ok) throw new Error('خطای سرور');
+        allDeadlines = await res.json();
+        renderCalendar();
+        renderUpcoming();
+        renderAllDeadlines();
+        if (selectedDay) renderDayDetail();
+    } catch(e) {
+        showToast('خطا در بارگذاری ددلاین‌ها', 'error');
+    }
+}
+
+async function saveDeadline() {
+    const title = document.getElementById('dl-title').value.trim();
+    if (!title) { showToast('عنوان ددلاین الزامی است', 'error'); return; }
+    const dateVal = document.getElementById('dl-date-hidden').value;
+    if (!dateVal) { showToast('لطفاً تاریخ را انتخاب کنید', 'error'); return; }
+    const type = document.querySelector('input[name="dl-type"]:checked')?.value || 'other';
+    const desc = document.getElementById('dl-desc').value.trim();
+
+    const payload = {
+        title, deadline_type: type, due_date_j: dateVal, description: desc, color: selectedColor
+    };
+
+    const btn = document.getElementById('save-deadline-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="material-icons spin-icon">sync</i> در حال ذخیره...';
+
+    try {
+        const url    = editingId ? `/api/deadlines/${editingId}` : '/api/deadlines';
+        const method = editingId ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+            method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'خطا');
+        showToast(editingId ? 'ددلاین ویرایش شد ✓' : 'ددلاین اضافه شد ✓', 'success');
+        closeDeadlineModal();
+        await loadDeadlines();
+    } catch(e) {
+        showToast('خطا: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="material-icons">save</i> ذخیره';
+    }
+}
+
+async function deleteDeadline(id) {
+    if (!confirm('آیا این ددلاین حذف شود؟')) return;
+    try {
+        const res = await fetch(`/api/deadlines/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('خطا');
+        showToast('ددلاین حذف شد', 'success');
+        await loadDeadlines();
+    } catch(e) {
+        showToast('خطا در حذف', 'error');
+    }
+}
+
+async function toggleDone(id) {
+    const dl = allDeadlines.find(d => d.id === id);
+    if (!dl) return;
+    try {
+        await fetch(`/api/deadlines/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ is_done: !dl.is_done })
+        });
+        await loadDeadlines();
+    } catch(e) {
+        showToast('خطا', 'error');
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۹. Modal Management
+   ═══════════════════════════════════════════════════════ */
+
+function openAddModal(preSelectedDate) {
+    editingId = null;
+    document.getElementById('modal-title-label').innerHTML = '<i class="material-icons">add_task</i> ددلاین جدید';
+    document.getElementById('dl-title').value = '';
+    document.getElementById('dl-desc').value = '';
+    document.getElementById('dl-date-hidden').value = '';
+    document.getElementById('dl-date-label').textContent = 'انتخاب تاریخ...';
+    document.getElementById('dl-date-display').classList.remove('has-date');
+    document.querySelector('input[name="dl-type"][value="project"]').checked = true;
+    selectedColor = '#00838F';
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.toggle('active', s.dataset.color === selectedColor));
+    miniSelected = preSelectedDate || (selectedDay ? { ...selectedDay } : null);
+    if (miniSelected) setModalDate(miniSelected.jy, miniSelected.jm, miniSelected.jd);
+    document.getElementById('deadline-modal').classList.add('open');
+}
+
+function openEditModal(id) {
+    const dl = allDeadlines.find(d => d.id === id);
+    if (!dl) return;
+    editingId = id;
+    document.getElementById('modal-title-label').innerHTML = '<i class="material-icons">edit</i> ویرایش ددلاین';
+    document.getElementById('dl-title').value = dl.title;
+    document.getElementById('dl-desc').value = dl.description || '';
+    const [gy, gm, gd] = dl.due_date.split('-').map(Number);
+    const [jy, jm, jd] = gToJ(gy, gm, gd);
+    setModalDate(jy, jm, jd);
+    const typeRadio = document.querySelector(`input[name="dl-type"][value="${dl.deadline_type}"]`);
+    if (typeRadio) typeRadio.checked = true;
+    selectedColor = dl.color || '#00838F';
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.toggle('active', s.dataset.color === selectedColor));
+    document.getElementById('deadline-modal').classList.add('open');
+}
+
+function closeDeadlineModal() {
+    document.getElementById('deadline-modal').classList.remove('open');
+    editingId = null;
+}
+
+function openDatePickerForModal() {
+    miniYear  = miniSelected ? miniSelected.jy  : TODAY_JY;
+    miniMonth = miniSelected ? miniSelected.jm : TODAY_JM;
+    renderMiniPicker();
+    document.getElementById('mini-date-picker').classList.add('open');
+}
+
+function closeMiniPicker() {
+    document.getElementById('mini-date-picker').classList.remove('open');
+}
+
+function changeMiniMonth(dir) {
+    miniMonth += dir;
+    if (miniMonth > 12) { miniMonth=1; miniYear++; }
+    if (miniMonth < 1)  { miniMonth=12; miniYear--; }
+    renderMiniPicker();
+}
+
+function miniGoToToday() { miniYear=TODAY_JY; miniMonth=TODAY_JM; renderMiniPicker(); }
+
+function renderMiniPicker() {
+    document.getElementById('mini-month-name').textContent = JALALI_MONTHS[miniMonth-1];
+    document.getElementById('mini-year').textContent = toPers(miniYear);
+    const grid = document.getElementById('mini-picker-grid');
+    grid.innerHTML = '';
+    const days    = jDaysInMonth(miniYear, miniMonth);
+    const firstWd = jWeekday(miniYear, miniMonth, 1);
+    for (let i=0; i<firstWd; i++) {
+        const b = document.createElement('button');
+        b.className = 'cal-day empty-day'; b.disabled = true; grid.appendChild(b);
+    }
+    for (let d=1; d<=days; d++) {
+        const btn = document.createElement('button');
+        btn.className = 'cal-day';
+        btn.textContent = toPers(d);
+        const isToday = (miniYear===TODAY_JY && miniMonth===TODAY_JM && d===TODAY_JD);
+        const isSel   = miniSelected && miniSelected.jy===miniYear && miniSelected.jm===miniMonth && miniSelected.jd===d;
+        if (isToday) btn.classList.add('today-day');
+        if (isSel)   btn.classList.add('selected-day');
+        btn.onclick = () => { setModalDate(miniYear, miniMonth, d); closeMiniPicker(); };
+        grid.appendChild(btn);
+    }
+}
+
+function setModalDate(jy, jm, jd) {
+    miniSelected = {jy, jm, jd};
+    const jalaliStr = formatJalali(jy, jm, jd);
+    document.getElementById('dl-date-hidden').value = jalaliStr;
+    document.getElementById('dl-date-label').textContent = `${jd} ${JALALI_MONTHS[jm-1]} ${toPers(jy)}`;
+    document.getElementById('dl-date-display').classList.add('has-date');
+}
+
+function selectColor(btn) {
+    selectedColor = btn.dataset.color;
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۱۰. Share Modal
+   ═══════════════════════════════════════════════════════ */
+
+let sharingDeadlineId = null;
+
+function openShareModalFor(id) {
+    const dl = allDeadlines.find(d => d.id === id);
+    if (!dl) return;
+    sharingDeadlineId = id;
+    const typeLabel = TYPE_LABELS[dl.deadline_type] || 'سایر';
+    document.getElementById('share-preview').innerHTML = `
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;">
+            <div style="width:10px;height:10px;border-radius:50%;background:${dl.color};flex-shrink:0;"></div>
+            <strong style="font-size:.95rem;">${escHtml(dl.title)}</strong>
+        </div>
+        <div style="font-size:.82rem;color:var(--text-secondary);">
+            <span>${typeLabel}</span> &nbsp;|&nbsp;
+            <span>تاریخ: ${dl.due_date_j}</span>
+            ${dl.days_left >= 0 ? `&nbsp;|&nbsp;<span>${toPers(dl.days_left)} روز مانده</span>` : ''}
+        </div>
+        ${dl.description ? `<div style="font-size:.82rem;margin-top:.5rem;color:var(--text-secondary);">${escHtml(dl.description)}</div>` : ''}
+    `;
+    document.getElementById('share-modal').classList.add('open');
+}
+
+function closeShareModal() {
+    document.getElementById('share-modal').classList.remove('open');
+    sharingDeadlineId = null;
+}
+
+async function shareDeadline(targetType) {
+    if (!sharingDeadlineId) return;
+    const btn = document.querySelector('.share-group-btn');
+    btn.disabled = true;
+    try {
+        const payload = { target_type: targetType };
+        const res = await fetch(`/api/deadlines/${sharingDeadlineId}/share`, {
+            method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'خطا');
+        showToast('ددلاین با موفقیت در گروه به اشتراک گذاشته شد ✓', 'success');
+        closeShareModal();
+    } catch(e) {
+        showToast('خطا در اشتراک‌گذاری: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۱۱. Toast
+   ═══════════════════════════════════════════════════════ */
+
+function showToast(msg, type='success') {
+    document.getElementById('dl-toast')?.remove();
+    const t = document.createElement('div');
+    t.id = 'dl-toast';
+    const bg = type==='success'
+        ? 'linear-gradient(135deg,var(--success),#1b5e20)'
+        : 'linear-gradient(135deg,var(--error),#b71c1c)';
+    t.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+        background:${bg};color:white;padding:.8rem 1.75rem;border-radius:24px;
+        font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);
+        display:flex;align-items:center;gap:.5rem;animation:fadeUp .25s ease;font-family:inherit;
+        white-space:nowrap;`;
+    t.innerHTML = `<i class="material-icons" style="font-size:1.1rem;">${type==='success'?'check_circle':'error'}</i>${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 3500);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۱۲. Init
+   ═══════════════════════════════════════════════════════ */
+
+document.addEventListener('DOMContentLoaded', function () {
+    // نمایش تاریخ امروز در هدر
+    document.getElementById('today-jalali-label').textContent =
+        `امروز: ${toPers(TODAY_JD)} ${JALALI_MONTHS[TODAY_JM-1]} ${toPers(TODAY_JY)}`;
+
+    // انتخاب امروز به صورت پیش‌فرض
+    selectedDay = { jy: TODAY_JY, jm: TODAY_JM, jd: TODAY_JD };
+
+    loadDeadlines();
+
+    // Escape key
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            closeDeadlineModal(); closeShareModal(); closeMiniPicker();
+        }
+    });
+});
+</script>
+{% endblock %}
