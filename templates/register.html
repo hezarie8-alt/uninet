@@ -2,6 +2,13 @@
 
 {% block title %}ورود و ثبت‌نام | یونی نت{% endblock %}
 
+{#
+  مشکل ۸: این flag به base.html می‌گوید که در این صفحه
+  فوتر (قسمت درباره ما، ارتباط با ما و...) نشان داده نشود.
+  در base.html باید شرط {% if not hide_footer %} اضافه شود.
+#}
+{% set hide_footer = true %}
+
 {% block content %}
 <div class="auth-container">
 
@@ -13,7 +20,7 @@
         <p class="auth-subtitle">پلتفرم یکپارچه دانشجویی</p>
     </div>
 
-    <!-- نمایش پیام‌های flash (موفقیت یا خطا از سرور) -->
+    <!-- نمایش پیام‌های flash از سرور -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -51,13 +58,9 @@
                 ایجاد حساب کاربری
             </h2>
 
-            <!--
-                مورد ۶: خلاصه خطاهای client-side
-                این div پیش‌فرض پنهان است. اگر کاربر فرم ناقص ارسال کند،
-                JavaScript لیست فیلدهای خالی/نادرست را اینجا نمایش می‌دهد
-                و صفحه به آن اسکرول می‌کند.
-            -->
-            <div class="validation-summary" id="reg-validation-summary" style="display:none;" role="alert" aria-live="polite">
+            <!-- خلاصه خطاهای client-side -->
+            <div class="validation-summary" id="reg-validation-summary"
+                 style="display:none;" role="alert" aria-live="polite">
                 <div class="validation-summary-header">
                     <i class="material-icons">warning_amber</i>
                     <strong>لطفاً موارد زیر را تکمیل کنید:</strong>
@@ -69,6 +72,7 @@
                   id="register-form" onsubmit="return validateRegisterForm(event)">
                 {{ form.hidden_tag() }}
 
+                <!-- نام و نام خانوادگی -->
                 <div class="form-group">
                     {{ form.full_name.label(class="form-label") }}
                     {{ form.full_name(
@@ -83,7 +87,6 @@
                             {{ form.full_name.errors[0] }}
                         </div>
                     {% else %}
-                        <!-- ظرف خالی برای نمایش خطاهای client-side -->
                         <div class="field-error" id="err-full-name" style="display:none;">
                             <i class="material-icons">error_outline</i>
                             <span></span>
@@ -91,6 +94,7 @@
                     {% endif %}
                 </div>
 
+                <!-- شماره دانشجویی -->
                 <div class="form-group">
                     {{ form.student_id.label(class="form-label") }}
                     {{ form.student_id(
@@ -112,13 +116,13 @@
                             <span></span>
                         </div>
                     {% endif %}
-                    <!-- راهنمای ظریف زیر فیلد شماره دانشجویی -->
                     <div class="field-hint">
                         <i class="material-icons">info_outline</i>
                         شماره دانشجویی شناسه یکتای شما در سیستم است.
                     </div>
                 </div>
 
+                <!-- رشته تحصیلی -->
                 <div class="form-group">
                     {{ form.major.label(class="form-label") }}
                     {{ form.major(
@@ -138,6 +142,7 @@
                     {% endif %}
                 </div>
 
+                <!-- رمز عبور (کد ملی) — بدون نشانگر قدرت -->
                 <div class="form-group">
                     {{ form.password.label(class="form-label") }}
                     <div class="input-with-toggle">
@@ -166,15 +171,14 @@
                             <span></span>
                         </div>
                     {% endif %}
-                    <!-- نشانگر قدرت رمز عبور — مورد ۶: بازخورد بصری فوری -->
-                    <div class="password-strength-bar" id="password-strength-bar" style="display:none;">
-                        <div class="strength-track">
-                            <div class="strength-fill" id="strength-fill"></div>
-                        </div>
-                        <span class="strength-label" id="strength-label"></span>
-                    </div>
+                    {#
+                      نشانگر قدرت رمز عبور حذف شد —
+                      چون رمز در این سیستم همیشه کد ملی (۱۰ رقم ثابت) است
+                      و نشان دادن سطح قدرت معنایی ندارد.
+                    #}
                 </div>
 
+                <!-- تکرار رمز عبور -->
                 <div class="form-group">
                     {{ form.confirm_password.label(class="form-label") }}
                     <div class="input-with-toggle">
@@ -228,10 +232,9 @@
                 ورود به سامانه
             </h2>
 
-            <!--
-                مورد ۶: خلاصه خطاهای client-side برای فرم ورود
-            -->
-            <div class="validation-summary" id="login-validation-summary" style="display:none;" role="alert" aria-live="polite">
+            <!-- خلاصه خطاهای client-side -->
+            <div class="validation-summary" id="login-validation-summary"
+                 style="display:none;" role="alert" aria-live="polite">
                 <div class="validation-summary-header">
                     <i class="material-icons">warning_amber</i>
                     <strong>لطفاً موارد زیر را تکمیل کنید:</strong>
@@ -243,6 +246,7 @@
                   id="login-form" onsubmit="return validateLoginForm(event)">
                 {{ login_form.hidden_tag() }}
 
+                <!-- شماره دانشجویی -->
                 <div class="form-group">
                     {{ login_form.student_id.label(class="form-label") }}
                     {{ login_form.student_id(
@@ -264,6 +268,7 @@
                     {% endif %}
                 </div>
 
+                <!-- رمز عبور -->
                 <div class="form-group">
                     {{ login_form.password.label(class="form-label") }}
                     <div class="input-with-toggle">
@@ -310,22 +315,15 @@
 </div><!-- /auth-container -->
 
 <style>
-/* ==========================================
-   Auth Container
-========================================== */
+/* ── Auth Container ── */
 .auth-container {
     max-width: 500px;
     margin: 2rem auto;
     padding: 0 1rem 3rem;
 }
 
-/* ==========================================
-   Header
-========================================== */
-.auth-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
+/* ── Header ── */
+.auth-header { text-align: center; margin-bottom: 2rem; }
 .auth-logo {
     width: 70px; height: 70px;
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
@@ -336,45 +334,29 @@
 }
 .auth-logo i { font-size: 2.2rem; color: white; }
 .auth-title {
-    font-size: 1.85rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: .4rem;
+    font-size: 1.85rem; font-weight: 700;
+    color: var(--primary-color); margin-bottom: .4rem;
 }
 .auth-subtitle { color: var(--text-secondary); font-size: .95rem; }
 
-/* ==========================================
-   Flash Alert
-========================================== */
+/* ── Flash Alerts ── */
 .auth-alert {
     display: flex; align-items: center; gap: .6rem;
-    padding: .85rem 1.1rem;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-    font-size: .9rem; font-weight: 500;
+    padding: .85rem 1.1rem; border-radius: 10px;
+    margin-bottom: 1rem; font-size: .9rem; font-weight: 500;
 }
 .auth-alert i { font-size: 1.1rem; flex-shrink: 0; }
 .auth-alert-success {
-    background: rgba(46,125,50,.1);
-    border: 1px solid rgba(46,125,50,.25);
-    color: var(--success);
+    background: rgba(46,125,50,.1); border: 1px solid rgba(46,125,50,.25); color: var(--success);
 }
 .auth-alert-error {
-    background: rgba(183,28,28,.08);
-    border: 1px solid rgba(183,28,28,.2);
-    color: var(--error);
+    background: rgba(183,28,28,.08); border: 1px solid rgba(183,28,28,.2); color: var(--error);
 }
 .auth-alert-info {
-    background: rgba(2,136,209,.08);
-    border: 1px solid rgba(2,136,209,.2);
-    color: var(--info);
+    background: rgba(2,136,209,.08); border: 1px solid rgba(2,136,209,.2); color: var(--info);
 }
 
-/* ==========================================
-   مورد ۶: Validation Summary Box
-   این جعبه وقتی فرم ناقص ارسال شد ظاهر می‌شود
-   و دقیقاً می‌گوید کدام فیلد‌ها مشکل دارند.
-========================================== */
+/* ── Validation Summary ── */
 .validation-summary {
     background: rgba(183,28,28,.06);
     border: 1.5px solid rgba(183,28,28,.25);
@@ -390,73 +372,46 @@
 }
 .validation-summary-header {
     display: flex; align-items: center; gap: .4rem;
-    color: var(--error);
-    font-size: .92rem;
-    margin-bottom: .55rem;
+    color: var(--error); font-size: .92rem; margin-bottom: .55rem;
 }
 .validation-summary-header i { font-size: 1.1rem; flex-shrink: 0; }
 .validation-summary-list {
-    list-style: none;
-    margin: 0; padding: 0;
+    list-style: none; margin: 0; padding: 0;
     display: flex; flex-direction: column; gap: .3rem;
 }
 .validation-summary-list li {
     display: flex; align-items: center; gap: .4rem;
-    font-size: .86rem;
-    color: var(--error);
-    cursor: pointer; /* کلیک روی خطا کاربر را به فیلد مربوطه می‌برد */
-    border-radius: 5px;
-    padding: .15rem .3rem;
-    transition: background .15s;
+    font-size: .86rem; color: var(--error);
+    cursor: pointer; border-radius: 5px;
+    padding: .15rem .3rem; transition: background .15s;
 }
-.validation-summary-list li:hover {
-    background: rgba(183,28,28,.08);
-}
-.validation-summary-list li::before {
-    content: '•';
-    font-size: 1rem;
-    flex-shrink: 0;
-}
+.validation-summary-list li:hover { background: rgba(183,28,28,.08); }
+.validation-summary-list li::before { content: '•'; font-size: 1rem; flex-shrink: 0; }
 
-/* ==========================================
-   Tabs
-========================================== */
+/* ── Tabs ── */
 .auth-tabs {
     display: flex;
     background: var(--surface);
     border: 1px solid var(--border-color);
-    border-radius: 14px;
-    padding: 5px;
+    border-radius: 14px; padding: 5px;
     margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    gap: 4px;
+    box-shadow: var(--shadow-sm); gap: 4px;
 }
 .auth-tab {
-    flex: 1;
-    text-align: center;
-    padding: .7rem .5rem;
-    cursor: pointer;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: .9rem;
-    color: var(--text-secondary);
+    flex: 1; text-align: center; padding: .7rem .5rem;
+    cursor: pointer; border-radius: 10px;
+    font-weight: 600; font-size: .9rem; color: var(--text-secondary);
     transition: all .25s;
     display: flex; align-items: center; justify-content: center; gap: .35rem;
     user-select: none;
 }
-.auth-tab:hover {
-    background: var(--background);
-    color: var(--primary-color);
-}
+.auth-tab:hover { background: var(--background); color: var(--primary-color); }
 .auth-tab.active {
-    background: var(--primary-color);
-    color: white;
+    background: var(--primary-color); color: white;
     box-shadow: 0 4px 12px rgba(0,131,143,.3);
 }
 
-/* ==========================================
-   Tab Content
-========================================== */
+/* ── Tab Content ── */
 .auth-tab-content { display: none; animation: authFadeIn .3s ease; }
 .auth-tab-content.active { display: block; }
 @keyframes authFadeIn {
@@ -464,58 +419,36 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ==========================================
-   Form Card
-========================================== */
+/* ── Form Card ── */
 .auth-form-card {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: var(--shadow-md);
+    background: var(--surface); border-radius: 16px;
+    padding: 2rem; box-shadow: var(--shadow-md);
     border: 1px solid var(--border-color);
 }
 .form-section-title {
     display: flex; align-items: center; gap: .5rem;
-    font-size: 1.1rem; font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    padding-bottom: .85rem;
+    font-size: 1.1rem; font-weight: 700; color: var(--primary-color);
+    margin-bottom: 1.5rem; padding-bottom: .85rem;
     border-bottom: 1px solid var(--border-color);
 }
 .form-section-title i { font-size: 1.2rem; }
 
-/* ==========================================
-   Input با دکمه نمایش رمز
-========================================== */
-.input-with-toggle {
-    position: relative;
-    display: flex; align-items: center;
-}
-.input-with-toggle .form-control {
-    padding-left: 2.75rem;
-    width: 100%;
-}
+/* ── Input با دکمه نمایش رمز ── */
+.input-with-toggle { position: relative; display: flex; align-items: center; }
+.input-with-toggle .form-control { padding-left: 2.75rem; width: 100%; }
 .toggle-password-btn {
-    position: absolute;
-    left: .6rem;
+    position: absolute; left: .6rem;
     background: none; border: none; cursor: pointer;
     color: var(--text-secondary); padding: .25rem;
     display: flex; align-items: center;
-    border-radius: 50%;
-    transition: color .2s;
-    line-height: 1;
+    border-radius: 50%; transition: color .2s; line-height: 1;
 }
 .toggle-password-btn:hover { color: var(--primary-color); }
 .toggle-password-btn i { font-size: 1.15rem; }
 
-/* ==========================================
-   خطای فیلد
-========================================== */
+/* ── Field Errors ── */
 .input-error { border-color: var(--error) !important; }
-/* انیمیشن shake برای فیلدهای نادرست — بازخورد بصری فوری */
-.input-error.shake {
-    animation: shakeInput .35s ease;
-}
+.input-error.shake { animation: shakeInput .35s ease; }
 @keyframes shakeInput {
     0%, 100% { transform: translateX(0); }
     20% { transform: translateX(-5px); }
@@ -525,77 +458,31 @@
 }
 .field-error {
     display: flex; align-items: center; gap: .3rem;
-    color: var(--error); font-size: .82rem;
-    margin-top: .35rem;
+    color: var(--error); font-size: .82rem; margin-top: .35rem;
 }
 .field-error i { font-size: .9rem; flex-shrink: 0; }
 
-/* ==========================================
-   راهنمای زیر فیلد (hint)
-========================================== */
+/* ── Field Hint ── */
 .field-hint {
     display: flex; align-items: center; gap: .25rem;
-    color: var(--text-secondary); font-size: .78rem;
-    margin-top: .3rem;
+    color: var(--text-secondary); font-size: .78rem; margin-top: .3rem;
 }
 .field-hint i { font-size: .85rem; }
 
-/* ==========================================
-   مورد ۶: نشانگر قدرت رمز عبور
-   بازخورد بصری فوری هنگام تایپ
-========================================== */
-.password-strength-bar {
-    margin-top: .5rem;
-    display: flex; align-items: center; gap: .6rem;
-}
-.strength-track {
-    flex: 1;
-    height: 5px;
-    background: var(--border-color);
-    border-radius: 4px;
-    overflow: hidden;
-}
-.strength-fill {
-    height: 100%;
-    border-radius: 4px;
-    transition: width .3s ease, background-color .3s ease;
-    width: 0%;
-}
-.strength-fill.weak   { width: 33%; background: var(--error); }
-.strength-fill.medium { width: 66%; background: #ff9800; }
-.strength-fill.strong { width: 100%; background: var(--success); }
-.strength-label {
-    font-size: .75rem;
-    font-weight: 600;
-    white-space: nowrap;
-}
-.strength-label.weak   { color: var(--error); }
-.strength-label.medium { color: #e65100; }
-.strength-label.strong { color: var(--success); }
-
-/* ==========================================
-   دکمه ارسال
-========================================== */
+/* ── Submit Button ── */
 .auth-submit-btn {
-    width: 100%;
-    margin-top: 1.25rem;
-    padding: .85rem;
-    font-size: 1rem; font-weight: 600;
-    border-radius: 10px;
-    justify-content: center;
+    width: 100%; margin-top: 1.25rem;
+    padding: .85rem; font-size: 1rem; font-weight: 600;
+    border-radius: 10px; justify-content: center;
 }
 
-/* لینک تغییر تب */
+/* ── Switch Hint ── */
 .auth-switch-hint {
-    text-align: center;
-    margin-top: 1.25rem;
-    font-size: .88rem;
-    color: var(--text-secondary);
+    text-align: center; margin-top: 1.25rem;
+    font-size: .88rem; color: var(--text-secondary);
 }
 .auth-switch-hint a {
-    color: var(--primary-color);
-    font-weight: 600;
-    text-decoration: none;
+    color: var(--primary-color); font-weight: 600; text-decoration: none;
 }
 .auth-switch-hint a:hover { text-decoration: underline; }
 </style>
@@ -603,28 +490,18 @@
 
 {% block scripts %}
 <script>
-/* ==========================================
-   switchTab — تعویض بین ثبت‌نام و ورود
-   پاس دادن this به عنوان آرگومان از طریق HTML
-   تضمین می‌کند که همیشه دقیقاً خود div.auth-tab
-   که کلیک شده active می‌شود، نه یک child element.
-========================================== */
+/* ── switchTab ── */
 function switchTab(tabName, tabBtn) {
     document.querySelectorAll('.auth-tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.auth-tab').forEach(el => el.classList.remove('active'));
-
     const content = document.getElementById(tabName + '-tab');
     if (content) content.classList.add('active');
     if (tabBtn) tabBtn.classList.add('active');
-
-    // پاک کردن summary اگر تب تغییر کرد
     hideSummary('reg-validation-summary');
     hideSummary('login-validation-summary');
 }
 
-/* ==========================================
-   نمایش/مخفی کردن رمز عبور
-========================================== */
+/* ── نمایش/مخفی کردن رمز ── */
 function togglePassword(inputId, btn) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -638,41 +515,31 @@ function togglePassword(inputId, btn) {
     }
 }
 
-/* ==========================================
-   Utility — مدیریت نمایش خطاهای فیلد
-   هر دو فرم از این توابع مشترک استفاده می‌کنند.
-========================================== */
+/* ── Utility: مدیریت خطاهای فیلد ── */
 
 /**
- * یک خطا را روی یک فیلد نمایش می‌دهد:
- * - border فیلد قرمز می‌شود
- * - انیمیشن shake اجرا می‌شود
- * - پیغام خطا زیر فیلد ظاهر می‌شود
+ * خطا را روی یک فیلد نشان می‌دهد:
+ * border قرمز + انیمیشن shake + پیام زیر فیلد
  */
 function showFieldError(inputId, errId, message) {
     const input = document.getElementById(inputId);
     const errEl = document.getElementById(errId);
     if (input) {
         input.classList.add('input-error');
-        // اجرای مجدد انیمیشن shake با re-trigger
+        // برای اینکه shake دوباره اجرا شود، ابتدا حذف و بعد اضافه می‌کنیم
         input.classList.remove('shake');
-        void input.offsetWidth; // force reflow
+        void input.offsetWidth; // force reflow — بدون این مرورگر تغییر را نمی‌بیند
         input.classList.add('shake');
         setTimeout(() => input.classList.remove('shake'), 400);
     }
     if (errEl) {
-        const span = errEl.querySelector('span') || errEl;
-        // اگر ظرف span داشته باشد پیام را داخل آن می‌گذاریم
-        if (errEl.querySelector('span')) {
-            errEl.querySelector('span').textContent = message;
-        }
+        const span = errEl.querySelector('span');
+        if (span) span.textContent = message;
         errEl.style.display = 'flex';
     }
 }
 
-/**
- * خطای یک فیلد را پاک می‌کند
- */
+/** خطای یک فیلد را پاک می‌کند */
 function clearFieldError(inputId, errId) {
     const input = document.getElementById(inputId);
     const errEl = document.getElementById(errId);
@@ -681,23 +548,17 @@ function clearFieldError(inputId, errId) {
 }
 
 /**
- * جعبه خلاصه خطاها را نشان می‌دهد.
- * هر آیتم لیست با کلیک به فیلد مربوطه focus می‌کند.
- *
- * @param {string} summaryId — id جعبه validation-summary
- * @param {string} listId    — id آیتم ul داخل جعبه
- * @param {Array}  errors    — آرایه‌ای از {message, inputId}
+ * جعبه خلاصه خطاها را نمایش می‌دهد.
+ * کلیک روی هر آیتم، کاربر را مستقیماً به فیلد مربوطه می‌برد.
  */
 function showSummary(summaryId, listId, errors) {
     const summary = document.getElementById(summaryId);
     const list = document.getElementById(listId);
     if (!summary || !list) return;
-
     list.innerHTML = '';
     errors.forEach(function(err) {
         const li = document.createElement('li');
         li.textContent = err.message;
-        // کلیک روی هر خطا کاربر را مستقیماً به آن فیلد می‌برد
         li.addEventListener('click', function() {
             const field = document.getElementById(err.inputId);
             if (field) {
@@ -707,9 +568,7 @@ function showSummary(summaryId, listId, errors) {
         });
         list.appendChild(li);
     });
-
     summary.style.display = 'block';
-    // اسکرول صفحه به بالای جعبه خطا تا کاربر فوری ببیند
     summary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -718,21 +577,9 @@ function hideSummary(summaryId) {
     if (el) el.style.display = 'none';
 }
 
-/* ==========================================
-   مورد ۶: اعتبارسنجی فرم ثبت‌نام (client-side)
-   این تابع قبل از هر ارسال به سرور اجرا می‌شود.
-   اگر خطایی پیدا کند false برمی‌گرداند و
-   ارسال فرم متوقف می‌شود.
-==========================================
-   منطق اعتبارسنجی:
-   ۱. نام: نباید خالی باشد
-   ۲. شماره دانشجویی: باید دقیقاً ۱۰ رقم باشد
-   ۳. رشته: باید یکی غیر از مقدار خالی انتخاب شده باشد
-   ۴. رمز: باید دقیقاً ۱۰ رقم باشد
-   ۵. تکرار رمز: باید با رمز یکسان باشد
-========================================== */
+/* ── اعتبارسنجی فرم ثبت‌نام ── */
 function validateRegisterForm(event) {
-    // ابتدا همه خطاهای قبلی را پاک کن
+    // پاک کردن همه خطاهای قبلی
     clearFieldError('reg-full-name', 'err-full-name');
     clearFieldError('reg-student-id', 'err-student-id');
     clearFieldError('reg-major', 'err-major');
@@ -740,7 +587,7 @@ function validateRegisterForm(event) {
     clearFieldError('reg-confirm-password', 'err-confirm-password');
     hideSummary('reg-validation-summary');
 
-    const errors = []; // آرایه خطاهای یافت‌شده — برای summary
+    const errors = [];
     let isValid = true;
 
     // ۱. نام و نام خانوادگی
@@ -795,20 +642,15 @@ function validateRegisterForm(event) {
         isValid = false;
     }
 
-    // اگر خطا وجود دارد جعبه summary را نمایش بده و ارسال را متوقف کن
     if (!isValid) {
         event.preventDefault();
         showSummary('reg-validation-summary', 'reg-validation-list', errors);
         return false;
     }
-
     return true;
 }
 
-/* ==========================================
-   مورد ۶: اعتبارسنجی فرم ورود (client-side)
-   ساده‌تر — فقط خالی نبودن فیلدها را بررسی می‌کند
-========================================== */
+/* ── اعتبارسنجی فرم ورود ── */
 function validateLoginForm(event) {
     clearFieldError('login-student-id', 'err-login-student-id');
     clearFieldError('login-password', 'err-login-password');
@@ -836,33 +678,33 @@ function validateLoginForm(event) {
         showSummary('login-validation-summary', 'login-validation-list', errors);
         return false;
     }
-
     return true;
 }
 
-/* ==========================================
-   مورد ۶: پاک کردن خطا هنگام تایپ کاربر
-   وقتی کاربر یک فیلد خطادار را شروع به اصلاح می‌کند،
-   خطای آن فیلد بلافاصله پاک می‌شود — UX روان‌تر.
-========================================== */
+/* ── پاک کردن خطا هنگام تایپ ── */
 document.addEventListener('DOMContentLoaded', function () {
 
-    // جفت‌های [inputId, errorId] برای فرم ثبت‌نام
-    var regFields = [
-        ['reg-full-name',         'err-full-name'],
-        ['reg-student-id',        'err-student-id'],
-        ['reg-major',             'err-major'],
-        ['reg-password',          'err-password'],
-        ['reg-confirm-password',  'err-confirm-password'],
-    ];
+    // فیلدهای فرم ثبت‌نام — وقتی کاربر شروع به تایپ می‌کند خطا پاک می‌شود
+    [
+        ['reg-full-name',        'err-full-name'],
+        ['reg-student-id',       'err-student-id'],
+        ['reg-major',            'err-major'],
+        ['reg-password',         'err-password'],
+        ['reg-confirm-password', 'err-confirm-password'],
+    ].forEach(function(pair) {
+        var input = document.getElementById(pair[0]);
+        if (!input) return;
+        var eventType = input.tagName === 'SELECT' ? 'change' : 'input';
+        input.addEventListener(eventType, function() {
+            clearFieldError(pair[0], pair[1]);
+        });
+    });
 
-    // جفت‌های فرم ورود
-    var loginFields = [
-        ['login-student-id',   'err-login-student-id'],
-        ['login-password',     'err-login-password'],
-    ];
-
-    regFields.forEach(function(pair) {
+    // فیلدهای فرم ورود
+    [
+        ['login-student-id', 'err-login-student-id'],
+        ['login-password',   'err-login-password'],
+    ].forEach(function(pair) {
         var input = document.getElementById(pair[0]);
         if (!input) return;
         input.addEventListener('input', function() {
@@ -870,56 +712,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    loginFields.forEach(function(pair) {
-        var input = document.getElementById(pair[0]);
-        if (!input) return;
-        input.addEventListener('input', function() {
-            clearFieldError(pair[0], pair[1]);
-        });
-    });
-
-    /* ==========================================
-       نشانگر قدرت رمز عبور
-       چون رمز در این سیستم کد ملی (۱۰ رقم) است،
-       ارزیابی ساده: ۱-۵ رقم = ضعیف، ۶-۹ = متوسط، ۱۰ = قوی
-    ========================================== */
-    var passwordInput = document.getElementById('reg-password');
-    var strengthBar   = document.getElementById('password-strength-bar');
-    var strengthFill  = document.getElementById('strength-fill');
-    var strengthLabel = document.getElementById('strength-label');
-
-    if (passwordInput) {
-        passwordInput.addEventListener('input', function() {
-            var val = passwordInput.value;
-            if (!val) {
-                strengthBar.style.display = 'none';
-                return;
-            }
-            strengthBar.style.display = 'flex';
-
-            // پاک کردن کلاس‌های قبلی
-            strengthFill.className = 'strength-fill';
-            strengthLabel.className = 'strength-label';
-
-            if (val.length < 5) {
-                strengthFill.classList.add('weak');
-                strengthLabel.classList.add('weak');
-                strengthLabel.textContent = 'ضعیف';
-            } else if (val.length < 10) {
-                strengthFill.classList.add('medium');
-                strengthLabel.classList.add('medium');
-                strengthLabel.textContent = 'متوسط';
-            } else {
-                strengthFill.classList.add('strong');
-                strengthLabel.classList.add('strong');
-                strengthLabel.textContent = 'مناسب';
-            }
-        });
-    }
-
-    /* ==========================================
-       تغییر خودکار تب اگر server-side validation خطا برگرداند
-    ========================================== */
+    /*
+      اگر سرور خطای اعتبارسنجی برگرداند، تب صحیح را به صورت خودکار فعال کن.
+      این حالت وقتی پیش می‌آید که JavaScript غیرفعال بوده یا
+      خطای server-side رخ داده باشد.
+    */
     {% if login_form.errors %}
         switchTab('login', document.getElementById('tab-btn-login'));
     {% endif %}

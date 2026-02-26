@@ -793,6 +793,61 @@
 .empty-state-full i { font-size:3.5rem; margin-bottom:.75rem; display:block; }
 .empty-state-full h3 { margin-bottom:.5rem; color:var(--text-primary); }
 
+/* ────── Holiday Highlighting (از API) ────── */
+.jalali-day.holiday {
+    color: var(--error) !important;
+    font-weight: 700;
+    position: relative;
+}
+.jalali-day.holiday::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px; height: 4px;
+    background: var(--error);
+    border-radius: 50%;
+}
+.jalali-day.holiday.selected {
+    color: white !important;
+    background: var(--error) !important;
+    box-shadow: 0 2px 8px rgba(183,28,28,.35);
+}
+.jalali-day.holiday.selected::after {
+    background: rgba(255,255,255,.6);
+}
+.jalali-calendar-loading {
+    grid-column: span 7;
+    text-align: center;
+    padding: 1.25rem 0;
+    color: var(--text-secondary);
+    font-size: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+}
+.jalali-holiday-legend {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .75rem;
+    color: var(--error);
+    margin-top: .6rem;
+    padding-top: .6rem;
+    border-top: 1px dashed var(--border-color);
+    justify-content: center;
+    opacity: .85;
+}
+.jalali-holiday-legend span.dot {
+    width: 6px; height: 6px;
+    background: var(--error);
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
 @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
@@ -913,128 +968,130 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal('
  * Converts Gregorian date to Jalali.
  * Returns [jy, jm, jd]
  */
+/* =====================================================
+   Jalali ↔ Gregorian Conversion
+   الگوریتم استاندارد — نسخه اصلاح‌شده
+   ===================================================== */
+
 function gregorianToJalali(gy, gm, gd) {
-    const g_d_no = [0,31,59+(gy%4===0&&(gy%100!==0||gy%400===0)?1:0),90,120,151,181,212,243,273,304,334];
-    let jy, jm, jd, j_day_no, g_day_no, leap;
-    g_day_no = 365*(gy-1600)+(Math.floor((gy-1600)/4))-Math.floor((gy-1600)/100)+Math.floor((gy-1600)/400);
-    g_day_no += g_d_no[gm-1] + (gd-1);
-    j_day_no = g_day_no - 79;
-    const j_np = Math.floor(j_day_no / 12053);
+    const g_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const j_days = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+
+    // سال میلادی کبیسه؟
+    if ((gy % 4 === 0 && gy % 100 !== 0) || gy % 400 === 0) g_days[1] = 29;
+
+    let g_day_no = 365 * (gy - 1600)
+        + Math.floor((gy - 1600) / 4)
+        - Math.floor((gy - 1600) / 100)
+        + Math.floor((gy - 1600) / 400);
+
+    for (let i = 0; i < gm - 1; i++) g_day_no += g_days[i];
+    g_day_no += gd - 1;
+
+    let j_day_no = g_day_no - 79;
+    const j_np   = Math.floor(j_day_no / 12053);
     j_day_no %= 12053;
-    jy = 979 + 33*j_np + 4*Math.floor(j_day_no/1461);
+
+    let jy = 979 + 33 * j_np + 4 * Math.floor(j_day_no / 1461);
     j_day_no %= 1461;
-    if (j_day_no >= 366) { jy += Math.floor((j_day_no-1)/365); j_day_no = (j_day_no-1) % 365; }
-    for (let i=0; i<11 && j_day_no >= [31,31,31,31,31,31,30,30,30,30,30][i]; ++i) {
-        j_day_no -= [31,31,31,31,31,31,30,30,30,30,30][i]; jy += i===0?0:0; /* noop */ jm = i+2;
+
+    if (j_day_no >= 366) {
+        jy += Math.floor((j_day_no - 1) / 365);
+        j_day_no  = (j_day_no - 1) % 365;
     }
-    // correct jm
-    const months=[31,31,31,31,31,31,30,30,30,30,30,29];
-    jm=1;
-    for(let i=0;i<12;i++){
-        if(j_day_no<months[i]){jm=i+1;jd=j_day_no+1;break;}
-        j_day_no-=months[i];
+
+    // محاسبه دقیق ماه و روز — حلقه اصلاح‌شده
+    let jm = 12, jd = j_day_no + 1;
+    for (let i = 0; i < 11; i++) {
+        if (j_day_no < j_days[i]) { jm = i + 1; jd = j_day_no + 1; break; }
+        j_day_no -= j_days[i];
     }
     return [jy, jm, jd];
 }
 
-/**
- * Converts Jalali date to Gregorian.
- * Returns [gy, gm, gd]
- */
-function jalaliToGregorian(jy, jm, jd) {
-    jy += 1595;
-    let days = -355779 + (365+Math.floor(jy/4))*jy + Math.floor((jy/128+2)/3)*29 +
-               Math.floor(((jm+Math.floor((jm-1)/6))*30)+Math.max(Math.floor((jm-1)/6),0)*(jm-7)*-1+(jm<=6?jm:jm-1)*0) + jd;
-    // simpler direct method:
-    const jdCon = jy*365+Math.floor((jy-474+474)/2820)*683+Math.floor(((jy-474+474)%2820)*365+(Math.floor(((jy-474+474)%2820)*365/2820))*682)+
-                  Math.floor((jm<=6?jm-1:jm-1)*30+(jm>6?(jm-7)*1:0))+jd+1948319.5;
-    return julianToGregorian(jdCon);
-}
-
-function julianToGregorian(jd) {
-    jd = Math.floor(jd+0.5);
-    let a = jd + 32044;
-    let b = Math.floor((4*a+3)/146097);
-    let c = a - Math.floor(b*146097/4);
-    let d = Math.floor((4*c+3)/1461);
-    let e = c - Math.floor(d*1461/4);
-    let m = Math.floor((5*e+2)/153);
-    let day = e - Math.floor((153*m+2)/5)+1;
-    let month = m + 3 - 12*Math.floor(m/10);
-    let year = b*100 + d - 4800 + Math.floor(m/10);
-    return [year, month, day];
-}
-
-/* cleaner algorithm using a known epoch approach */
 function jToG(jy, jm, jd) {
-    // Confirmed working algorithm
-    const gDays = [ 0,31,59,90,120,151,181,212,243,273,304,334 ];
-    let gy = jy + 621;
-    let gm, gd;
-    let jDayOfYear = (jm - 1) * 30 + Math.min(jm - 1, 6) + (jd - 1);
-    // Calculate March equinox offset for year jy
-    // Using lookup table approach for simplicity and accuracy
-    let leap_j = ((jy - (jy > 0 ? 474 : 473)) % 2820 + 474 + 38) * 682;
-    // Simple approach: count days from Jalali epoch
-    let epoch = 1948438.5; // Jalali epoch (1/1/1 = Julian 1948438.5)
-    // days from jy/1/1
-    let yCycleNo = Math.floor((jy - 474) / 2820);
-    let yRem = (jy - 474) % 2820;
-    if (yRem < 0) yRem += 2820;
-    let d = epoch - 1 + 1029983 * yCycleNo + Math.floor((yRem * 682 + 110) / 2816) * (yRem < 2816/682 ? 0 : 1);
-    d += 365 * yRem + Math.floor((682 * yRem + 110) / 2816);
-    // month days
-    for (let i = 1; i < jm; i++) d += (i <= 6) ? 31 : 30;
-    d += jd;
-    // convert Julian day to Gregorian
-    let j = Math.floor(d) + 32082;
-    let y4 = Math.floor((4*j+3)/1461);
-    let r  = j - Math.floor(1461*y4/4);
-    let m5 = Math.floor((5*r+2)/153);
-    gd = r - Math.floor((153*m5+2)/5) + 1;
-    gm = m5 + 3 - 12*Math.floor(m5/10);
-    gy = y4 - 4800 + Math.floor(m5/10);
-    return [gy, gm, gd];
+    // تبدیل شمسی به میلادی — برای محاسبه روز هفته
+    let j = jy - 474;
+    let jC = 474 + j % 2820;
+    let julianDay = jd
+        + (jm <= 6 ? (jm - 1) * 31 : (jm - 1) * 30 + 6)
+        + Math.floor((jC * 682 - 110) / 2816)
+        + (jC - 1) * 365
+        + Math.floor(j / 2820) * 1029983
+        + 1948319.5;
+    julianDay = Math.floor(julianDay + 0.5);
+    let a = julianDay + 32082;
+    let b = Math.floor((4 * a + 3) / 146097);
+    let c = a - Math.floor(b * 146097 / 4);
+    let d = Math.floor((4 * c + 3) / 1461);
+    let e = c - Math.floor(d * 1461 / 4);
+    let m = Math.floor((5 * e + 2) / 153);
+    let gd2 = e - Math.floor((153 * m + 2) / 5) + 1;
+    let gm2 = m + 3 - 12 * Math.floor(m / 10);
+    let gy2 = b * 100 + d - 4800 + Math.floor(m / 10);
+    return [gy2, gm2, gd2];
 }
 
-/**
- * Get number of days in a Jalali month.
- */
 function jalaliMonthDays(jy, jm) {
-    if (jm <= 6) return 31;
+    if (jm <= 6)  return 31;
     if (jm <= 11) return 30;
-    // Month 12: 29 or 30 (leap year check)
-    return isJalaliLeap(jy) ? 30 : 29;
+    // اسفند: بررسی سال کبیسه شمسی
+    const rem = ((jy - (jy > 0 ? 474 : 473)) % 2820 + 474 + 38) % 2820;
+    return [1,5,9,13,17,22,26,30].includes(rem % 474 % 29) ? 30 : 29;
 }
 
-function isJalaliLeap(jy) {
-    const leaps = [1,5,9,13,17,22,26,30];
-    return leaps.includes(((jy - (jy > 0 ? 474 : 473)) % 2820 + 474 + 38) % 2820 % 474 % 29);
-}
-
-/**
- * Get weekday (0=Saturday ... 6=Friday) for Jalali date.
- */
 function jalaliWeekday(jy, jm, jd) {
+    // برگشت: 0=شنبه، 1=یکشنبه، ... 6=جمعه
     const [gy, gm, gd] = jToG(jy, jm, jd);
-    const date = new Date(gy, gm - 1, gd);
-    // JS: 0=Sunday, we want 0=Saturday
-    return (date.getDay() + 1) % 7;
+    return (new Date(gy, gm - 1, gd).getDay() + 1) % 7;
 }
 
-const JALALI_MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const JALALI_MONTHS = [
+    'فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور',
+    'مهر','آبان','آذر','دی','بهمن','اسفند'
+];
+
+/* =====================================================
+   Holiday Cache & Fetcher
+   کش سمت کلاینت — هر ماه فقط یک بار از سرور خوانده می‌شود
+   ===================================================== */
+// ساختار: { "jy/jm": { 1: {is_holiday, events}, 2: {...}, ... } }
+const holidayMonthCache = {};
+
+async function fetchHolidaysForMonth(jy, jm) {
+    const key = `${jy}/${jm}`;
+
+    // کش سمت کلاینت — بدون هیچ درخواستی
+    if (holidayMonthCache[key]) return holidayMonthCache[key];
+
+    try {
+        const resp = await fetch(`/api/holidays/${jy}/${jm}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        // تبدیل کلیدها به عدد (JSON همه کلیدها را رشته می‌کند)
+        const normalized = {};
+        for (const [k, v] of Object.entries(data)) normalized[parseInt(k)] = v;
+        holidayMonthCache[key] = normalized;
+        return normalized;
+    } catch (err) {
+        console.warn('Holiday API fetch failed:', err);
+        // در صورت خطا، ماه را بدون تعطیلات نمایش می‌دهیم
+        return {};
+    }
+}
 
 /* =====================================================
    Datepicker State
    ===================================================== */
-let pickerTarget = null;   // 'cancel' | 'start' | 'end'
+let pickerTarget = null;
 let pickerYear   = 1400;
 let pickerMonth  = 1;
-let pickerSelected = { cancel: null, start: null, end: null }; // {jy,jm,jd} or null
+let pickerSelected = { cancel: null, start: null, end: null };
 
-// Get today's Jalali date on load
 const _now = new Date();
-const [todayJY, todayJM, todayJD] = gregorianToJalali(_now.getFullYear(), _now.getMonth()+1, _now.getDate());
+const [todayJY, todayJM, todayJD] = gregorianToJalali(
+    _now.getFullYear(), _now.getMonth() + 1, _now.getDate()
+);
 
 function openJalaliPicker(target) {
     pickerTarget = target;
@@ -1045,7 +1102,7 @@ function openJalaliPicker(target) {
         pickerYear  = todayJY;
         pickerMonth = todayJM;
     }
-    renderJalaliCalendar();
+    renderJalaliCalendar();   // async — بدون await، UI بلافاصله باز می‌شود
     document.getElementById('jalali-picker-popup').classList.add('open');
 }
 
@@ -1068,64 +1125,109 @@ function changeJalaliMonth(dir) {
     renderJalaliCalendar();
 }
 
-function renderJalaliCalendar() {
+/* =====================================================
+   Calendar Renderer — async (تعطیلات از API)
+   ===================================================== */
+async function renderJalaliCalendar() {
     document.getElementById('jalali-month-label').textContent = JALALI_MONTHS[pickerMonth - 1];
     document.getElementById('jalali-year-label').textContent  = pickerYear;
-    const grid    = document.getElementById('jalali-days-grid');
+
+    const grid = document.getElementById('jalali-days-grid');
+
+    // نمایش loading در حین دریافت داده
+    grid.innerHTML = `
+        <div class="jalali-calendar-loading">
+            <i class="material-icons" style="animation:spin 1s linear infinite;display:inline-block;font-size:1rem;">sync</i>
+            بارگذاری تعطیلات...
+        </div>`;
+
+    // دریافت تعطیلات (از کش یا API)
+    const holidays = await fetchHolidaysForMonth(pickerYear, pickerMonth);
+
     const days    = jalaliMonthDays(pickerYear, pickerMonth);
-    const firstWd = jalaliWeekday(pickerYear, pickerMonth, 1); // 0=شنبه
+    const firstWd = jalaliWeekday(pickerYear, pickerMonth, 1);
     const sel     = pickerSelected[pickerTarget];
+
     grid.innerHTML = '';
-    // blank slots before day 1
+
+    // خانه‌های خالی قبل از روز اول
     for (let i = 0; i < firstWd; i++) {
         const blank = document.createElement('button');
         blank.type = 'button';
         blank.className = 'jalali-day empty';
         grid.appendChild(blank);
     }
+
     for (let d = 1; d <= days; d++) {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'jalali-day';
         btn.textContent = toPersianNum(d);
-        const isToday = (pickerYear === todayJY && pickerMonth === todayJM && d === todayJD);
+
+        const colIndex   = (firstWd + d - 1) % 7;  // 6 = جمعه
+        const isToday    = (pickerYear === todayJY && pickerMonth === todayJM && d === todayJD);
         const isSelected = sel && sel.jy === pickerYear && sel.jm === pickerMonth && sel.jd === d;
+        const dayData    = holidays[d] || {};
+
+        // یا API تعطیل می‌داند یا جمعه است
+        const isHoliday  = dayData.is_holiday || colIndex === 6;
+        const events     = dayData.events || [];
+
         if (isToday)    btn.classList.add('today');
         if (isSelected) btn.classList.add('selected');
+
+        if (isHoliday) {
+            btn.classList.add('holiday');
+            // tooltip: نام رویداد از API یا «جمعه»
+            const tooltipText = events.length > 0
+                ? events.join(' | ')
+                : (colIndex === 6 ? 'جمعه' : 'تعطیل رسمی');
+            btn.title = tooltipText;
+        }
+
         btn.onclick = () => selectJalaliDay(d);
         grid.appendChild(btn);
     }
+
+    // راهنمای پایین تقویم
+    const existingLegend = grid.parentElement.querySelector('.jalali-holiday-legend');
+    if (existingLegend) existingLegend.remove();
+    const legend = document.createElement('div');
+    legend.className = 'jalali-holiday-legend';
+    legend.innerHTML = '<span class="dot"></span> تعطیل رسمی — برای مشاهده نام رویداد نگه دارید';
+    grid.parentElement.appendChild(legend);
 }
 
 function selectJalaliDay(jd) {
     pickerSelected[pickerTarget] = { jy: pickerYear, jm: pickerMonth, jd: jd };
-    const jalaliStr = `${pickerYear}/${String(pickerMonth).padStart(2,'0')}/${String(jd).padStart(2,'0')}`;
-    const displayStr = `${pickerYear}/${String(pickerMonth).padStart(2,'0')}/${String(jd).padStart(2,'0')} — ${JALALI_MONTHS[pickerMonth-1]}`;
-    // update hidden inputs
+    const jalaliStr  = `${pickerYear}/${String(pickerMonth).padStart(2,'0')}/${String(jd).padStart(2,'0')}`;
+    const displayStr = `${jalaliStr} — ${JALALI_MONTHS[pickerMonth - 1]}`;
+
     const displayMap = { cancel: 'cancel_date_display', start: 'start_date_display', end: 'end_date_display' };
-    const hiddenMap  = { cancel: 'cancel_date_j_input', start: 'start_date_j_input', end: 'end_date_j_input' };
+    const hiddenMap  = { cancel: 'cancel_date_j_input', start: 'start_date_j_input', end:  'end_date_j_input' };
+    const wrapMap    = { cancel: 'picker-cancel',       start: 'picker-start',       end:  'picker-end'       };
+
     document.getElementById(displayMap[pickerTarget]).value = displayStr;
     document.getElementById(hiddenMap[pickerTarget]).value  = jalaliStr;
-    // show clear button
-    const wrappers = { cancel: 'picker-cancel', start: 'picker-start', end: 'picker-end' };
-    const clearBtn = document.getElementById(wrappers[pickerTarget]).querySelector('.jalali-clear-btn');
-    if (clearBtn) clearBtn.classList.remove('hidden');
-    renderJalaliCalendar();
-    // auto close after short delay
+    document.getElementById(wrapMap[pickerTarget]).querySelector('.jalali-clear-btn').classList.remove('hidden');
+
+    renderJalaliCalendar();   // refresh برای نمایش حالت selected
     setTimeout(() => document.getElementById('jalali-picker-popup').classList.remove('open'), 200);
 }
 
 function clearJalaliDate(target) {
     pickerSelected[target] = null;
     const displayMap = { cancel: 'cancel_date_display', start: 'start_date_display', end: 'end_date_display' };
-    const hiddenMap  = { cancel: 'cancel_date_j_input', start: 'start_date_j_input', end: 'end_date_j_input' };
+    const hiddenMap  = { cancel: 'cancel_date_j_input', start: 'start_date_j_input', end:  'end_date_j_input' };
+    const wrapMap    = { cancel: 'picker-cancel',       start: 'picker-start',       end:  'picker-end'       };
     document.getElementById(displayMap[target]).value = '';
     document.getElementById(hiddenMap[target]).value  = '';
-    const wrappers = { cancel: 'picker-cancel', start: 'picker-start', end: 'picker-end' };
-    const clearBtn = document.getElementById(wrappers[target]).querySelector('.jalali-clear-btn');
-    if (clearBtn) clearBtn.classList.add('hidden');
+    document.getElementById(wrapMap[target]).querySelector('.jalali-clear-btn').classList.add('hidden');
 }
 
+function toPersianNum(n) {
+    return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+}
 function toPersianNum(n) {
     return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 }

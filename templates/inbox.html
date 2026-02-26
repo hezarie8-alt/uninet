@@ -279,6 +279,19 @@
 .empty-icon-wrap i { font-size: 2.5rem; color: var(--primary-color); opacity: .5; }
 .inbox-empty-state h3 { font-size: 1.05rem; color: var(--text-primary); margin: 0; }
 .inbox-empty-state p { font-size: .88rem; margin: 0; max-width: 280px; }
+
+/* ─── Dark Mode ─── */
+[data-theme="dark"] .inbox-header-card { background: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .inbox-card { background: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .inbox-card-header { background: #242526; border-color: #3a3b3c; }
+[data-theme="dark"] .convo-count-badge { background: #3a3b3c; border-color: #4a4b4c; }
+[data-theme="dark"] .conversation-item { border-color: #3a3b3c; color: var(--text-primary); }
+[data-theme="dark"] .conversation-item:hover { background: #3a3b3c; }
+[data-theme="dark"] .conversation-item.has-unread { background: rgba(79,179,191,.07); border-right-color: var(--primary-color); }
+[data-theme="dark"] .conversation-item.has-unread:hover { background: rgba(79,179,191,.12); }
+[data-theme="dark"] .conv-online-dot { border-color: #2d2f31; }
+
+
 </style>
 {% endblock %}
 

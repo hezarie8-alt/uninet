@@ -626,6 +626,33 @@
     .res-toolbar-right { justify-content: space-between; }
     .res-filter-chips { display: none; } /* در موبایل فیلتر داخل accordion */
 }
+
+/* ─── Dark Mode ─── */
+[data-theme="dark"] .res-search-input { background: #3a3b3c; border-color: #4a4b4c; }
+[data-theme="dark"] .res-chip { background: #2d2f31; border-color: #3a3b3c; color: var(--text-secondary); }
+[data-theme="dark"] .res-chip.active { background: var(--primary-color); color: white; }
+[data-theme="dark"] .res-sort-wrap { background: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .res-sort-select { color: var(--text-primary); }
+[data-theme="dark"] .view-toggle { background: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .view-btn { color: var(--text-secondary); }
+[data-theme="dark"] .res-stats-bar { background: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .course-section-header { background: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .course-body { background: #1c1e21; border-color: #3a3b3c; }
+[data-theme="dark"] .res-card { background: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .res-row { background: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .res-action-btn { background: #3a3b3c; border-color: #4a4b4c; color: var(--text-secondary); }
+[data-theme="dark"] .res-action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(79,179,191,.1); }
+[data-theme="dark"] .res-action-btn.liked { border-color: var(--error); color: var(--error); background: rgba(239,83,80,.1); }
+[data-theme="dark"] .res-modal-card { background: #242526; border-color: #3a3b3c; }
+[data-theme="dark"] .dropzone { background: #1c1e21; border-color: #4a4b4c; }
+[data-theme="dark"] .dropzone:hover { background: rgba(79,179,191,.05); }
+[data-theme="dark"] .up-form-input { background: #3a3b3c; border-color: #4a4b4c; color: var(--text-primary); }
+[data-theme="dark"] .course-suggestions { background: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .type-chip-up span { background: #3a3b3c; border-color: #4a4b4c; }
+[data-theme="dark"] .res-card-divider { border-color: #3a3b3c; }
+[data-theme="dark"] .dropzone-formats { background: #2d2f31; border-color: #3a3b3c; }
+
+
 </style>
 
 <!-- ═══════════════════════════════════════════
@@ -740,6 +767,10 @@ async function submitUpload() {
                 }
             };
             xhr.onerror = () => reject(new Error('خطای شبکه'));
+            xhr.setRequestHeader('X-CSRFToken',
+            document.cookie.split(';').find(c => c.trim().startsWith('csrf_token='))
+            ?.split('=')[1] || ''
+        );
             xhr.send(formData);
         });
 

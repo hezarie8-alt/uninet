@@ -12,13 +12,33 @@
     <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
-    <!-- Dark Mode Script (اجرا قبل از رندر برای جلوگیری از flash) -->
+    <!-- Dark Mode Script — اجرا قبل از رندر برای جلوگیری از flash -->
     <script>
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme === 'dark' || (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
+        (function() {
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (saved === 'dark' || (!saved && prefersDark)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        })();
     </script>
+
+    <!-- مسئله ۸: پنهان کردن footer در صفحاتی غیر از index و about -->
+    <script>
+        (function() {
+            const path = window.location.pathname;
+            const showFooterPaths = ['/', '/about'];
+            if (!showFooterPaths.includes(path)) {
+                document.documentElement.classList.add('hide-footer-early');
+            }
+        })();
+    </script>
+    <style>
+        html.hide-footer-early .footer { display: none !important; }
+        body.hide-footer .footer { display: none !important; }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
@@ -32,16 +52,16 @@
                     <li>
                         <a href="{{ url_for('dashboard') }}" class="nav-link">
                             <i class="material-icons">dashboard</i>
-                            داشبورد
+                            <span>داشبورد</span>
                         </a>
                     </li>
                     
                     <!-- پیام‌رسان (Dropdown) -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="chatDropdown" role="button"
-                           onclick="toggleDropdown('chat-menu')">
+                           onclick="toggleDropdown('chat-menu'); return false;">
                             <i class="material-icons">chat</i>
-                            پیام‌رسان
+                            <span>پیام‌رسان</span>
                         </a>
                         <div class="dropdown-menu-nav" id="chat-menu">
                             <a class="dropdown-item" href="{{ url_for('chat_main') }}">
@@ -63,19 +83,19 @@
                         </div>
                     </li>
 
-                    <!-- ددلاین — مورد ۹: بخش جدید ددلاین با تقویم شمسی -->
+                    <!-- ددلاین -->
                     <li>
-                        <a href="{{ url_for('deadline_page') }}" class="nav-link nav-link-deadline">
+                        <a href="{{ url_for('deadline_page') }}" class="nav-link">
                             <i class="material-icons">event_note</i>
-                            ددلاین
+                            <span>ددلاین</span>
                         </a>
                     </li>
 
-                    <!-- منابع درسی — مورد ۱۰: بخش جدید اشتراک‌گذاری فایل -->
+                    <!-- منابع درسی -->
                     <li>
-                        <a href="{{ url_for('resources_page') }}" class="nav-link nav-link-resources">
+                        <a href="{{ url_for('resources_page') }}" class="nav-link">
                             <i class="material-icons">library_books</i>
-                            منابع درسی
+                            <span>منابع درسی</span>
                         </a>
                     </li>
 
@@ -85,24 +105,22 @@
                             <a href="{{ url_for('admin_dashboard') }}" class="nav-link"
                                style="color: #ffeb3b;">
                                 <i class="material-icons">admin_panel_settings</i>
-                                مدیریت
+                                <span>مدیریت</span>
                             </a>
                         </li>
                     {% endif %}
 
                 {% else %}
                     <!-- حالت مهمان -->
-                    <li><a href="{{ url_for('index') }}" class="nav-link">صفحه اصلی</a></li>
-                    <li><a href="{{ url_for('about') }}" class="nav-link">درباره ما</a></li>
-                    <li><a href="{{ url_for('show_auth_page') }}" class="nav-link">ورود / ثبت‌نام</a></li>
+                    <li><a href="{{ url_for('index') }}" class="nav-link"><span>صفحه اصلی</span></a></li>
+                    <li><a href="{{ url_for('about') }}" class="nav-link"><span>درباره ما</span></a></li>
+                    <li><a href="{{ url_for('show_auth_page') }}" class="nav-link"><span>ورود / ثبت‌نام</span></a></li>
                 {% endif %}
             </ul>
             
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <!-- تغییر تم روشن/تاریک -->
-                <button id="theme-toggle" class="nav-link"
-                        style="background: none; border: none; cursor: pointer;"
-                        title="تغییر تم">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <!-- تغییر تم روشن/تاریک — مسئله ۷ -->
+                <button id="theme-toggle" class="dark-mode-toggle" title="تغییر تم">
                     <i class="material-icons" id="theme-icon">light_mode</i>
                 </button>
 
@@ -127,10 +145,6 @@
                                 <i class="material-icons">person</i>
                                 پروفایل من
                             </a>
-                            {#
-                                مورد ۸: قابلیت حذف اکانت کاملاً برداشته شده —
-                                هیچ لینک یا دکمه‌ای برای delete account وجود ندارد.
-                            #}
                             <a href="{{ url_for('logout') }}" class="dropdown-item danger">
                                 <i class="material-icons">exit_to_app</i>
                                 خروج
@@ -174,9 +188,9 @@
         {% block content %}{% endblock %}
     </main>
     
-    <!-- Footer -->
+    <!-- Footer — مسئله ۸: فقط در index و about نمایش داده می‌شود -->
     <footer class="footer">
-        <div class="container" style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+        <div class="container" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
             <div class="footer-section">
                 <h3 class="footer-title">درباره ما</h3>
                 <ul class="footer-links">
@@ -192,125 +206,202 @@
                 </ul>
             </div>
         </div>
-        <div class="copyright">
+        <div class="copyright" style="margin-top: 1.5rem; padding-top: 1rem;
+             border-top: 1px solid rgba(255,255,255,0.15); text-align: center;
+             color: rgba(255,255,255,0.7); font-size: 0.85rem;">
             <p>© 2025 یونی نت. تمام حقوق محفوظ است.</p>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
     <script>
         /* =====================================================
-           تم روشن / تاریک
+           تم روشن / تاریک — مسئله ۷
            ===================================================== */
-        const toggleBtn = document.getElementById('theme-toggle');
-        const htmlElement = document.documentElement;
-        const themeIcon = document.getElementById('theme-icon');
+        const toggleBtn   = document.getElementById('theme-toggle');
+        const htmlEl      = document.documentElement;
+        const themeIcon   = document.getElementById('theme-icon');
 
-        function updateIcon() {
-            themeIcon.textContent = htmlElement.getAttribute('data-theme') === 'dark'
-                ? 'dark_mode'
-                : 'light_mode';
-        }
-        updateIcon();
-
-        toggleBtn.addEventListener('click', () => {
-            if (htmlElement.getAttribute('data-theme') === 'dark') {
-                htmlElement.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'light');
-            } else {
-                htmlElement.setAttribute('data-theme', 'dark');
+        function applyTheme(dark) {
+            if (dark) {
+                htmlEl.setAttribute('data-theme', 'dark');
                 localStorage.setItem('theme', 'dark');
+            } else {
+                htmlEl.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
             }
-            updateIcon();
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const isDark = htmlEl.getAttribute('data-theme') === 'dark';
+            themeIcon.textContent = isDark ? 'dark_mode' : 'light_mode';
+        }
+
+        updateThemeIcon();
+
+        toggleBtn.addEventListener('click', function() {
+            const isDark = htmlEl.getAttribute('data-theme') === 'dark';
+            applyTheme(!isDark);
         });
+
+        /* گوش دادن به تغییر system preference */
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            if (!localStorage.getItem('theme')) {
+                applyTheme(e.matches);
+            }
+        });
+
+        /* =====================================================
+           مسئله ۸: پنهان کردن footer در صفحاتی غیر از index/about
+           ===================================================== */
+        (function() {
+            const path = window.location.pathname;
+            const showFooterPaths = ['/', '/about'];
+            const footer = document.querySelector('.footer');
+            if (footer && !showFooterPaths.includes(path)) {
+                footer.style.display = 'none';
+            }
+        })();
 
         /* =====================================================
            مدیریت dropdown های navbar
            ===================================================== */
         function toggleDropdown(id) {
             const menu = document.getElementById(id);
-            if (menu.style.display === 'block') {
-                menu.style.display = 'none';
-            } else {
+            if (!menu) return;
+            const isOpen = menu.style.display === 'block';
+            // بستن همه منوها
+            document.querySelectorAll('.dropdown-menu-nav').forEach(m => {
+                m.style.display = 'none';
+            });
+            if (!isOpen) {
                 menu.style.display = 'block';
             }
         }
 
-        /* بستن dropdown در صورت کلیک خارج از آن */
+        /* بستن dropdown در صورت کلیک خارج */
         window.addEventListener('click', function(event) {
-            if (!event.target.matches('.dropdown-toggle')) {
-                document.querySelectorAll('.dropdown-menu-nav').forEach(menu => {
-                    menu.style.display = 'none';
+            if (!event.target.closest('.nav-item.dropdown')) {
+                document.querySelectorAll('.dropdown-menu-nav').forEach(m => {
+                    m.style.display = 'none';
                 });
             }
         });
 
         /* =====================================================
            مشخص کردن لینک فعال در navbar بر اساس URL جاری
-           این کمک می‌کند کاربر بداند در کدام بخش است.
            ===================================================== */
         document.addEventListener('DOMContentLoaded', function () {
             const currentPath = window.location.pathname;
-            document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
-                if (link.getAttribute('href') && link.getAttribute('href') !== '#') {
-                    // مقایسه دقیق مسیر (نه starts-with تا داشبورد همیشه active نباشه)
-                    if (currentPath === link.getAttribute('href') ||
-                        (currentPath.startsWith(link.getAttribute('href')) &&
-                         link.getAttribute('href') !== '/')) {
+            document.querySelectorAll('.navbar-nav .nav-link').forEach(function(link) {
+                const href = link.getAttribute('href');
+                if (!href || href === '#') return;
+                try {
+                    const linkPath = new URL(href, window.location.origin).pathname;
+                    if (
+                        currentPath === linkPath ||
+                        (linkPath !== '/' && currentPath.startsWith(linkPath))
+                    ) {
                         link.classList.add('active');
                     }
-                }
+                } catch(e) {}
             });
         });
     </script>
 
     {% block scripts %}{% endblock %}
+
+    <!-- Navbar و Dropdown styles — درون base.html برای جلوگیری از FOUC -->
+    <style>
+        /* Navbar Dropdown */
+        .nav-item { position: relative; }
+
+        .dropdown-menu-nav {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            background-color: var(--surface);
+            min-width: 200px;
+            box-shadow: var(--shadow-lg);
+            border-radius: 10px;
+            z-index: 1001;
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0;
+            animation: fadeIn 0.15s ease;
+        }
+
+        .dropdown-menu-nav .dropdown-item {
+            padding: 0.7rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            transition: background 0.15s;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .dropdown-menu-nav .dropdown-item:hover {
+            background-color: var(--background);
+        }
+        .dropdown-menu-nav .dropdown-item i {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        /* لینک فعال در navbar */
+        .navbar-nav .nav-link.active {
+            background-color: rgba(255,255,255,0.2);
+            font-weight: 600;
+        }
+
+        /* ایمن‌سازی دارک مود برای dropdown */
+        [data-theme="dark"] .dropdown-menu-nav {
+            background-color: #2d2f31;
+            border-color: #3a3b3c;
+        }
+        [data-theme="dark"] .dropdown-menu-nav .dropdown-item {
+            color: #e4e6eb;
+        }
+        [data-theme="dark"] .dropdown-menu-nav .dropdown-item:hover {
+            background-color: #3a3b3c;
+        }
+
+        /* Flash message دارک مود */
+        [data-theme="dark"] .alert {
+            border-radius: 8px;
+        }
+
+        /* Main content — فضای مناسب */
+        .main-content {
+            min-height: calc(100vh - 60px);
+        }
+
+        /* Dark mode toggle در navbar */
+        .dark-mode-toggle {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            padding: 0;
+        }
+        .dark-mode-toggle:hover {
+            background: rgba(255,255,255,0.28);
+            transform: rotate(15deg) scale(1.08);
+        }
+        .dark-mode-toggle .material-icons {
+            font-size: 1.2rem;
+        }
+    </style>
 </body>
 </html>
-
-<style>
-    /* =====================================================
-       Navbar Dropdown — chat menu
-       ===================================================== */
-    .nav-item { position: relative; }
-
-    .dropdown-menu-nav {
-        display: none;
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background-color: var(--surface);
-        min-width: 200px;
-        box-shadow: var(--shadow-lg);
-        border-radius: 8px;
-        z-index: 1000;
-        border: 1px solid var(--border-color);
-        padding: 0.5rem 0;
-    }
-
-    .dropdown-menu-nav .dropdown-item {
-        padding: 0.75rem 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--text-primary);
-        transition: background 0.2s;
-        text-decoration: none;
-    }
-
-    .dropdown-menu-nav .dropdown-item:hover {
-        background-color: var(--background);
-    }
-
-    /* =====================================================
-       لینک‌های جدید navbar (ددلاین و منابع درسی)
-       با همان ظاهر nav-link اصلی، بدون تغییر در UI
-       ===================================================== */
-
-    /* حالت active برای لینک جاری */
-    .navbar-nav .nav-link.active {
-        color: var(--primary-color);
-        font-weight: 600;
-    }
-</style>

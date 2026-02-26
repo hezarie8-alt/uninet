@@ -98,6 +98,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 csrf = CSRFProtect(app)
 
 ONLINE_USERS_MEMORY = set()
+HOLIDAY_CACHE = {}
 
 # ساعت‌های مجاز تشکیل کلاس
 CLASS_TIME_SLOTS = ['08:00-10:00', '10:00-12:00', '12:00-14:00',
@@ -140,6 +141,7 @@ class User(db.Model):
     last_seen_visibility = db.Column(db.String(20), default='all')   # all / contacts / none
     profile_pic_visibility = db.Column(db.String(20), default='all')
     who_can_message = db.Column(db.String(20), default='all')        # all / none
+    chat_theme = db.Column(db.String(50), default='default')
 
 
 class Message(db.Model):
@@ -414,6 +416,30 @@ class ResourceLike(db.Model):
 # create_initial_data
 # ==========================================
 
+def _fetch_day_holiday(args):
+    """
+    یک روز شمسی را از holidayapi.ir می‌خواند.
+    طراحی شده برای فراخوانی موازی با eventlet.GreenPool.
+    چون eventlet.monkey_patch() اجرا شده، urllib.request
+    به طور خودکار از سوکت‌های سبز (green sockets) استفاده می‌کند.
+    """
+    import urllib.request as urlreq
+    jy, jm, day = args
+    url = f"https://holidayapi.ir/jalali/{jy}/{jm:02d}/{day:02d}"
+    try:
+        req = urlreq.Request(url, headers={'User-Agent': 'UniNet/1.0'})
+        with urlreq.urlopen(req, timeout=6) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            return day, {
+                'is_holiday': bool(data.get('is_holiday', False)),
+                'events': [
+                    e.get('title', '') for e in data.get('events', []) if e.get('title')
+                ]
+            }
+    except Exception:
+        # اگر API پاسخ نداد، روز را تعطیل نمی‌دانیم
+        return day, {'is_holiday': False, 'events': []}
+
 def create_initial_data():
     """ایجاد داده‌های اولیه پس از db.create_all() — ایمن در برابر اجرای مکرر"""
     try:
@@ -481,7 +507,7 @@ def serialize_reactions(reactions_query):
     return result
 
 
-def serialize_message(msg, current_user_id):
+def serialize_message(msg, current_user_id, show_student_id=False):
     """تبدیل Message به dict"""
     reply_data = None
     if msg.reply_to_id and msg.reply_to:
@@ -495,7 +521,7 @@ def serialize_message(msg, current_user_id):
         'sender_id': msg.sender_id,
         'receiver_id': msg.receiver_id,
         'sender_name': msg.sender.full_name if msg.sender else '?',
-        'sender_student_id': msg.sender.student_id if msg.sender else '',
+        'sender_student_id': (msg.sender.student_id if (msg.sender and show_student_id) else ''),
         'content': msg.content,
         'file_path': msg.file_path,
         'timestamp': fmt_time(msg.timestamp),
@@ -509,13 +535,12 @@ def serialize_message(msg, current_user_id):
         'deleted_for_sender': msg.deleted_for_sender,
         'deleted_for_receiver': msg.deleted_for_receiver,
         'forwarded_from_id': msg.forwarded_from_id,
-        # وضعیت تیک
         'status': ('read' if msg.read_at else
                    'delivered' if msg.delivered_at else 'sent')
     }
 
 
-def serialize_group_message(msg, current_user_id):
+def serialize_group_message(msg, current_user_id, show_student_id=False):
     """تبدیل GroupMessage به dict"""
     reply_data = None
     if msg.reply_to_id and msg.reply_to:
@@ -528,7 +553,7 @@ def serialize_group_message(msg, current_user_id):
         'id': msg.id,
         'sender_id': msg.sender_id,
         'sender_name': msg.sender.full_name if msg.sender else '?',
-        'sender_student_id': msg.sender.student_id if msg.sender else '',
+        'sender_student_id': (msg.sender.student_id if (msg.sender and show_student_id) else ''),
         'sender_pic': msg.sender.profile_pic if msg.sender else 'default.jpg',
         'content': '[پیام حذف شده]' if msg.is_deleted else (msg.content or ''),
         'file_path': None if msg.is_deleted else msg.file_path,
@@ -1050,20 +1075,34 @@ def update_schedule():
         if not data:
             return jsonify({'status': 'error', 'message': 'داده‌ای ارسال نشد'}), 400
         user_id = session['current_user_id']
-        ClassSchedule.query.filter_by(
-            user_id=user_id,
-            day=data.get('day'),
-            time_slot=data.get('time_slot')
-        ).delete()
+        week_type = data.get('week_type', 'all')
+        day = data.get('day')
+        time_slot = data.get('time_slot')
+
+        # منطق حذف هوشمند:
+        # اگر 'all' انتخاب شد → همه ورودی‌های آن slot حذف شوند (زوج، فرد، همه)
+        # اگر 'odd' یا 'even' انتخاب شد → فقط همان نوع + 'all' حذف شود تا امکان همزمانی باشد
+        if week_type == 'all':
+            ClassSchedule.query.filter_by(
+                user_id=user_id, day=day, time_slot=time_slot
+            ).delete()
+        else:
+            ClassSchedule.query.filter(
+                ClassSchedule.user_id == user_id,
+                ClassSchedule.day == day,
+                ClassSchedule.time_slot == time_slot,
+                ClassSchedule.week_type.in_([week_type, 'all'])
+            ).delete(synchronize_session=False)
+
         if data.get('course_name') and str(data['course_name']).strip():
             new_schedule = ClassSchedule(
                 user_id=user_id,
-                day=data['day'],
-                time_slot=data['time_slot'],
+                day=day,
+                time_slot=time_slot,
                 course_name=data['course_name'].strip(),
                 class_location=data.get('class_location', '').strip(),
                 professor_name=data.get('professor_name', '').strip(),
-                week_type=data.get('week_type', 'all')
+                week_type=week_type
             )
             db.session.add(new_schedule)
         db.session.commit()
@@ -1510,6 +1549,86 @@ def privacy_settings():
         'who_can_message': user.who_can_message
     })
 
+# ==========================================
+# Routes — Chat Theme
+# ==========================================
+
+@app.route('/api/chat_theme', methods=['GET', 'POST'])
+@csrf.exempt
+@login_required
+def chat_theme():
+    """ذخیره و بازیابی تم شخصی پیام‌رسان"""
+    user = db.session.get(User, session['current_user_id'])
+    if not user:
+        return jsonify({'error': 'کاربر یافت نشد'}), 404
+
+    if request.method == 'POST':
+        try:
+            data = request.get_json() or {}
+            theme = data.get('theme', 'default')
+            # اعتبارسنجی: فقط تم‌های مجاز
+            allowed_themes = [
+                'default', 'ocean', 'forest', 'sunset', 'midnight',
+                'rose', 'aurora', 'desert', 'lavender', 'slate'
+            ]
+            if theme not in allowed_themes:
+                return jsonify({'error': 'تم نامعتبر'}), 400
+            user.chat_theme = theme
+            db.session.commit()
+            return jsonify({'status': 'success', 'theme': theme})
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'error': str(e)}), 500
+
+    return jsonify({'theme': user.chat_theme or 'default'})
+
+
+# ==========================================
+# Routes — Holiday API Proxy
+# ==========================================
+
+@app.route('/api/holidays/<int:jy>/<int:jm>')
+@login_required
+def get_month_holidays(jy, jm):
+    """
+    تعطیلات یک ماه شمسی را از holidayapi.ir می‌خواند و کش می‌کند.
+    تمام روزهای ماه به صورت موازی (با GreenPool) fetch می‌شوند،
+    بنابراین تأخیر کلی برابر تأخیر تک‌درخواست (نه مجموع) است.
+    """
+    # اعتبارسنجی ساده
+    if not (1 <= jm <= 12) or not (1300 <= jy <= 1500):
+        return jsonify({'error': 'پارامتر نامعتبر'}), 400
+
+    cache_key = (jy, jm)
+    if cache_key in HOLIDAY_CACHE:
+        # از کش سرو می‌شود — بدون هیچ درخواست خارجی
+        return jsonify(HOLIDAY_CACHE[cache_key])
+
+    # تعداد روزهای این ماه شمسی
+    if jm <= 6:
+        total_days = 31
+    elif jm <= 11:
+        total_days = 30
+    else:
+        # اسفند: ۲۹ یا ۳۰ روز — محاسبه دقیق
+        try:
+            import jdatetime as _jdt
+            total_days = 30 if _jdt.date(jy, 12, 30) else 29
+        except Exception:
+            total_days = 29
+
+    # fetch موازی: همه روزهای ماه هم‌زمان درخواست می‌شوند
+    args_list = [(jy, jm, d) for d in range(1, total_days + 1)]
+    pool = eventlet.GreenPool(size=total_days)
+
+    month_data = {}
+    for day, day_info in pool.imap(_fetch_day_holiday, args_list):
+        month_data[day] = day_info
+
+    # ذخیره در کش
+    HOLIDAY_CACHE[cache_key] = month_data
+    return jsonify(month_data)
+
 
 # ==========================================
 # Routes — Chat
@@ -1567,6 +1686,7 @@ def chat_main():
 
 
 @app.route('/upload_chat_file', methods=['POST'])
+@csrf.exempt
 @login_required
 def upload_chat_file():
     try:
@@ -1595,15 +1715,21 @@ def check_user_online(user_id):
         'last_seen': fmt_datetime(user.last_seen)
     })
 
-
 @app.route('/api/online_users')
 @login_required
 def get_online_users():
     try:
+        is_admin = session.get('is_admin', False)
         online_ids = list(ONLINE_USERS_MEMORY)
         users = User.query.filter(User.id.in_(online_ids)).all() if online_ids else []
-        result = [{'id': u.id, 'name': u.full_name,
-                   'student_id': u.student_id, 'pic': u.profile_pic} for u in users]
+        result = [
+            {
+                'id': u.id,
+                'name': u.full_name,
+                'student_id': u.student_id if is_admin else '',
+                'pic': u.profile_pic
+            } for u in users
+        ]
         return jsonify(result)
     except Exception:
         return jsonify([])
@@ -1613,6 +1739,7 @@ def get_online_users():
 @login_required
 def get_all_users():
     try:
+        is_admin = session.get('is_admin', False)
         users = User.query.filter(
             User.id != session['current_user_id']
         ).order_by(User.full_name).all()
@@ -1620,7 +1747,7 @@ def get_all_users():
             'id': u.id,
             'name': u.full_name,
             'pic': u.profile_pic,
-            'student_id': u.student_id,
+            'student_id': u.student_id if is_admin else '',
             'is_online': StateManager.is_online(u.id)
         } for u in users]
         return jsonify(result)
@@ -1651,7 +1778,8 @@ def search_messages():
             Message.deleted_for_sender.is_(False),
             Message.deleted_for_receiver.is_(False)
         ).order_by(Message.timestamp.desc()).limit(20).all()
-        return jsonify([serialize_message(m, current_uid) for m in msgs])
+        is_admin = session.get('is_admin', False)
+        return jsonify([serialize_message(m, current_uid, show_student_id=is_admin) for m in msgs])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1860,7 +1988,8 @@ def get_pinned_messages(other_user_id):
             ),
             Message.is_pinned.is_(True)
         ).order_by(Message.timestamp.desc()).all()
-        return jsonify([serialize_message(m, current_uid) for m in pinned])
+        is_admin = session.get('is_admin', False)
+        return jsonify([serialize_message(m, current_uid, show_student_id=is_admin) for m in pinned])
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1961,8 +2090,8 @@ def group_settings():
 @app.route('/api/group/members')
 @login_required
 def get_group_members():
-    """لیست اعضای گروه همراه با نقش هر عضو"""
     try:
+        is_admin = session.get('is_admin', False)
         users = User.query.order_by(User.full_name).all()
         member_map = {m.user_id: m for m in GroupMember.query.all()}
         result = []
@@ -1971,7 +2100,7 @@ def get_group_members():
             result.append({
                 'id': u.id,
                 'name': u.full_name,
-                'student_id': u.student_id,
+                'student_id': u.student_id if is_admin else '',
                 'pic': u.profile_pic,
                 'role': 'admin' if u.is_admin else (member.role if member else 'member'),
                 'is_muted': member.is_muted if member else False,
@@ -2620,6 +2749,7 @@ def _format_size(size_bytes):
 
 
 @app.route('/api/resources', methods=['POST'])
+@csrf.exempt
 @login_required
 def upload_resource():
     try:
@@ -2878,10 +3008,11 @@ def handle_send_message(data):
 
         sender = db.session.get(User, uid)
         room = f"chat-{min(uid, oid)}-{max(uid, oid)}"
+        is_admin_session = session.get('is_admin', False)
         emit('new_message', {
             'message_id': msg.id,
             'sender_name': sender.full_name if sender else '',
-            'sender_student_id': sender.student_id if sender else '',
+            'sender_student_id': (sender.student_id if (sender and is_admin_session) else ''),
             'sender_pic': sender.profile_pic if sender else 'default.jpg',
             'content': content,
             'timestamp': fmt_time(msg.timestamp),
@@ -2967,11 +3098,12 @@ def handle_group_message(data):
                     'sender_name': r_sender.full_name if r_sender else '?'
                 }
 
+        is_admin_session = session.get('is_admin', False)
         emit('new_group_message', {
             'id': msg.id,
             'sender_id': uid,
             'sender_name': user.full_name if user else '',
-            'sender_student_id': user.student_id if user else '',
+            'sender_student_id': (user.student_id if (user and is_admin_session) else ''),
             'sender_pic': user.profile_pic if user else 'default.jpg',
             'content': content,
             'file_path': file_path,

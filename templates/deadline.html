@@ -22,11 +22,17 @@
         </button>
     </div>
 
-    <!-- ===== Main Layout ===== -->
+    <!-- ===== Main Layout: 2×2 Grid ===== -->
+    <!--
+        تغییر ۱۰: چیدمان جدید به صورت دو ردیف دو ستونی:
+        ردیف اول: تقویم (چپ) | جزئیات روز انتخابی (راست)
+        ردیف دوم: ددلاین‌های نزدیک (چپ) | همه ددلاین‌ها (راست)
+        این کار تعادل بصری بهتری ایجاد می‌کند و هر بخش فضای مناسب خودش را دارد.
+    -->
     <div class="deadline-layout">
 
-        <!-- ────── Left: Calendar + Upcoming ────── -->
-        <div class="deadline-left">
+        <!-- ── ردیف اول: تقویم + جزئیات روز ── -->
+        <div class="deadline-row deadline-row--top">
 
             <!-- Calendar Card -->
             <div class="calendar-card">
@@ -41,6 +47,11 @@
                     <button class="cal-nav-btn" onclick="changeMonth(1)" title="ماه بعد">
                         <i class="material-icons">chevron_left</i>
                     </button>
+                </div>
+
+                <!-- نشانگر بارگذاری تعطیلات -->
+                <div id="holiday-loading" class="holiday-loading-bar" style="display:none;">
+                    <div class="holiday-loading-inner"></div>
                 </div>
 
                 <div class="calendar-weekdays">
@@ -60,8 +71,41 @@
                     <div class="cal-legend-item">
                         <span class="cal-legend-dot near-dot"></span><span>نزدیک (کمتر از ۷ روز)</span>
                     </div>
+                    <!-- تغییر ۱۱: اضافه شدن راهنمای تعطیلات به legend -->
+                    <div class="cal-legend-item">
+                        <span class="cal-legend-dot holiday-legend-dot"></span><span>تعطیل رسمی</span>
+                    </div>
                 </div>
             </div>
+
+            <!-- Day Detail Card (کنار تقویم در ردیف اول) -->
+            <div class="day-detail-card" id="day-detail-card">
+                <div class="day-detail-header">
+                    <div class="day-detail-date" id="day-detail-date">
+                        <div class="day-number" id="day-num">—</div>
+                        <div class="day-info">
+                            <span id="day-month-name">روزی انتخاب نشده</span>
+                            <span id="day-year-label" class="day-year"></span>
+                            <!-- تغییر ۱۱: نام تعطیل رسمی روز انتخاب‌شده -->
+                            <span id="day-holiday-name" class="day-holiday-name" style="display:none;"></span>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="openAddModal()" id="add-to-day-btn">
+                        <i class="material-icons">add</i> افزودن
+                    </button>
+                </div>
+
+                <div id="day-deadlines-list" class="day-deadlines-list">
+                    <div class="select-day-hint">
+                        <i class="material-icons">touch_app</i>
+                        <p>روی یک روز در تقویم کلیک کنید</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── ردیف دوم: ددلاین‌های نزدیک + همه ددلاین‌ها ── -->
+        <div class="deadline-row deadline-row--bottom">
 
             <!-- Upcoming / Near Deadlines -->
             <div class="upcoming-card" id="upcoming-card">
@@ -74,33 +118,6 @@
                     <div class="empty-upcoming">
                         <i class="material-icons">check_circle_outline</i>
                         <span>هیچ ددلاین نزدیکی ندارید</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ────── Right: Selected Day Details ────── -->
-        <div class="deadline-right">
-
-            <!-- Day Detail Card -->
-            <div class="day-detail-card" id="day-detail-card">
-                <div class="day-detail-header">
-                    <div class="day-detail-date" id="day-detail-date">
-                        <div class="day-number" id="day-num">—</div>
-                        <div class="day-info">
-                            <span id="day-month-name">روزی انتخاب نشده</span>
-                            <span id="day-year-label" class="day-year"></span>
-                        </div>
-                    </div>
-                    <button class="btn btn-outline btn-sm" onclick="openAddModal()" id="add-to-day-btn">
-                        <i class="material-icons">add</i> افزودن
-                    </button>
-                </div>
-
-                <div id="day-deadlines-list" class="day-deadlines-list">
-                    <div class="select-day-hint">
-                        <i class="material-icons">touch_app</i>
-                        <p>روی یک روز در تقویم کلیک کنید</p>
                     </div>
                 </div>
             </div>
@@ -126,6 +143,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -143,7 +161,6 @@
         </div>
 
         <div class="dl-modal-body">
-            <!-- عنوان -->
             <div class="dl-form-group">
                 <label class="dl-form-label">
                     <i class="material-icons">title</i> عنوان <span class="req">*</span>
@@ -152,7 +169,6 @@
                        placeholder="مثال: پروژه پایانی برنامه‌سازی">
             </div>
 
-            <!-- نوع ددلاین -->
             <div class="dl-form-group">
                 <label class="dl-form-label">
                     <i class="material-icons">category</i> نوع
@@ -177,7 +193,6 @@
                 </div>
             </div>
 
-            <!-- تاریخ -->
             <div class="dl-form-group">
                 <label class="dl-form-label">
                     <i class="material-icons">event</i> تاریخ ددلاین <span class="req">*</span>
@@ -189,7 +204,6 @@
                 <input type="hidden" id="dl-date-hidden">
             </div>
 
-            <!-- توضیحات -->
             <div class="dl-form-group">
                 <label class="dl-form-label">
                     <i class="material-icons">notes</i> توضیحات
@@ -198,7 +212,6 @@
                           placeholder="توضیحات اضافی (اختیاری)..." rows="3"></textarea>
             </div>
 
-            <!-- رنگ -->
             <div class="dl-form-group">
                 <label class="dl-form-label">
                     <i class="material-icons">palette</i> رنگ
@@ -233,7 +246,7 @@
     </div>
 </div>
 
-<!-- ==================== Mini Date Picker (for modal) ==================== -->
+<!-- ==================== Mini Date Picker ==================== -->
 <div id="mini-date-picker" class="mini-picker-overlay" onclick="if(event.target===this)closeMiniPicker()">
     <div class="mini-picker-card">
         <div class="mini-picker-header">
@@ -286,7 +299,7 @@
 <!-- ===================== Styles ===================== -->
 <style>
 /* ─── Page Layout ─── */
-.deadline-page { max-width: 1200px; margin: 0 auto; padding-bottom: 3rem; }
+.deadline-page { max-width: 1300px; margin: 0 auto; padding-bottom: 3rem; }
 
 .deadline-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -302,19 +315,40 @@
 .deadline-header-icon i { color: white; font-size: 1.6rem; }
 .deadline-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 .15rem; }
 .deadline-subtitle { font-size: .88rem; color: var(--text-secondary); margin: 0; }
-
 .add-deadline-top-btn { display: flex; align-items: center; gap: .4rem; }
 
-/* ─── Two-Column Layout ─── */
-.deadline-layout {
+/*
+ * تغییر ۱۰: چیدمان جدید
+ * به جای یک گرید دو‌ستونه ساده، از دو ردیف مجزا استفاده می‌کنیم:
+ * ردیف اول: تقویم (380px ثابت) + جزئیات روز (انعطاف‌پذیر)
+ * ردیف دوم: ددلاین‌های نزدیک (380px ثابت) + همه ددلاین‌ها (انعطاف‌پذیر)
+ * این باعث می‌شود ستون‌ها با هم تراز بمانند و UX بسیار بهتری داشته باشیم.
+ */
+.deadline-layout { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.deadline-row {
     display: grid;
-    grid-template-columns: 340px 1fr;
-    gap: 1.5rem;
+    grid-template-columns: 390px 1fr;
+    gap: 1.25rem;
     align-items: start;
 }
-@media (max-width: 900px) {
-    .deadline-layout { grid-template-columns: 1fr; }
+
+/* در صفحات کوچکتر از ۹۰۰px، ستون‌ها به صورت عمودی قرار می‌گیرند */
+@media (max-width: 960px) {
+    .deadline-row { grid-template-columns: 1fr; }
 }
+
+/* ─── Holiday Loading Bar ─── */
+/* یک نوار پیشرفت کوچک زیر header تقویم نشان می‌دهد که تعطیلات در حال بارگذاری است */
+.holiday-loading-bar {
+    height: 2px; background: var(--border-color); border-radius: 2px;
+    margin-bottom: .6rem; overflow: hidden;
+}
+.holiday-loading-inner {
+    height: 100%; width: 40%; background: var(--primary-color);
+    border-radius: 2px; animation: loadSlide 1s ease-in-out infinite alternate;
+}
+@keyframes loadSlide { from{transform:translateX(-100%)} to{transform:translateX(300%)} }
 
 /* ─── Calendar Card ─── */
 .calendar-card {
@@ -323,12 +357,11 @@
     border-radius: 18px;
     padding: 1.25rem;
     box-shadow: var(--shadow-sm);
-    margin-bottom: 1.25rem;
 }
 
 .calendar-header {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.1rem;
+    margin-bottom: .75rem;
 }
 .cal-month-title {
     display: flex; gap: .4rem; font-weight: 800; font-size: 1.1rem;
@@ -361,7 +394,7 @@
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     border-radius: 10px; cursor: pointer;
-    font-size: .9rem; font-weight: 500;
+    font-size: .88rem; font-weight: 500;
     border: none; background: none; font-family: inherit;
     color: var(--text-primary); position: relative;
     transition: background .15s, color .15s, transform .1s;
@@ -378,6 +411,43 @@
 .cal-day.has-deadline:not(.selected-day) .cal-day-num { position: relative; }
 .cal-day.empty-day { cursor: default; color: transparent; pointer-events: none; }
 
+/*
+ * تغییر ۱۱: استایل روزهای تعطیل رسمی
+ * اگر روز تعطیل رسمی باشد، عدد آن به رنگ قرمز نشان داده می‌شود
+ * مگر اینکه انتخاب شده باشد (که رنگ سفید می‌شود)
+ */
+.cal-day.holiday-day:not(.selected-day) {
+    color: #E53935;
+}
+.cal-day.holiday-day.today-day:not(.selected-day) {
+    color: #E53935;
+    border-color: #E53935;
+    background: rgba(229, 57, 53, .08);
+}
+/* توضیح تعطیل به صورت tooltip */
+.cal-day.holiday-day::after {
+    content: attr(data-holiday);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    right: 50%;
+    transform: translateX(50%);
+    background: rgba(229,57,53,.95);
+    color: white;
+    font-size: .68rem;
+    padding: .25rem .55rem;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 100;
+    transition: opacity .2s;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+}
+.cal-day.holiday-day:hover::after { opacity: 1; }
+
 /* نقطه‌های ددلاین روی روز */
 .cal-day-dots {
     display: flex; gap: 2px; justify-content: center;
@@ -390,7 +460,7 @@
 .cal-day.selected-day .cal-day-dot { background: rgba(255,255,255,.8) !important; }
 
 .calendar-legend {
-    display: flex; gap: 1rem; margin-top: 1rem; padding-top: .75rem;
+    display: flex; gap: .8rem; margin-top: 1rem; padding-top: .75rem;
     border-top: 1px solid var(--border-color); flex-wrap: wrap;
 }
 .cal-legend-item { display: flex; align-items: center; gap: .35rem; font-size: .75rem; color: var(--text-secondary); }
@@ -398,6 +468,8 @@
 .today-dot { background: var(--primary-color); border: 1.5px solid var(--primary-color); }
 .deadline-dot { background: var(--primary-color); }
 .near-dot { background: var(--error); }
+/* تغییر ۱۱: نقطه قرمز برای تعطیلات رسمی در legend */
+.holiday-legend-dot { background: #E53935; }
 
 /* ─── Upcoming Card ─── */
 .upcoming-card {
@@ -458,7 +530,6 @@
     border: 1px solid var(--border-color);
     border-radius: 18px; padding: 1.25rem;
     box-shadow: var(--shadow-sm);
-    margin-bottom: 1.25rem;
 }
 .day-detail-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -472,10 +543,26 @@
     color: white; display: flex; align-items: center; justify-content: center;
     font-size: 1.4rem; font-weight: 800;
     box-shadow: 0 3px 10px rgba(0,131,143,.3);
+    flex-shrink: 0;
 }
 .day-info { display: flex; flex-direction: column; }
 .day-info span:first-child { font-size: 1rem; font-weight: 700; }
 .day-year { font-size: .82rem; color: var(--text-secondary); }
+
+/* تغییر ۱۱: نمایش نام تعطیل در کارت جزئیات روز */
+.day-holiday-name {
+    font-size: .75rem;
+    color: #E53935;
+    font-weight: 700;
+    margin-top: .1rem;
+    display: flex;
+    align-items: center;
+    gap: .2rem;
+}
+.day-holiday-name::before {
+    content: '🔴';
+    font-size: .65rem;
+}
 
 .day-deadlines-list { display: flex; flex-direction: column; gap: .6rem; min-height: 80px; }
 
@@ -608,7 +695,6 @@
 }
 .dl-form-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0,131,143,.12); }
 
-/* Type Chips */
 .dl-type-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
 .dl-type-chip { cursor: pointer; }
 .dl-type-chip input { display: none; }
@@ -626,7 +712,6 @@
 }
 .dl-type-chip:hover span { border-color: var(--primary-color); color: var(--primary-color); }
 
-/* Date Display */
 .dl-date-display {
     display: flex; align-items: center; gap: .6rem;
     padding: .65rem .9rem; border-radius: 10px;
@@ -639,7 +724,6 @@
 .dl-date-display.has-date { border-style: solid; border-color: var(--primary-color); color: var(--text-primary); font-weight: 600; }
 .dl-date-display i { color: var(--primary-color); }
 
-/* Color Palette */
 .color-palette { display: flex; gap: .5rem; flex-wrap: wrap; }
 .color-swatch {
     width: 30px; height: 30px; border-radius: 50%;
@@ -650,7 +734,6 @@
 .color-swatch:hover { transform: scale(1.15); }
 .color-swatch.active { border-color: var(--text-primary); transform: scale(1.15); }
 
-/* Mini Date Picker */
 .mini-picker-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,.4); backdrop-filter: blur(3px);
@@ -673,7 +756,6 @@
 }
 .mini-today-btn:hover { background: rgba(0,131,143,.08); }
 
-/* Share Modal */
 .share-deadline-preview {
     background: var(--background); border-radius: 12px; padding: 1rem;
     border: 1px solid var(--border-color); margin-bottom: 1.25rem;
@@ -699,21 +781,18 @@
 <!-- ===================== Script ===================== -->
 <script>
 /* ═══════════════════════════════════════════════════════
-   ۱. Jalali Utilities (تبدیل تاریخ بدون dependency)
+   ۱. Jalali Utilities
    ═══════════════════════════════════════════════════════ */
 
 const JALALI_MONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور',
                        'مهر','آبان','آذر','دی','بهمن','اسفند'];
-const JALALI_WEEKDAYS = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه','پنجشنبه','جمعه'];
 
-/** Gregorian → Jalali → [jy, jm, jd] */
 function gToJ(gy, gm, gd) {
     const gDaysInMonth = [0,31,59,90,120,151,181,212,243,273,304,334];
     let g_day_no = 365*(gy-1600) + Math.floor((gy-1600)/4) -
                    Math.floor((gy-1600)/100) + Math.floor((gy-1600)/400);
     g_day_no += gDaysInMonth[gm-1] + gd - 1;
     if (gm > 2 && gy%4===0 && (gy%100!==0 || gy%400===0)) g_day_no++;
-
     let j_day_no = g_day_no - 79;
     const j_np = Math.floor(j_day_no / 12053);
     j_day_no %= 12053;
@@ -729,7 +808,6 @@ function gToJ(gy, gm, gd) {
     return [jy, jm, jd];
 }
 
-/** Jalali → Gregorian → [gy, gm, gd] */
 function jToG(jy, jm, jd) {
     const jMoDays = [31,31,31,31,31,31,30,30,30,30,30,29];
     let jDayNo = 0;
@@ -738,52 +816,36 @@ function jToG(jy, jm, jd) {
     let jy2 = jy - 979;
     let gDayNo = 365*jy2 + Math.floor(jy2/4) - Math.floor(jy2/100) + Math.floor(jy2/400) +
                  Math.floor((jy2%400)/4)*1 + 79 + jDayNo;
-    // correct for Julian -> proleptic
     gDayNo += Math.floor(jy2/33)*8 + Math.floor(((jy2%33)+3)/4);
-
-    // days since 1600/01/01
     const base = 365*1600 + Math.floor(1600/4) - Math.floor(1600/100) + Math.floor(1600/400);
-    gDayNo -= base; // days from year 0
-
-    // convert absolute day number to Gregorian
-    // Use a known epoch: 1970-01-01 = day 719468
-    // simpler: just use Date
+    gDayNo -= base;
     const epoch = new Date(1600,0,1);
     const ms = gDayNo * 86400000;
     const result = new Date(epoch.getTime() + ms);
     return [result.getFullYear(), result.getMonth()+1, result.getDate()];
 }
 
-/** Days in a Jalali month */
 function jDaysInMonth(jy, jm) {
     if (jm <= 6) return 31;
     if (jm <= 11) return 30;
-    // leap year check
     const leapYears = [1,5,9,13,17,22,26,30];
     const rem = ((jy - (jy > 0 ? 474 : 473)) % 2820 + 474 + 38) * 682 % 2816;
     return leapYears.includes(rem % 474 % 29) ? 30 : 29;
 }
 
-/**
- * Weekday of Jalali date: 0=Saturday, 6=Friday
- * (Persian week starts on Saturday)
- */
 function jWeekday(jy, jm, jd) {
     const [gy, gm, gd] = jToG(jy, jm, jd);
-    const d = new Date(gy, gm-1, gd).getDay(); // 0=Sun
+    const d = new Date(gy, gm-1, gd).getDay();
     return (d + 1) % 7; // 0=Sat, 6=Fri
 }
 
-/** Format a Jalali date as string */
 function formatJalali(jy, jm, jd) {
     return `${jy}/${String(jm).padStart(2,'0')}/${String(jd).padStart(2,'0')}`;
 }
 
-/** Today in Jalali */
 const _today = new Date();
 const [TODAY_JY, TODAY_JM, TODAY_JD] = gToJ(_today.getFullYear(), _today.getMonth()+1, _today.getDate());
 
-/** Convert number to Persian digits */
 function toPers(n) {
     return String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 }
@@ -792,33 +854,77 @@ function toPers(n) {
    ۲. State
    ═══════════════════════════════════════════════════════ */
 
-let allDeadlines   = [];      // raw data from API
+let allDeadlines   = [];
 let calYear        = TODAY_JY;
 let calMonth       = TODAY_JM;
-let selectedDay    = null;    // {jy,jm,jd} currently selected
-let editingId      = null;    // null = new, number = editing
+let selectedDay    = null;
+let editingId      = null;
 let selectedColor  = '#00838F';
 let filterType     = 'all';
+let miniYear       = TODAY_JY;
+let miniMonth      = TODAY_JM;
+let miniSelected   = null;
 
-// mini picker (for modal)
-let miniYear   = TODAY_JY;
-let miniMonth  = TODAY_JM;
-let miniSelected = null;  // {jy,jm,jd}
+/*
+ * تغییر ۱۱: کش تعطیلات
+ * هر ماه فقط یک بار از API خوانده می‌شود و نتیجه اینجا ذخیره می‌شود.
+ * کلید: "jy-jm" (مثلاً "1403-7")، مقدار: آبجکت {day: {is_holiday, events}}
+ */
+let holidayCache = {};
+let currentMonthHolidays = {}; // داده‌های تعطیلات ماه جاری نمایش‌یافته
 
 /* ═══════════════════════════════════════════════════════
-   ۳. Calendar Rendering
+   ۳. تغییر ۱۱: بارگذاری تعطیلات از API
    ═══════════════════════════════════════════════════════ */
 
-function renderCalendar() {
+/**
+ * داده‌های تعطیلات یک ماه شمسی را از بک‌اند دریافت می‌کند.
+ * اگر قبلاً برای همین ماه fetch شده باشد، نتیجه کش‌شده برمی‌گردد.
+ * @returns {Object} مثلاً { 1: {is_holiday:true, events:['نوروز']}, 2: {...}, ... }
+ */
+async function fetchHolidays(jy, jm) {
+    const cacheKey = `${jy}-${jm}`;
+    if (holidayCache[cacheKey]) return holidayCache[cacheKey];
+
+    // نشان دادن نوار بارگذاری
+    const loadingBar = document.getElementById('holiday-loading');
+    if (loadingBar) loadingBar.style.display = 'block';
+
+    try {
+        const res = await fetch(`/api/holidays/${jy}/${jm}`);
+        if (!res.ok) return {};
+        const data = await res.json();
+        holidayCache[cacheKey] = data;
+        return data;
+    } catch(e) {
+        // اگر API در دسترس نبود، تقویم بدون تعطیلات نمایش داده می‌شود
+        console.warn('holiday API unavailable:', e.message);
+        return {};
+    } finally {
+        if (loadingBar) loadingBar.style.display = 'none';
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
+   ۴. Calendar Rendering
+   ═══════════════════════════════════════════════════════ */
+
+/**
+ * تغییر ۱۱: renderCalendar حالا async است و قبل از رندر، تعطیلات ماه را می‌گیرد.
+ * سپس برای هر روز تعطیل، کلاس holiday-day و data-holiday (نام تعطیل) تنظیم می‌شود.
+ */
+async function renderCalendar() {
     document.getElementById('cal-month-name').textContent = JALALI_MONTHS[calMonth-1];
     document.getElementById('cal-year').textContent = toPers(calYear);
 
+    // دریافت تعطیلات ماه جاری (از کش یا API)
+    currentMonthHolidays = await fetchHolidays(calYear, calMonth);
+
     const grid = document.getElementById('calendar-grid');
     grid.innerHTML = '';
-    const days   = jDaysInMonth(calYear, calMonth);
-    const firstWd = jWeekday(calYear, calMonth, 1);  // 0=Sat
+    const days    = jDaysInMonth(calYear, calMonth);
+    const firstWd = jWeekday(calYear, calMonth, 1);
 
-    // پر کردن خانه‌های خالی قبل از روز اول
     for (let i=0; i<firstWd; i++) {
         const blank = document.createElement('button');
         blank.className = 'cal-day empty-day';
@@ -835,6 +941,19 @@ function renderCalendar() {
 
         if (isToday)    btn.classList.add('today-day');
         if (isSelected) btn.classList.add('selected-day');
+
+        // تغییر ۱۱: بررسی آیا این روز تعطیل رسمی است
+        // currentMonthHolidays کلید عددی روز دارد (مثلاً "1" یا 1)
+        const holidayInfo = currentMonthHolidays[d] || currentMonthHolidays[String(d)];
+        if (holidayInfo && holidayInfo.is_holiday) {
+            btn.classList.add('holiday-day');
+            // اولین رویداد را به عنوان tooltip تعیین می‌کنیم
+            const eventName = (holidayInfo.events && holidayInfo.events.length > 0)
+                ? holidayInfo.events[0]
+                : 'تعطیل رسمی';
+            btn.setAttribute('data-holiday', eventName);
+            btn.setAttribute('title', eventName);
+        }
 
         // ددلاین‌های این روز
         const [gy, gm, gd] = jToG(calYear, calMonth, d);
@@ -864,11 +983,15 @@ function renderCalendar() {
     }
 }
 
+/**
+ * تغییر ۱۱: changeMonth حالا renderCalendar را await می‌کند
+ * تا تعطیلات ماه جدید هم قبل از رندر بارگذاری شوند.
+ */
 function changeMonth(dir) {
     calMonth += dir;
     if (calMonth > 12) { calMonth=1; calYear++; }
     if (calMonth < 1)  { calMonth=12; calYear--; }
-    renderCalendar();
+    renderCalendar(); // async - fire and forget کافی است
 }
 
 function selectDay(jy, jm, jd) {
@@ -878,9 +1001,13 @@ function selectDay(jy, jm, jd) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۴. Day Detail Panel
+   ۵. Day Detail Panel
    ═══════════════════════════════════════════════════════ */
 
+/**
+ * تغییر ۱۱: در renderDayDetail، اگر روز انتخاب‌شده تعطیل رسمی باشد،
+ * نام تعطیل زیر تاریخ نشان داده می‌شود.
+ */
 function renderDayDetail() {
     if (!selectedDay) return;
     const {jy, jm, jd} = selectedDay;
@@ -888,6 +1015,20 @@ function renderDayDetail() {
     document.getElementById('day-num').textContent = toPers(jd);
     document.getElementById('day-month-name').textContent = JALALI_MONTHS[jm-1];
     document.getElementById('day-year-label').textContent = toPers(jy);
+
+    // نمایش نام تعطیل رسمی (اگر ماه همان ماه نمایش‌یافته باشد)
+    const holidayLabel = document.getElementById('day-holiday-name');
+    if (jy === calYear && jm === calMonth) {
+        const hInfo = currentMonthHolidays[jd] || currentMonthHolidays[String(jd)];
+        if (hInfo && hInfo.is_holiday && hInfo.events && hInfo.events.length > 0) {
+            holidayLabel.textContent = hInfo.events[0];
+            holidayLabel.style.display = 'flex';
+        } else {
+            holidayLabel.style.display = 'none';
+        }
+    } else {
+        holidayLabel.style.display = 'none';
+    }
 
     const [gy, gm, gd] = jToG(jy, jm, jd);
     const dateStr = `${gy}-${String(gm).padStart(2,'0')}-${String(gd).padStart(2,'0')}`;
@@ -906,18 +1047,18 @@ function renderDayDetail() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۵. Deadline Item HTML
+   ۶. Deadline Item HTML
    ═══════════════════════════════════════════════════════ */
 
 const TYPE_LABELS = { project:'پروژه', exam:'امتحان', assignment:'تکلیف', other:'سایر' };
 const TYPE_ICONS  = { project:'engineering', exam:'quiz', assignment:'assignment', other:'more_horiz' };
 
 function renderDeadlineItem(dl) {
-    const nearClass  = (dl.days_left >= 0 && dl.days_left <= 7) ? 'background:rgba(183,28,28,.12);color:var(--error)' : 'background:rgba(0,131,143,.1);color:var(--primary-color)';
+    const nearStyle  = (dl.days_left >= 0 && dl.days_left <= 7) ? 'background:rgba(183,28,28,.12);color:var(--error)' : 'background:rgba(0,131,143,.1);color:var(--primary-color)';
     const daysLabel  = dl.is_done ? '<span class="dl-item-days" style="background:rgba(46,125,50,.1);color:var(--success)">✓ انجام شد</span>'
                      : dl.days_left < 0 ? '<span class="dl-item-days" style="background:rgba(183,28,28,.12);color:var(--error)">منقضی شده</span>'
                      : dl.days_left === 0 ? '<span class="dl-item-days" style="background:rgba(183,28,28,.2);color:var(--error)">امروز!</span>'
-                     : `<span class="dl-item-days" style="${nearClass}">${toPers(dl.days_left)} روز مانده</span>`;
+                     : `<span class="dl-item-days" style="${nearStyle}">${toPers(dl.days_left)} روز مانده</span>`;
 
     return `
     <div class="dl-item ${dl.is_done ? 'is-done' : ''}" id="dl-item-${dl.id}">
@@ -956,7 +1097,7 @@ function escHtml(str) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۶. All Deadlines List & Filter
+   ۷. All Deadlines List & Filter
    ═══════════════════════════════════════════════════════ */
 
 function renderAllDeadlines() {
@@ -979,7 +1120,7 @@ function filterDeadlines(type, btn) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۷. Countdown Rings (ددلاین‌های نزدیک)
+   ۸. Countdown Rings (ددلاین‌های نزدیک)
    ═══════════════════════════════════════════════════════ */
 
 function renderUpcoming() {
@@ -1000,15 +1141,10 @@ function renderUpcoming() {
     }
 
     list.innerHTML = near.map(dl => {
-        // محاسبه stroke برای حلقه
-        // circumference برای r=18: 2*π*18 ≈ 113.1
         const r = 18, cx = 24, cy = 24;
         const circ = 2 * Math.PI * r;
-        // سهم باقی‌مانده: days_left/7 از دایره (اما حداقل ۱/۷)
         const fraction = Math.max(dl.days_left, 0) / 7;
         const dashoffset = circ * (1 - fraction);
-
-        // رنگ حلقه
         const ringColor = dl.days_left <= 2 ? '#E53935' : dl.days_left <= 4 ? '#FB8C00' : '#43A047';
 
         return `
@@ -1038,7 +1174,7 @@ function renderUpcoming() {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۸. API Calls
+   ۹. API Calls
    ═══════════════════════════════════════════════════════ */
 
 async function loadDeadlines() {
@@ -1046,7 +1182,7 @@ async function loadDeadlines() {
         const res = await fetch('/api/deadlines');
         if (!res.ok) throw new Error('خطای سرور');
         allDeadlines = await res.json();
-        renderCalendar();
+        await renderCalendar();
         renderUpcoming();
         renderAllDeadlines();
         if (selectedDay) renderDayDetail();
@@ -1118,7 +1254,7 @@ async function toggleDone(id) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۹. Modal Management
+   ۱۰. Modal Management
    ═══════════════════════════════════════════════════════ */
 
 function openAddModal(preSelectedDate) {
@@ -1161,7 +1297,7 @@ function closeDeadlineModal() {
 
 function openDatePickerForModal() {
     miniYear  = miniSelected ? miniSelected.jy  : TODAY_JY;
-    miniMonth = miniSelected ? miniSelected.jm : TODAY_JM;
+    miniMonth = miniSelected ? miniSelected.jm  : TODAY_JM;
     renderMiniPicker();
     document.getElementById('mini-date-picker').classList.add('open');
 }
@@ -1218,7 +1354,7 @@ function selectColor(btn) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۱۰. Share Modal
+   ۱۱. Share Modal
    ═══════════════════════════════════════════════════════ */
 
 let sharingDeadlineId = null;
@@ -1269,7 +1405,7 @@ async function shareDeadline(targetType) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۱۱. Toast
+   ۱۲. Toast
    ═══════════════════════════════════════════════════════ */
 
 function showToast(msg, type='success') {
@@ -1290,20 +1426,18 @@ function showToast(msg, type='success') {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۱۲. Init
+   ۱۳. Init
    ═══════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', function () {
-    // نمایش تاریخ امروز در هدر
     document.getElementById('today-jalali-label').textContent =
         `امروز: ${toPers(TODAY_JD)} ${JALALI_MONTHS[TODAY_JM-1]} ${toPers(TODAY_JY)}`;
 
-    // انتخاب امروز به صورت پیش‌فرض
     selectedDay = { jy: TODAY_JY, jm: TODAY_JM, jd: TODAY_JD };
 
+    // loadDeadlines خودش renderCalendar را صدا می‌زند (که async است)
     loadDeadlines();
 
-    // Escape key
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
             closeDeadlineModal(); closeShareModal(); closeMiniPicker();

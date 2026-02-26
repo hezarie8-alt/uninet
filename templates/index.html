@@ -13,20 +13,31 @@
                     مدیریت برنامه کلاسی، ارتباط با دوستان و همکلاسی‌ها در یک پلتفرم ساده و کاربردی.
                     با یونی نت، تجربه دانشجویی خود را ارتقا دهید.
                 </p>
-                <div class="hero-buttons">
+                <div class="hero-buttons" style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.5rem;">
                     {% if current_user %}
                         <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
                             <i class="material-icons" style="margin-left: 8px;">dashboard</i>
                             داشبورد برنامه
                         </a>
                     {% else %}
-                        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">شروع کنید</a>
-                        <a href="{{ url_for('about') }}" class="btn btn-outline">درباره من</a>
+                        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">
+                            <i class="material-icons">login</i>
+                            شروع کنید
+                        </a>
+                        <a href="{{ url_for('about') }}" class="btn btn-outline"
+                           style="color:white; border-color:rgba(255,255,255,0.5);">
+                            <i class="material-icons">info</i>
+                            درباره ما
+                        </a>
                     {% endif %}
                 </div>
             </div>
             <div class="hero-image">
-                <img src="https://sfile.chatglm.cn/images-ppt/c8eeb1a1ee7c.jpg" alt="Student Platform" style="border-radius: 10px; box-shadow: var(--shadow-lg); max-width: 100%; height: auto;">
+                <img src="https://sfile.chatglm.cn/images-ppt/c8eeb1a1ee7c.jpg"
+                     alt="Student Platform"
+                     style="border-radius: 16px; box-shadow: var(--shadow-lg);
+                            max-width: 100%; height: auto;
+                            border: 2px solid rgba(255,255,255,0.2);">
             </div>
         </div>
     </div>
@@ -40,38 +51,100 @@
         
         <div class="features-grid">
             <div class="feature-card">
-                <i class="material-icons feature-icon">event_note</i>
+                <i class="material-icons feature-icon">calendar_month</i>
                 <h3 class="feature-title">برنامه کلاسی هوشمند</h3>
-                <p class="feature-description">مدیریت برنامه هفتگی با پشتیبانی از کلاس‌های زوج و فرد و نمایش تقویم شمسی.</p>
+                <p class="feature-description">
+                    مدیریت برنامه هفتگی با پشتیبانی از کلاس‌های زوج و فرد به صورت همزمان،
+                    نمایش تقویم شمسی و تعطیلات رسمی.
+                </p>
             </div>
             
             <div class="feature-card">
-                <i class="material-icons feature-icon">chat</i>
+                <i class="material-icons feature-icon">forum</i>
                 <h3 class="feature-title">پیام‌رسان پیشرفته</h3>
-                <p class="feature-description">چت خصوصی، گروه عمومی دانشجویان و کانال اطلاعیه‌ها در یک مکان.</p>
+                <p class="feature-description">
+                    چت خصوصی، گروه عمومی دانشجویان و کانال اطلاعیه‌ها.
+                    با قابلیت ارسال فایل، ری‌اکشن و ریپلای.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="material-icons feature-icon">event_note</i>
+                <h3 class="feature-title">مدیریت ددلاین</h3>
+                <p class="feature-description">
+                    ثبت، دنبال کردن و اشتراک‌گذاری ددلاین‌های درسی با تقویم شمسی.
+                    افزودن ددلاین دیگران به اکانت خودتان.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <i class="material-icons feature-icon">library_books</i>
+                <h3 class="feature-title">منابع درسی</h3>
+                <p class="feature-description">
+                    آپلود و دانلود جزوه، اسلاید و نمونه سوال.
+                    جستجو بر اساس درس و نوع منبع.
+                </p>
             </div>
             
             <div class="feature-card">
                 <i class="material-icons feature-icon">meeting_room</i>
                 <h3 class="feature-title">رزرو کلاس</h3>
-                <p class="feature-description">سیستم درخواست رزرو کلاس‌های خالی به صورت هفتگی و مدیریت توسط ادمین.</p>
+                <p class="feature-description">
+                    سیستم درخواست رزرو کلاس‌های خالی به صورت هفتگی
+                    و مدیریت توسط ادمین.
+                </p>
             </div>
             
             <div class="feature-card">
-                <i class="material-icons feature-icon">dark_mode</i>
-                <h3 class="feature-title">حالت تاریک</h3>
-                <p class="feature-description">محافظت از چشمان شما با پشتیبانی کامل از تم تاریک و طراحی مدرن.</p>
+                <i class="material-icons feature-icon">palette</i>
+                <h3 class="feature-title">تم‌های شخصی‌سازی</h3>
+                <p class="feature-description">
+                    دارک مود حرفه‌ای و بیش از ۱۲ تم رنگی برای پیام‌رسان.
+                    تجربه‌ای شخصی‌سازی‌شده برای هر کاربر.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section style="background:var(--surface); padding: 3rem 0; transition: background-color 0.3s;">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 2rem; text-align: center;">
+            <div>
+                <div style="font-size:2.5rem; font-weight:700; color:var(--primary-color);">۱۲+</div>
+                <div style="color:var(--text-secondary); margin-top:0.25rem;">تم رنگی</div>
+            </div>
+            <div>
+                <div style="font-size:2.5rem; font-weight:700; color:var(--primary-color);">۵</div>
+                <div style="color:var(--text-secondary); margin-top:0.25rem;">روز هفته</div>
+            </div>
+            <div>
+                <div style="font-size:2.5rem; font-weight:700; color:var(--primary-color);">۶</div>
+                <div style="color:var(--text-secondary); margin-top:0.25rem;">بازه زمانی کلاس</div>
+            </div>
+            <div>
+                <div style="font-size:2.5rem; font-weight:700; color:var(--primary-color);">∞</div>
+                <div style="color:var(--text-secondary); margin-top:0.25rem;">ددلاین قابل ثبت</div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- CTA Section -->
-<section class="cta">
+<section class="cta" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+     padding: 4rem 0; text-align: center; color: white;">
     <div class="container">
-        <h2 class="cta-title">همین الان شروع کنید</h2>
-        <p class="cta-subtitle">با وارد کردن شماره دانشجویی، به جمع ما بپیوندید.</p>
-        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">ثبت‌نام رایگان</a>
+        <h2 style="font-size:2rem; font-weight:700; margin-bottom:1rem;">همین الان شروع کنید</h2>
+        <p style="font-size:1.1rem; margin-bottom:2rem; opacity:0.9;">
+            با وارد کردن شماره دانشجویی، به جمع یونی نت بپیوندید.
+        </p>
+        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary"
+           style="background:white; color:var(--primary-color); font-weight:700;
+                  padding: 1rem 2.5rem; font-size:1.1rem;">
+            <i class="material-icons">person_add</i>
+            ثبت‌نام رایگان
+        </a>
     </div>
 </section>
 {% endblock %}

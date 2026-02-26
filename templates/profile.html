@@ -2,6 +2,11 @@
 
 {% block title %}پروفایل کاربری | یونی نت{% endblock %}
 
+{# ── CSRF token برای fetch های JS ── #}
+{% block head_extra %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+{% endblock %}
+
 {% block content %}
 <div class="profile-container">
 
@@ -58,10 +63,20 @@
         <!-- اطلاعات نمایشی کاربر -->
         <div class="profile-user-info">
             <h2 class="profile-user-name">{{ user.full_name }}</h2>
+
+            {#
+                مشکل #12 — شماره دانشجویی:
+                - صاحب حساب (can_edit) همیشه شماره خودش را می‌بیند.
+                - مدیر سیستم (is_admin) شماره همه را می‌بیند.
+                - سایر دانشجویان فقط آواتار و نام می‌بینند.
+            #}
+            {% if can_edit or is_admin %}
             <p class="profile-student-id">
                 <i class="material-icons">badge</i>
                 شماره دانشجویی: {{ user.student_id }}
             </p>
+            {% endif %}
+
             {% if user.major %}
             <span class="profile-major-badge">{{ user.major }}</span>
             {% endif %}
@@ -278,8 +293,7 @@
                         <p class="privacy-option-desc">چه کسی می‌تواند زمان آخرین فعالیت شما را ببیند؟</p>
                     </div>
                     <div class="privacy-select-wrapper">
-                        <select class="privacy-select" id="priv-last-seen"
-                                onchange="savePrivacy('last_seen_visibility', this.value)">
+                        <select class="privacy-select" id="priv-last-seen">
                             <option value="all">همه</option>
                             <option value="none">هیچ‌کس</option>
                         </select>
@@ -298,8 +312,7 @@
                         <p class="privacy-option-desc">چه کسی می‌تواند عکس پروفایل شما را ببیند؟</p>
                     </div>
                     <div class="privacy-select-wrapper">
-                        <select class="privacy-select" id="priv-profile-pic"
-                                onchange="savePrivacy('profile_pic_visibility', this.value)">
+                        <select class="privacy-select" id="priv-profile-pic">
                             <option value="all">همه</option>
                             <option value="none">هیچ‌کس</option>
                         </select>
@@ -318,8 +331,7 @@
                         <p class="privacy-option-desc">چه کسی می‌تواند برای شما پیام مستقیم ارسال کند؟</p>
                     </div>
                     <div class="privacy-select-wrapper">
-                        <select class="privacy-select" id="priv-who-can-msg"
-                                onchange="savePrivacy('who_can_message', this.value)">
+                        <select class="privacy-select" id="priv-who-can-msg">
                             <option value="all">همه</option>
                             <option value="none">هیچ‌کس</option>
                         </select>
@@ -328,8 +340,20 @@
 
             </div>
 
-            <!-- نشانگر وضعیت ذخیره -->
-            <div class="privacy-save-status" id="privacy-save-status"></div>
+            <!--
+                مشکل #6 — دکمه ذخیره تنظیمات حریم خصوصی:
+                قبلاً فقط onchange بود که به‌خاطر نبود CSRF token کار نمی‌کرد.
+                حالا دکمه صریح ذخیره اضافه شد + CSRF از meta tag خوانده می‌شود.
+            -->
+            <div class="privacy-footer">
+                <button type="button" class="btn btn-custom" onclick="saveAllPrivacy()" id="privacy-save-btn">
+                    <i class="material-icons">save</i>
+                    ذخیره تنظیمات حریم خصوصی
+                </button>
+
+                <!-- نشانگر وضعیت ذخیره -->
+                <div class="privacy-save-status" id="privacy-save-status"></div>
+            </div>
         </div>
 
     </div><!-- /profile-edit-card -->
@@ -522,24 +546,45 @@
 }
 .privacy-select:focus { outline: none; border-color: var(--primary-color); }
 
+/* ─── Privacy Footer (دکمه ذخیره + وضعیت) ─── */
+.privacy-footer {
+    display: flex; align-items: center; gap: 1rem;
+    margin-top: 1.5rem; flex-wrap: wrap;
+}
 .privacy-save-status {
-    margin-top: 1rem; font-size: .85rem; font-weight: 600;
-    min-height: 1.5rem; display: flex; align-items: center; gap: .35rem;
+    font-size: .85rem; font-weight: 600;
+    display: flex; align-items: center; gap: .35rem;
+    min-height: 1.5rem;
 }
 .privacy-save-status.saving { color: var(--text-secondary); }
 .privacy-save-status.saved  { color: var(--success); }
 .privacy-save-status.error  { color: var(--error); }
 
+/* دکمه هنگام در حال ذخیره */
+#privacy-save-btn:disabled {
+    opacity: .6; cursor: not-allowed;
+}
+
 @media (max-width: 600px) {
     .profile-tab span { display: none; }
     .profile-tab { padding: .85rem .75rem; }
     .privacy-option-row { flex-direction: column; align-items: flex-start; }
+    .privacy-footer { flex-direction: column; align-items: flex-start; }
 }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
+/* =====================================================
+   خواندن CSRF token از meta tag
+   (مشکل #6 — بدون این token، Flask-WTF درخواست POST را رد می‌کرد)
+   ===================================================== */
+function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+}
+
 /* =====================================================
    Tab Switcher
    ===================================================== */
@@ -557,7 +602,6 @@ function switchProfileTab(tabName, btn) {
 function submitProfilePic() {
     const form = document.getElementById('profile-pic-form');
     if (!form) return;
-    // requestSubmit اعتبارسنجی HTML5 را هم فعال می‌کند
     if (typeof form.requestSubmit === 'function') form.requestSubmit();
     else form.submit();
 }
@@ -615,7 +659,6 @@ document.addEventListener('DOMContentLoaded', function () {
             label.style.color = cfg.bg;
             label.textContent = cfg.text;
 
-            // بررسی تطابق اگر فیلد تأیید قبلاً پر شده
             if (pwConfirm && pwConfirm.value) checkMatch();
         });
     }
@@ -679,42 +722,74 @@ function loadPrivacySettings() {
     fetch('/api/privacy_settings')
         .then(r => r.json())
         .then(data => {
-            if (data.last_seen_visibility)  lsEl.value  = data.last_seen_visibility;
+            if (data.last_seen_visibility)   lsEl.value  = data.last_seen_visibility;
             if (data.profile_pic_visibility) ppEl.value  = data.profile_pic_visibility;
             if (data.who_can_message)        msgEl.value = data.who_can_message;
         })
         .catch(() => {});
 }
 
-let privacySaveTimer = null;
-
-function savePrivacy(key, value) {
+/*
+    مشکل #6 — تابع ذخیره همه تنظیمات یکجا:
+    - CSRF token از meta tag خوانده می‌شود و در هدر X-CSRFToken ارسال می‌شود.
+    - دکمه حین ارسال غیرفعال می‌شود تا از کلیک مکرر جلوگیری شود.
+*/
+function saveAllPrivacy() {
+    const lsEl  = document.getElementById('priv-last-seen');
+    const ppEl  = document.getElementById('priv-profile-pic');
+    const msgEl = document.getElementById('priv-who-can-msg');
     const statusEl = document.getElementById('privacy-save-status');
+    const saveBtn  = document.getElementById('privacy-save-btn');
+
+    if (!lsEl || !ppEl || !msgEl) return;
+
+    // نمایش حالت در حال ذخیره
     statusEl.className = 'privacy-save-status saving';
     statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;animation:privSpin 1s linear infinite;display:inline-block;">sync</i> در حال ذخیره...';
+    saveBtn.disabled = true;
 
-    // debounce — اگر تغییر سریع بود، فقط آخرین را ذخیره کن
-    clearTimeout(privacySaveTimer);
-    privacySaveTimer = setTimeout(function () {
-        const payload = { [key]: value };
-        fetch('/api/privacy_settings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'success') {
-                statusEl.className = 'privacy-save-status saved';
-                statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;">check_circle</i> ذخیره شد';
-                setTimeout(() => { statusEl.innerHTML = ''; statusEl.className = 'privacy-save-status'; }, 2500);
-            } else throw new Error(data.error || 'خطا');
-        })
-        .catch(() => {
-            statusEl.className = 'privacy-save-status error';
-            statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;">error</i> خطا در ذخیره';
-        });
-    }, 400);
+    const payload = {
+        last_seen_visibility:   lsEl.value,
+        profile_pic_visibility: ppEl.value,
+        who_can_message:        msgEl.value
+    };
+
+    fetch('/api/privacy_settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            /* CSRF token برای Flask-WTF ضروری است */
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            statusEl.className = 'privacy-save-status saved';
+            statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;">check_circle</i> تنظیمات با موفقیت ذخیره شد';
+            showProfileToast('تنظیمات حریم خصوصی ذخیره شد', 'success');
+            // پاک کردن پیام بعد از چند ثانیه
+            setTimeout(() => {
+                statusEl.innerHTML = '';
+                statusEl.className = 'privacy-save-status';
+            }, 3500);
+        } else {
+            throw new Error(data.error || 'خطای ناشناخته');
+        }
+    })
+    .catch(err => {
+        statusEl.className = 'privacy-save-status error';
+        statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;">error</i> خطا در ذخیره تنظیمات';
+        showProfileToast('خطا در ذخیره تنظیمات حریم خصوصی', 'error');
+        console.error('Privacy save error:', err);
+    })
+    .finally(() => {
+        saveBtn.disabled = false;
+    });
 }
 
 /* =====================================================
@@ -731,7 +806,11 @@ function showProfileToast(msg, type) {
     t.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:${bg};color:white;padding:.8rem 1.75rem;border-radius:24px;font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);display:flex;align-items:center;gap:.5rem;font-family:inherit;`;
     t.innerHTML = `<i class="material-icons" style="font-size:1.1rem;">${type === 'success' ? 'check_circle' : 'error'}</i>${msg}`;
     document.body.appendChild(t);
-    setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3200);
+    setTimeout(() => {
+        t.style.transition = 'opacity .3s';
+        t.style.opacity = '0';
+        setTimeout(() => t.remove(), 300);
+    }, 3200);
 }
 
 /* =====================================================

@@ -21,26 +21,161 @@
     --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.05);
     --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+
+    /* Chat theme variables (overridden by theme classes) */
+    --chat-bg: #f0f2f5;
+    --chat-bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v-2h4v4h2v-4h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4v-2H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    --chat-sent-bg: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    --chat-sent-color: #ffffff;
+    --chat-received-bg: var(--surface);
+    --chat-received-border: 1px solid var(--border-color);
+    --chat-sidebar-bg: var(--surface);
+    --chat-header-bg: var(--surface);
+    --chat-input-bg: var(--surface);
 }
 
-/* Dark Mode */
+/* ============================================================
+   Dark Mode — بهبود یافته و کامل
+   ============================================================ */
 [data-theme="dark"] {
     --primary-color: #4fb3bf;
-    --primary-light: #00838f;
-    --primary-dark: #e0f7fa;
+    --primary-light: #80cbc4;
+    --primary-dark: #00838f;
     --secondary-color: #455a64;
 
     --text-on-primary: #121212;
-    --text-primary: #e0e0e0;
-    --text-secondary: #a0a0a0;
-    --background: #121212;
-    --surface: #1e1e1e;
+    --text-primary: #e4e6eb;
+    --text-secondary: #b0b3b8;
+    --background: #18191a;
+    --surface: #242526;
     --error: #ef5350;
     --warning: #ffb74d;
     --success: #66bb6a;
     --info: #29b6f6;
-    --border-color: #333333;
+    --border-color: #3a3b3c;
+
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+
+    --chat-bg: #0d1117;
+    --chat-bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v-2h4v4h2v-4h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4v-2H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    --chat-sent-bg: linear-gradient(135deg, #00838f, #005662);
+    --chat-sent-color: #ffffff;
+    --chat-received-bg: #2d2f31;
+    --chat-received-border: 1px solid #3a3b3c;
+    --chat-sidebar-bg: #1c1e21;
+    --chat-header-bg: #242526;
+    --chat-input-bg: #242526;
 }
+
+/* Dark mode — عناصر خاص */
+[data-theme="dark"] .navbar { background-color: #1c2732; }
+[data-theme="dark"] .feature-card { background-color: #2d2f31; }
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select { background-color: #3a3b3c; color: var(--text-primary); border-color: #4a4b4c; }
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .modal-box > div { background-color: var(--surface); color: var(--text-primary); }
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select { background-color: #3a3b3c !important; color: var(--text-primary) !important; border-color: #4a4b4c !important; }
+[data-theme="dark"] .dropdown-menu { background-color: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .dropdown-item { color: var(--text-primary); }
+[data-theme="dark"] .dropdown-item:hover { background-color: #3a3b3c; }
+[data-theme="dark"] .schedule-cell { background-color: #242526; }
+[data-theme="dark"] .schedule-header,
+[data-theme="dark"] .schedule-time { background-color: #1c1e21; }
+[data-theme="dark"] .convo-item:hover { background-color: #2d2f31; }
+[data-theme="dark"] .convo-item.active { background-color: rgba(79,179,191,0.15); }
+[data-theme="dark"] .channel-msg-card { background-color: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .group-msg-item { background-color: #2d2f31; }
+[data-theme="dark"] table th { background-color: #2d2f31; }
+[data-theme="dark"] table td { border-color: #3a3b3c; }
+[data-theme="dark"] .btn-outline { border-color: #4a4b4c; color: var(--text-primary); }
+[data-theme="dark"] .btn-outline:hover { background-color: #3a3b3c; }
+[data-theme="dark"] .hero { background: linear-gradient(135deg, #1c2732 0%, #0d1117 100%); }
+[data-theme="dark"] .features-section { background-color: #1c1e21; }
+[data-theme="dark"] .chat-empty { color: var(--text-secondary); }
+[data-theme="dark"] .tab-btn.active { border-bottom-color: var(--primary-color); color: var(--primary-color); }
+[data-theme="dark"] .section-card { background-color: var(--surface); }
+[data-theme="dark"] .deadline-card { background-color: #2d2f31; border-color: #3a3b3c; }
+[data-theme="dark"] .resource-card { background-color: #2d2f31; }
+[data-theme="dark"] .cancelled-badge { background-color: rgba(239,83,80,0.2); }
+
+/* ============================================================
+   Chat Themes — ۱۰+ تم برای پیام‌رسان
+   ============================================================ */
+
+/* Theme 1: default (پیش‌فرض — تعریف شده در :root) */
+
+/* Theme 2: ocean */
+.chat-theme-ocean { --chat-bg: #e8f4f8; --chat-sent-bg: linear-gradient(135deg, #0277bd, #01579b); --chat-sent-color: #fff; --chat-received-bg: #ffffff; }
+.chat-theme-ocean .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%230277bd' fill-opacity='0.04'%3E%3Cpath d='M0 40 Q20 20 40 40 Q60 60 80 40 L80 80 L0 80Z'/%3E%3C/g%3E%3C/svg%3E"); }
+.chat-theme-ocean .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+
+/* Theme 3: forest */
+.chat-theme-forest { --chat-bg: #e8f5e9; --chat-sent-bg: linear-gradient(135deg, #2e7d32, #1b5e20); --chat-sent-color: #fff; --chat-received-bg: #f9fbe7; }
+.chat-theme-forest .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%232e7d32' fill-opacity='0.04'%3E%3Cpath d='M30 0 L45 30 L60 60 L0 60 L15 30Z'/%3E%3C/g%3E%3C/svg%3E"); }
+.chat-theme-forest .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+
+/* Theme 4: sunset */
+.chat-theme-sunset { --chat-bg: #fff3e0; --chat-sent-bg: linear-gradient(135deg, #e64a19, #bf360c); --chat-sent-color: #fff; --chat-received-bg: #ffe0b2; }
+.chat-theme-sunset .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='100' height='50' viewBox='0 0 100 50' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e64a19' fill-opacity='0.04'%3E%3Cellipse cx='50' cy='50' rx='50' ry='30'/%3E%3C/g%3E%3C/svg%3E"); }
+.chat-theme-sunset .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+
+/* Theme 5: midnight */
+.chat-theme-midnight { --chat-bg: #0a0e1a; --chat-sent-bg: linear-gradient(135deg, #3949ab, #1a237e); --chat-sent-color: #fff; --chat-received-bg: #1a1f2e; }
+.chat-theme-midnight .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='1' fill='%23ffffff' fill-opacity='0.3'/%3E%3Ccircle cx='20' cy='20' r='0.5' fill='%23ffffff' fill-opacity='0.2'/%3E%3Ccircle cx='80' cy='30' r='0.8' fill='%23ffffff' fill-opacity='0.25'/%3E%3Ccircle cx='10' cy='70' r='0.6' fill='%23ffffff' fill-opacity='0.2'/%3E%3Ccircle cx='90' cy='80' r='1' fill='%23ffffff' fill-opacity='0.15'/%3E%3C/svg%3E"); }
+.chat-theme-midnight .chat-messages-active .message-wrapper.received .message-bubble { background-color: #1a1f2e; color: #e0e0e0; border-color: #2a3050; }
+.chat-theme-midnight .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+.chat-theme-midnight .chat-sidebar { background-color: #0f1320; }
+.chat-theme-midnight .convo-item { border-color: #1a1f2e; }
+.chat-theme-midnight .chat-header-active,
+.chat-theme-midnight .chat-input-area { background-color: #0f1320; border-color: #1a1f2e; }
+.chat-theme-midnight .chat-input-area input[type="text"] { background-color: #1a1f2e; color: #e0e0e0; border-color: #2a3050; }
+.chat-theme-midnight .convo-name { color: #e0e0e0; }
+.chat-theme-midnight .convo-msg { color: #8899aa; }
+
+/* Theme 6: rose */
+.chat-theme-rose { --chat-bg: #fce4ec; --chat-sent-bg: linear-gradient(135deg, #e91e63, #880e4f); --chat-sent-color: #fff; --chat-received-bg: #fff; }
+.chat-theme-rose .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e91e63' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E"); }
+.chat-theme-rose .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+
+/* Theme 7: aurora */
+.chat-theme-aurora { --chat-bg: #f3e5f5; --chat-sent-bg: linear-gradient(135deg, #7b1fa2, #4a148c); --chat-sent-color: #fff; --chat-received-bg: #ede7f6; }
+.chat-theme-aurora .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='120' height='60' viewBox='0 0 120 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%237b1fa2' stroke-opacity='0.06' stroke-width='2'%3E%3Cpath d='M0 30 Q30 0 60 30 Q90 60 120 30'/%3E%3C/g%3E%3C/svg%3E"); }
+.chat-theme-aurora .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+
+/* Theme 8: desert */
+.chat-theme-desert { --chat-bg: #fdf6e3; --chat-sent-bg: linear-gradient(135deg, #795548, #4e342e); --chat-sent-color: #fff; --chat-received-bg: #fff8e1; }
+.chat-theme-desert .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23795548' fill-opacity='0.04'%3E%3Cpath d='M40 0 L80 40 L40 80 L0 40Z'/%3E%3C/g%3E%3C/svg%3E"); }
+.chat-theme-desert .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+
+/* Theme 9: lavender */
+.chat-theme-lavender { --chat-bg: #ede7f6; --chat-sent-bg: linear-gradient(135deg, #5e35b1, #311b92); --chat-sent-color: #fff; --chat-received-bg: #f5f0ff; }
+.chat-theme-lavender .chat-messages-active { background-color: var(--chat-bg); }
+.chat-theme-lavender .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+
+/* Theme 10: slate */
+.chat-theme-slate { --chat-bg: #eceff1; --chat-sent-bg: linear-gradient(135deg, #455a64, #263238); --chat-sent-color: #fff; --chat-received-bg: #ffffff; }
+.chat-theme-slate .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23455a64' fill-opacity='0.04'%3E%3Crect x='0' y='0' width='20' height='20'/%3E%3Crect x='20' y='20' width='20' height='20'/%3E%3C/g%3E%3C/svg%3E"); }
+.chat-theme-slate .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+
+/* Theme 11: sakura */
+.chat-theme-sakura { --chat-bg: #ffeef8; --chat-sent-bg: linear-gradient(135deg, #f48fb1, #c2185b); --chat-sent-color: #fff; --chat-received-bg: #fff0f7; }
+.chat-theme-sakura .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f48fb1' fill-opacity='0.08'%3E%3Cellipse cx='40' cy='40' rx='15' ry='8' transform='rotate(0 40 40)'/%3E%3Cellipse cx='40' cy='40' rx='15' ry='8' transform='rotate(72 40 40)'/%3E%3Cellipse cx='40' cy='40' rx='15' ry='8' transform='rotate(144 40 40)'/%3E%3Cellipse cx='40' cy='40' rx='15' ry='8' transform='rotate(216 40 40)'/%3E%3Cellipse cx='40' cy='40' rx='15' ry='8' transform='rotate(288 40 40)'/%3E%3C/g%3E%3C/svg%3E"); }
+.chat-theme-sakura .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
+
+/* Theme 12: neon */
+.chat-theme-neon { --chat-bg: #0a0a0a; --chat-sent-bg: linear-gradient(135deg, #00e676, #00c853); --chat-sent-color: #000; --chat-received-bg: #1a1a1a; }
+.chat-theme-neon .chat-messages-active { background-color: var(--chat-bg); background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%2300e676' stroke-opacity='0.05' stroke-width='1'%3E%3Cline x1='0' y1='0' x2='100' y2='100'/%3E%3Cline x1='50' y1='0' x2='100' y2='50'/%3E%3Cline x1='0' y1='50' x2='50' y2='100'/%3E%3C/g%3E%3C/svg%3E"); }
+.chat-theme-neon .message-wrapper.received .message-bubble { background-color: #1a1a1a; color: #e0e0e0; border-color: #333; }
+.chat-theme-neon .chat-sidebar { background-color: #111111; }
+.chat-theme-neon .chat-header-active,
+.chat-theme-neon .chat-input-area { background-color: #111111; border-color: #222; }
+.chat-theme-neon .chat-input-area input[type="text"] { background-color: #1a1a1a; color: #e0e0e0; border-color: #333; }
+.chat-theme-neon .convo-name { color: #e0e0e0; }
+.chat-theme-neon .message-wrapper.sent .message-bubble { background: var(--chat-sent-bg); color: var(--chat-sent-color); }
 
 /* ============================================================
    Global Reset & Base
@@ -53,6 +188,7 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     direction: rtl;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a { text-decoration: none; color: inherit; }
@@ -65,8 +201,6 @@ a { text-decoration: none; color: inherit; }
 
 /* ============================================================
    Navbar
-   navbar دقیقاً 60px ارتفاع دارد — این مقدار باید با
-   تمام محاسبات calc(100vh - Xpx) در صفحات دیگر هماهنگ باشد
    ============================================================ */
 .navbar {
     background-color: var(--primary-color);
@@ -76,7 +210,8 @@ a { text-decoration: none; color: inherit; }
     position: sticky;
     top: 0;
     z-index: 1000;
-    height: 60px; /* مقدار مرجع برای سایر صفحات */
+    height: 60px;
+    transition: background-color 0.3s ease;
 }
 .navbar .container {
     display: flex;
@@ -105,6 +240,20 @@ a { text-decoration: none; color: inherit; }
     gap: 0.5rem;
 }
 .navbar-nav .nav-link:hover { background-color: rgba(255,255,255,0.2); }
+
+/* Dark Mode Toggle Button */
+.dark-mode-toggle {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    border-radius: 50%;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+.dark-mode-toggle:hover { background: rgba(255,255,255,0.25); transform: rotate(20deg); }
 
 /* User Dropdown */
 .user-dropdown { position: relative; cursor: pointer; padding: 0.5rem; border-radius: 50px; }
@@ -152,6 +301,7 @@ a { text-decoration: none; color: inherit; }
     padding: 6rem 0;
     position: relative;
     overflow: hidden;
+    transition: background 0.3s ease;
 }
 .hero-content {
     position: relative; z-index: 1;
@@ -183,11 +333,14 @@ a { text-decoration: none; color: inherit; }
 .btn-custom:hover { background-color: var(--primary-dark); }
 .btn-outline { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
 .btn-outline:hover { background-color: var(--background); }
+.btn-danger { background-color: var(--error); color: white; }
+.btn-danger:hover { opacity: 0.9; }
+.btn-success { background-color: var(--success); color: white; }
 
 /* ============================================================
    Features Grid
    ============================================================ */
-.features-section { padding: 5rem 0; background-color: var(--surface); }
+.features-section { padding: 5rem 0; background-color: var(--surface); transition: background-color 0.3s; }
 .section-title {
     text-align: center; font-size: 2.5rem; font-weight: 700;
     margin-bottom: 1rem; color: var(--primary-color);
@@ -211,13 +364,33 @@ a { text-decoration: none; color: inherit; }
 .feature-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
 
 /* ============================================================
-   Dashboard & Schedule (برای dashboard.html)
+   Footer — فقط در index و about باید نمایش داشته باشه
+   در صفحات دیگر کلاس hide-footer به body اضافه می‌شود
+   ============================================================ */
+.footer {
+    background-color: var(--secondary-color);
+    color: var(--text-on-primary);
+    padding: 2rem 0;
+    margin-top: 4rem;
+    transition: background-color 0.3s;
+}
+.footer-section { margin-bottom: 1rem; }
+.footer-title { font-size: 1.1rem; margin-bottom: 1rem; }
+.footer-links { list-style: none; }
+.footer-links a {
+    color: rgba(255,255,255,0.8);
+    display: block; padding: 0.25rem 0;
+    transition: padding 0.2s;
+}
+.footer-links a:hover { padding-right: 10px; }
+
+/* پنهان کردن footer در صفحاتی که body.hide-footer دارند */
+body.hide-footer .footer { display: none !important; }
+
+/* ============================================================
+   Dashboard & Schedule
    ============================================================ */
 .dashboard-container { padding: 2rem 0; }
-
-/* schedule-card و schedule-grid در dashboard.html با کلاس‌های
-   section-card و schedule-grid بازنویسی شده‌اند، اما این کلاس‌های
-   قدیمی برای admin_dashboard.html هنوز استفاده می‌شوند */
 .schedule-card {
     background-color: var(--surface);
     border-radius: 12px;
@@ -225,6 +398,7 @@ a { text-decoration: none; color: inherit; }
     padding: 1.5rem;
     margin-bottom: 2rem;
     overflow-x: auto;
+    transition: background-color 0.3s;
 }
 .card-header {
     display: flex;
@@ -236,7 +410,6 @@ a { text-decoration: none; color: inherit; }
 }
 .card-header h2 { font-size: 1.2rem; font-weight: 700; }
 
-/* grid برنامه هفتگی — این کلاس در هر دو dashboard.html و admin_dashboard.html استفاده می‌شود */
 .schedule-grid {
     display: grid;
     grid-template-columns: 80px repeat(5, 1fr);
@@ -255,6 +428,7 @@ a { text-decoration: none; color: inherit; }
     font-weight: 600;
     color: var(--text-secondary);
     font-size: 0.9rem;
+    transition: background-color 0.3s;
 }
 .schedule-cell {
     background-color: var(--surface);
@@ -268,7 +442,6 @@ a { text-decoration: none; color: inherit; }
 .schedule-cell:hover { background-color: var(--background); }
 .schedule-cell.has-class { border-right: 3px solid var(--primary-color); }
 
-/* رنگ‌بندی هفته‌های زوج/فرد */
 .split-container { display: flex; flex-direction: column; height: 100%; width: 100%; }
 .split-half {
     flex: 1;
@@ -277,15 +450,16 @@ a { text-decoration: none; color: inherit; }
     width: 100%;
     border-bottom: 1px dashed var(--border-color);
     font-size: 0.8rem; padding: 0.25rem;
+    border-radius: 4px;
+    margin-bottom: 2px;
 }
-.split-half:last-child { border-bottom: none; }
-.bg-odd  { background-color: rgba(33,150,243,0.15); }
-.bg-even { background-color: rgba(76,175,80,0.15); }
-.bg-all  { background-color: rgba(0,131,143,0.1); }
+.split-half:last-child { border-bottom: none; margin-bottom: 0; }
+.bg-odd  { background-color: rgba(33,150,243,0.12); }
+.bg-even { background-color: rgba(76,175,80,0.12); }
+.bg-all  { background-color: rgba(0,131,143,0.08); }
 .class-name { font-size: 0.85rem; font-weight: 600; color: var(--primary-color); margin-bottom: 0.25rem; }
 .class-location { font-size: 0.75rem; color: var(--text-secondary); }
 
-/* Dashboard Tabs — مشترک بین dashboard.html و admin_dashboard.html */
 .dashboard-tabs {
     display: flex;
     border-bottom: 1px solid var(--border-color);
@@ -295,30 +469,25 @@ a { text-decoration: none; color: inherit; }
 }
 
 /* ============================================================
-   Chat Layout — chat.html
-   ============================================================
-   مشکل قبلی: ارتفاع calc(100vh - 80px) بود اما navbar
-   فقط 60px است. این اختلاف ۲۰ پیکسل باعث می‌شد یک نوار
-   خالی در پایین صفحه روی موبایل ظاهر شود.
-   راه‌حل: تغییر به calc(100vh - 60px) تا با navbar هماهنگ باشد.
+   Chat Layout — اصلاح کامل
    ============================================================ */
 .chat-layout {
     display: flex;
-    /* 60px = ارتفاع دقیق navbar که در همین فایل تعریف شده */
     height: calc(100vh - 60px);
     overflow: hidden;
     background: var(--background);
+    transition: background-color 0.3s;
 }
 
-/* sidebar عرض 300px دارد تا با تعریف chat.html هماهنگ باشد */
 .chat-sidebar {
     width: 300px;
     min-width: 300px;
-    background-color: var(--surface);
+    background-color: var(--chat-sidebar-bg, var(--surface));
     border-left: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
+    transition: background-color 0.3s, border-color 0.3s;
 }
 
 .chat-main {
@@ -328,13 +497,20 @@ a { text-decoration: none; color: inherit; }
     background-color: var(--background);
     position: relative;
     overflow: hidden;
+    transition: background-color 0.3s;
 }
+
+/* --- مسئله ۹: پنهان کردن "یک گفتگو را انتخاب کنید" وقتی چت فعال است --- */
+.chat-main.has-active-chat .chat-empty { display: none !important; }
+.chat-main.has-active-chat .chat-active-panel { display: flex !important; flex-direction: column; flex: 1; overflow: hidden; }
+.chat-active-panel { display: none; }
 
 /* Sidebar elements */
 .sidebar-header {
     padding: 1rem 1.25rem;
-    background-color: var(--surface);
+    background-color: var(--chat-sidebar-bg, var(--surface));
     border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s;
 }
 .conversation-list { flex: 1; overflow-y: auto; }
 .convo-item {
@@ -361,12 +537,13 @@ a { text-decoration: none; color: inherit; }
 
 /* Chat Header */
 .chat-header-active {
-    background-color: var(--surface);
+    background-color: var(--chat-header-bg, var(--surface));
     padding: 0.75rem 1.5rem;
     display: flex; align-items: center; gap: 1rem;
     border-bottom: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
     z-index: 10;
+    transition: background-color 0.3s;
 }
 
 /* Messages Area */
@@ -377,28 +554,14 @@ a { text-decoration: none; color: inherit; }
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v-2h4v4h2v-4h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4v-2H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-color: var(--chat-bg, #f0f2f5);
+    background-image: var(--chat-bg-pattern);
+    transition: background-color 0.3s;
 }
 
 /* ============================================================
-   Message Bubbles — رفع تعارض با ساختار جدید chat.html
-   ============================================================
-   مشکل قبلی: .message-bubble.sent و .message-bubble.received
-   هر دو از align-self استفاده می‌کردند تا پیام را چپ یا راست
-   تراز کنند. اما در chat.html جدید، ساختار HTML تغییر کرده:
-     <div class="message-wrapper sent">      ← این المان align-self دارد
-       <div class="message-bubble">...</div> ← این فقط ظاهر بصری دارد
-     </div>
-   اگر align-self همچنان روی .message-bubble باقی می‌ماند، در
-   حالتی که هر دو استایل هم‌زمان load می‌شدند (چون CSS فایل
-   global است)، پیام‌ها ممکن بود هر دو در یک سمت نمایش داده شوند.
-   راه‌حل: حذف align-self از message-bubble و انتقال منطق
-   تراز به message-wrapper که ساختار جدید chat.html از آن
-   استفاده می‌کند. کلاس‌های sent/received روی bubble فقط
-   رنگ و شکل ظاهری را مدیریت می‌کنند.
+   Message Bubbles
    ============================================================ */
-
-/* wrapper — مدیریت جهت (چپ یا راست) */
 .message-wrapper {
     display: flex;
     flex-direction: column;
@@ -407,7 +570,6 @@ a { text-decoration: none; color: inherit; }
 .message-wrapper.sent  { align-self: flex-end;  align-items: flex-end; }
 .message-wrapper.received { align-self: flex-start; align-items: flex-start; }
 
-/* bubble — فقط ظاهر بصری، بدون align-self */
 .message-bubble {
     padding: 0.65rem 1rem;
     border-radius: 14px;
@@ -415,49 +577,62 @@ a { text-decoration: none; color: inherit; }
     word-wrap: break-word;
     font-size: 0.9rem;
     line-height: 1.55;
+    transition: background 0.3s;
 }
 .message-wrapper.sent .message-bubble {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
+    background: var(--chat-sent-bg, linear-gradient(135deg, var(--primary-color), var(--primary-dark)));
+    color: var(--chat-sent-color, white);
     border-bottom-left-radius: 4px;
 }
 .message-wrapper.received .message-bubble {
-    background-color: var(--surface);
+    background-color: var(--chat-received-bg, var(--surface));
     color: var(--text-primary);
-    border: 1px solid var(--border-color);
+    border: var(--chat-received-border, 1px solid var(--border-color));
     border-bottom-right-radius: 4px;
     box-shadow: var(--shadow-sm);
 }
 
-/* پشتیبانی از ساختار قدیمی (برای صفحات دیگری که ممکن است
-   هنوز از .message-bubble.sent/received بدون wrapper استفاده کنند) */
+/* ساختار قدیمی backward compatibility */
 .message-bubble.sent {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
+    background: var(--chat-sent-bg, linear-gradient(135deg, var(--primary-color), var(--primary-dark)));
+    color: var(--chat-sent-color, white);
     align-self: flex-end;
     border-bottom-left-radius: 4px;
 }
 .message-bubble.received {
-    background-color: var(--surface);
+    background-color: var(--chat-received-bg, var(--surface));
     color: var(--text-primary);
     align-self: flex-start;
-    border: 1px solid var(--border-color);
+    border: var(--chat-received-border, 1px solid var(--border-color));
     border-bottom-right-radius: 4px;
     box-shadow: var(--shadow-sm);
 }
 
-.message-time { font-size: 0.7rem; margin-top: 0.3rem; opacity: 0.7; display: block; }
-.message-wrapper.sent .message-time { text-align: left; color: var(--text-secondary); }
-.message-wrapper.received .message-time { text-align: right; color: var(--text-secondary); }
-/* پشتیبانی از ساختار قدیمی */
-.message-bubble.sent .message-time { text-align: right; }
+/* --- مسئله ۴: ساعت پیام ارسالی باید سفید باشد --- */
+.message-time {
+    font-size: 0.7rem;
+    margin-top: 0.3rem;
+    display: block;
+}
+.message-wrapper.sent .message-time {
+    text-align: left;
+    color: rgba(255, 255, 255, 0.85); /* سفید برای خوانایی روی پس‌زمینه رنگی */
+}
+.message-wrapper.received .message-time {
+    text-align: right;
+    color: var(--text-secondary);
+}
+/* ساختار قدیمی */
+.message-bubble.sent .message-time { color: rgba(255,255,255,0.85); text-align: right; }
+.message-bubble.received .message-time { color: var(--text-secondary); }
 
 /* Chat Input */
 .chat-input-area {
-    background-color: var(--surface);
+    background-color: var(--chat-input-bg, var(--surface));
     padding: 0.85rem 1.25rem;
     display: flex; align-items: center; gap: 0.75rem;
     border-top: 1px solid var(--border-color);
+    transition: background-color 0.3s;
 }
 .chat-input-area input[type="text"] {
     flex: 1;
@@ -469,10 +644,9 @@ a { text-decoration: none; color: inherit; }
     font-family: inherit;
     font-size: 0.9rem;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, background-color 0.3s;
 }
 .chat-input-area input[type="text"]:focus { border-color: var(--primary-color); }
-/* پشتیبانی از selector قدیمی input بدون type */
 .chat-input-area input:not([type]) {
     flex: 1;
     padding: 0.75rem 1rem;
@@ -481,6 +655,7 @@ a { text-decoration: none; color: inherit; }
     background-color: var(--background);
     color: var(--text-primary);
     font-family: inherit;
+    transition: background-color 0.3s;
 }
 .chat-input-area input:not([type]):focus { outline: none; border-color: var(--primary-color); }
 
@@ -498,12 +673,383 @@ a { text-decoration: none; color: inherit; }
 .send-btn:hover { transform: scale(1.08); box-shadow: 0 5px 14px rgba(0,131,143,.4); }
 .send-btn:active { transform: scale(0.95); }
 
-/* Empty State */
+/* Empty State — مسئله ۹ */
 .chat-empty {
     flex: 1;
     display: flex; align-items: center; justify-content: center;
     color: var(--text-secondary);
     flex-direction: column; gap: 1rem;
+    transition: opacity 0.2s;
+}
+
+/* ============================================================
+   Chat Theme Selector Panel
+   ============================================================ */
+.chat-theme-panel {
+    position: absolute;
+    top: 70px; left: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    display: none;
+    min-width: 280px;
+}
+.chat-theme-panel.open { display: block; }
+.chat-theme-panel h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary); }
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+.theme-swatch {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    overflow: hidden;
+    position: relative;
+}
+.theme-swatch:hover { transform: scale(1.05); border-color: var(--primary-color); }
+.theme-swatch.active { border-color: var(--primary-color); box-shadow: 0 0 0 2px var(--primary-light); }
+.theme-swatch[data-theme="default"] { background: linear-gradient(135deg, #00838f, #005662); }
+.theme-swatch[data-theme="ocean"] { background: linear-gradient(135deg, #0277bd, #01579b); }
+.theme-swatch[data-theme="forest"] { background: linear-gradient(135deg, #2e7d32, #1b5e20); }
+.theme-swatch[data-theme="sunset"] { background: linear-gradient(135deg, #e64a19, #bf360c); }
+.theme-swatch[data-theme="midnight"] { background: linear-gradient(135deg, #1a237e, #0d0d2e); }
+.theme-swatch[data-theme="rose"] { background: linear-gradient(135deg, #e91e63, #880e4f); }
+.theme-swatch[data-theme="aurora"] { background: linear-gradient(135deg, #7b1fa2, #4a148c); }
+.theme-swatch[data-theme="desert"] { background: linear-gradient(135deg, #795548, #4e342e); }
+.theme-swatch[data-theme="lavender"] { background: linear-gradient(135deg, #5e35b1, #311b92); }
+.theme-swatch[data-theme="slate"] { background: linear-gradient(135deg, #455a64, #263238); }
+.theme-swatch[data-theme="sakura"] { background: linear-gradient(135deg, #f48fb1, #c2185b); }
+.theme-swatch[data-theme="neon"] { background: linear-gradient(135deg, #00e676, #00c853); color: #000; text-shadow: none; }
+
+/* ============================================================
+   Group Chat — مسئله ۲: شبیه کانال (کشیده و حرفه‌ای)
+   ============================================================ */
+.group-chat-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--background);
+}
+
+.group-messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background-color: var(--background);
+}
+
+/* پیام‌های گروه — شبیه کانال، کشیده */
+.group-msg-item {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    transition: background 0.15s;
+    width: 100%;
+}
+.group-msg-item:hover { background-color: rgba(0,0,0,0.03); }
+[data-theme="dark"] .group-msg-item:hover { background-color: rgba(255,255,255,0.04); }
+
+.group-msg-item.own-message { flex-direction: row-reverse; }
+
+.group-msg-avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background-color: var(--primary-light);
+    overflow: hidden; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 0.9rem; font-weight: 700;
+}
+.group-msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.group-msg-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+.group-msg-item.own-message .group-msg-body { align-items: flex-end; }
+
+.group-msg-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+}
+.group-msg-item.own-message .group-msg-header { flex-direction: row-reverse; }
+
+.group-msg-sender {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+.group-msg-time {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+
+.group-msg-bubble {
+    background-color: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0 12px 12px 12px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    word-break: break-word;
+    max-width: 75%;
+    box-shadow: var(--shadow-sm);
+    transition: background-color 0.3s;
+}
+.group-msg-item.own-message .group-msg-bubble {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 12px 0 12px 12px;
+}
+
+/* پیام حذف‌شده در گروه */
+.group-msg-bubble.deleted-msg {
+    font-style: italic;
+    color: var(--text-secondary);
+    background-color: var(--background);
+}
+
+/* Input گروه */
+.group-input-area {
+    background-color: var(--surface);
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.group-input-area input[type="text"] {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border-radius: 24px;
+    border: 1.5px solid var(--border-color);
+    background-color: var(--background);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.group-input-area input[type="text"]:focus { border-color: var(--primary-color); }
+
+/* ============================================================
+   Channel Messages — کانال اطلاعیه
+   ============================================================ */
+.channel-messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: var(--background);
+}
+
+.channel-msg-card {
+    background-color: var(--surface);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s, background-color 0.3s;
+    width: 100%;
+}
+.channel-msg-card:hover { box-shadow: var(--shadow-md); }
+.channel-msg-card.pinned { border-right: 3px solid var(--primary-color); }
+
+.channel-msg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+.channel-msg-sender {
+    font-weight: 700;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.channel-msg-content {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.channel-msg-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* ============================================================
+   Deadline Page — مسئله ۱۰: چیدمان بهتر
+   ============================================================ */
+.deadline-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* تقویم — تمام عرض در ردیف اول */
+.deadline-calendar-wrap {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+/* ددلاین‌های نزدیک — ستون چپ ردیف دوم */
+.deadline-near-wrap {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+/* فرم افزودن — ستون راست ردیف دوم */
+.deadline-add-wrap {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+/* همه ددلاین‌ها — تمام عرض ردیف سوم */
+.deadline-all-wrap {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+/* کارت ددلاین */
+.deadline-card {
+    background: var(--background);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    border-right: 4px solid var(--primary-color);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s, background-color 0.3s;
+}
+.deadline-card:hover { transform: translateX(-2px); box-shadow: var(--shadow-sm); }
+.deadline-card.done { opacity: 0.55; }
+.deadline-card-info { flex: 1; min-width: 0; }
+.deadline-card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.deadline-card-meta { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.2rem; }
+.deadline-days-badge {
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.3rem 0.65rem;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.deadline-days-badge.urgent { background-color: #ffebee; color: var(--error); }
+.deadline-days-badge.normal { background-color: #e8f5e9; color: var(--success); }
+.deadline-days-badge.overdue { background-color: #f3e5f5; color: #6a1b9a; }
+
+/* ============================================================
+   Jalali Calendar — تعطیلات رسمی
+   ============================================================ */
+.jalali-calendar {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Vazirmatn', sans-serif;
+}
+.jalali-calendar th {
+    text-align: center;
+    padding: 0.6rem;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.85rem;
+}
+.jalali-calendar td {
+    text-align: center;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.15s;
+    vertical-align: top;
+    min-height: 50px;
+    font-size: 0.88rem;
+    position: relative;
+}
+.jalali-calendar td:hover { background-color: rgba(0,131,143,0.08); }
+.jalali-calendar td.today {
+    background-color: rgba(0,131,143,0.15);
+    font-weight: 700;
+    border: 2px solid var(--primary-color);
+}
+.jalali-calendar td.holiday {
+    background-color: #fff3f3;
+    color: #c62828;
+    font-weight: 600;
+}
+[data-theme="dark"] .jalali-calendar td.holiday { background-color: rgba(198,40,40,0.15); }
+.jalali-calendar td.has-deadline::after {
+    content: '';
+    display: block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    margin: 2px auto 0;
+}
+.holiday-tooltip {
+    font-size: 0.7rem;
+    color: #c62828;
+    display: block;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 70px;
 }
 
 /* ============================================================
@@ -514,6 +1060,7 @@ a { text-decoration: none; color: inherit; }
     border-radius: 12px;
     padding: 2rem;
     box-shadow: var(--shadow-md);
+    transition: background-color 0.3s;
 }
 .form-group { margin-bottom: 1.5rem; }
 .form-label {
@@ -531,17 +1078,36 @@ a { text-decoration: none; color: inherit; }
     background-color: var(--background);
     color: var(--text-primary);
     font-family: inherit;
-    transition: border 0.2s;
+    transition: border 0.2s, background-color 0.3s, color 0.3s;
 }
 .form-control:focus,
 .form-select:focus {
     outline: none;
     border-color: var(--primary-color);
 }
-/* کلاس قدیمی برای خطاهای فرم — هنوز در بعضی صفحات استفاده می‌شود */
 .error-message { color: var(--error); font-size: 0.85rem; margin-top: 0.25rem; }
 
-/* Modal — کلاس‌های پایه مشترک که ممکن است در base.html استفاده شوند */
+/* Privacy settings save button */
+.privacy-save-btn {
+    margin-top: 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.privacy-save-btn:hover { background-color: var(--primary-dark); transform: translateY(-1px); }
+.privacy-save-btn:active { transform: translateY(0); }
+
+/* Modal */
 .modal-box {
     display: none;
     position: fixed; inset: 0;
@@ -554,52 +1120,199 @@ a { text-decoration: none; color: inherit; }
 .modal-box[style*="flex"] { display: flex; }
 
 /* ============================================================
-   Footer
+   Section Cards (used across pages)
    ============================================================ */
-.footer {
-    background-color: var(--secondary-color);
-    color: var(--text-on-primary);
-    padding: 2rem 0;
-    margin-top: 4rem;
+.section-card {
+    background-color: var(--surface);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: background-color 0.3s, box-shadow 0.3s;
 }
-.footer-section { margin-bottom: 1rem; }
-.footer-title { font-size: 1.1rem; margin-bottom: 1rem; }
-.footer-links { list-style: none; }
-.footer-links a {
-    color: rgba(255,255,255,0.8);
-    display: block; padding: 0.25rem 0;
-    transition: padding 0.2s;
+.section-card:hover { box-shadow: var(--shadow-lg); }
+
+/* Tabs */
+.tab-btn {
+    padding: 0.85rem 1.25rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.5rem;
+    white-space: nowrap;
 }
-.footer-links a:hover { padding-right: 10px; }
+.tab-btn.active {
+    border-bottom-color: var(--primary-color);
+    color: var(--primary-color);
+    font-weight: 600;
+}
+.tab-btn:hover { color: var(--primary-color); }
+
+/* ============================================================
+   Resources Page
+   ============================================================ */
+.resource-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s, background-color 0.3s;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+.resource-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.resource-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    width: 50px; height: 50px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px;
+    background: rgba(0,131,143,0.1);
+    color: var(--primary-color);
+}
+.resource-info { flex: 1; min-width: 0; }
+.resource-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+.resource-meta { font-size: 0.8rem; color: var(--text-secondary); }
+
+/* ============================================================
+   Badges / Tags
+   ============================================================ */
+.badge {
+    display: inline-flex; align-items: center;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.badge-primary { background-color: rgba(0,131,143,0.12); color: var(--primary-color); }
+.badge-error { background-color: rgba(183,28,28,0.12); color: var(--error); }
+.badge-success { background-color: rgba(46,125,50,0.12); color: var(--success); }
+.badge-warning { background-color: rgba(245,124,0,0.12); color: var(--warning); }
+.badge-info { background-color: rgba(2,136,209,0.12); color: var(--info); }
+
+/* لغو کلاس */
+.cancelled-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background-color: rgba(183,28,28,0.1);
+    color: var(--error);
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* آنلاین بودن */
+.online-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background-color: var(--success);
+    display: inline-block;
+    border: 2px solid var(--surface);
+}
+
+/* ============================================================
+   Admin Panel
+   ============================================================ */
+.admin-stat-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    transition: all 0.3s, background-color 0.3s;
+}
+.admin-stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.admin-stat-number { font-size: 2.5rem; font-weight: 700; color: var(--primary-color); }
+.admin-stat-label { color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem; }
+
+/* ============================================================
+   Notifications
+   ============================================================ */
+.notif-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    transition: background 0.2s;
+}
+.notif-item:hover { background-color: var(--background); }
+.notif-item.unread { background-color: rgba(0,131,143,0.04); }
+.notif-item.unread::before {
+    content: '';
+    display: block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    flex-shrink: 0;
+    margin-top: 6px;
+}
 
 /* ============================================================
    Utilities
    ============================================================ */
 .text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 0.75rem; }
 .mt-3 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 0.75rem; }
 .mb-3 { margin-bottom: 1rem; }
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.p-3 { padding: 1.5rem; }
+.d-flex { display: flex; }
+.align-center { align-items: center; }
+.gap-1 { gap: 0.5rem; }
+.gap-2 { gap: 1rem; }
+.flex-1 { flex: 1; }
+.text-muted { color: var(--text-secondary); }
+.text-primary-color { color: var(--primary-color); }
+.text-error { color: var(--error); }
+.text-success { color: var(--success); }
+.w-100 { width: 100%; }
+.hidden { display: none !important; }
+.visible { display: block !important; }
+.rounded { border-radius: 8px; }
+.rounded-full { border-radius: 50%; }
+.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* انیمیشن ظاهر شدن */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeIn 0.25s ease; }
+
+/* loading spinner */
+.spinner {
+    width: 24px; height: 24px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ============================================================
    Responsive
    ============================================================ */
 @media (max-width: 768px) {
-    /* Hero */
     .hero-content { flex-direction: column; text-align: center; }
     .hero-text { padding-left: 0; margin-bottom: 2rem; }
     .hero-title { font-size: 2rem; }
     .features-grid { grid-template-columns: 1fr; }
 
-    /* ============================================================
-       Chat Responsive
-       ============================================================
-       مشکل قبلی: روی موبایل chat-main با display:none پنهان می‌شد
-       و فقط با کلاس active نمایش می‌یافت. اما در chat.html جدید،
-       sidebar و main هر دو از طریق JavaScript مستقیماً
-       display:flex/none می‌شوند. بنابراین کلاس active دیگر
-       ضروری نیست ولی برای backward compatibility نگه می‌داریم.
-       ============================================================ */
+    /* Chat mobile */
     .chat-layout {
-        /* روی موبایل ارتفاع auto می‌شود تا محتوا اسکرول‌پذیر باشد */
         height: calc(100vh - 60px);
         flex-direction: column;
         position: relative;
@@ -609,27 +1322,38 @@ a { text-decoration: none; color: inherit; }
         min-width: unset;
         border-left: none;
         border-bottom: 1px solid var(--border-color);
-        /* JavaScript در chat.html مستقیماً display را کنترل می‌کند */
     }
     .chat-main {
         position: absolute;
         top: 0; left: 0;
         width: 100%; height: 100%;
         z-index: 50;
-        /* به جای display:none، JavaScript از style.display استفاده می‌کند */
     }
-    /* backward compatibility برای کد قدیمی که از کلاس active استفاده می‌کرد */
     .chat-main:not([style]) { display: none; }
     .chat-main.active { display: flex; }
 
     .message-wrapper { max-width: 88%; }
+    .group-msg-bubble { max-width: 90%; }
+
+    /* Deadline layout mobile */
+    .deadline-layout {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+        gap: 1rem;
+    }
+    .deadline-calendar-wrap,
+    .deadline-all-wrap { grid-column: 1 / -1; }
 
     /* Navbar */
     .navbar-nav .nav-link span { display: none; }
+
+    .chat-theme-panel { left: 5px; right: 5px; min-width: unset; }
 }
 
 @media (max-width: 480px) {
     .hero-title { font-size: 1.6rem; }
     .section-title { font-size: 1.8rem; }
     .form-card { padding: 1.25rem; }
+    .deadline-layout { padding: 0.75rem; gap: 0.75rem; }
+    .theme-grid { grid-template-columns: repeat(3, 1fr); }
 }

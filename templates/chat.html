@@ -95,6 +95,15 @@
         <button class="btn-icon" id="group-search-toggle" onclick="toggleSearch('group')" title="جستجو">
           <i class="material-icons">search</i>
         </button>
+        <div style="position:relative;">
+          <button class="btn-icon theme-toggle-btn" onclick="toggleThemePanel(event)" title="تم چت">
+            <i class="material-icons" style="font-size:1rem;">palette</i>
+          </button>
+          <div class="chat-theme-panel" id="chat-theme-panel-group">
+            <div class="theme-panel-title">تم گفتگو</div>
+            <div class="theme-swatches" id="theme-swatches"></div>
+          </div>
+        </div>
         <button class="btn-icon" onclick="openMembersModal()" title="اعضا">
           <i class="material-icons">people</i>
         </button>
@@ -189,6 +198,15 @@
           <span id="private-status">آفلاین</span>
         </div>
         <button class="btn-icon" onclick="toggleSearch('private')" title="جستجو"><i class="material-icons">search</i></button>
+        <div style="position:relative;">
+          <button class="btn-icon theme-toggle-btn" onclick="toggleThemePanel(event)" title="تم چت">
+            <i class="material-icons" style="font-size:1rem;">palette</i>
+          </button>
+          <div class="chat-theme-panel" id="chat-theme-panel">
+            <div class="theme-panel-title">تم گفتگو</div>
+            <div class="theme-swatches" id="theme-swatches"></div>
+          </div>
+        </div>
         <a href="#" id="private-profile-link" class="btn-icon" title="پروفایل"><i class="material-icons">account_circle</i></a>
         <button class="btn-icon" id="block-btn" onclick="toggleBlockUser()" title="بلاک کاربر" style="color:var(--error);">
           <i class="material-icons">block</i>
@@ -366,6 +384,13 @@
   </div>
 </div>
 
+<div style="margin-top:1rem;display:flex;justify-content:flex-end;">
+  <button class="btn-primary" onclick="saveAllPrivacy()">
+    <i class="material-icons" style="font-size:1rem;vertical-align:middle;">save</i>
+    ذخیره تنظیمات
+  </button>
+</div>
+
 <!-- Message Context Dropdown -->
 <div id="msg-context-menu" class="context-menu" style="display:none;" onclick="event.stopPropagation()"></div>
 
@@ -442,6 +467,74 @@
 .chat-messages-active{flex:1;overflow-y:auto;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.35rem;background:var(--background);}
 .chat-messages-active::-webkit-scrollbar{width:4px;}
 .chat-messages-active::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:4px;}
+/* ── Chat Theme Selector ── */
+.theme-toggle-btn {
+    background: none; border: 1px solid var(--border-color);
+    border-radius: 20px; padding: .25rem .65rem;
+    display: flex; align-items: center; gap: .3rem;
+    cursor: pointer; font-size: .78rem; color: var(--text-secondary);
+    transition: all .18s;
+}
+.theme-toggle-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+
+.chat-theme-panel {
+    display: none; position: absolute; bottom: calc(100% + 8px);
+    left: 50%; transform: translateX(-50%);
+    background: var(--surface); border: 1px solid var(--border-color);
+    border-radius: 14px; padding: .85rem; box-shadow: 0 8px 28px rgba(0,0,0,.15);
+    z-index: 200; width: 260px;
+}
+.chat-theme-panel.open { display: block; animation: fadeIn .18s ease; }
+.theme-panel-title { font-size: .78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: .6rem; }
+.theme-swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
+.theme-swatch {
+    width: 100%; aspect-ratio: 1; border-radius: 10px; cursor: pointer;
+    border: 2px solid transparent; transition: transform .15s, border-color .15s;
+    position: relative; overflow: hidden;
+}
+.theme-swatch:hover { transform: scale(1.08); }
+.theme-swatch.active { border-color: var(--primary-color); }
+.theme-swatch span { position: absolute; bottom: 2px; left: 0; right: 0; text-align: center; font-size: .6rem; color: white; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+
+/* Theme backgrounds */
+.chat-theme-default .chat-messages-active { background: var(--background); }
+.chat-theme-ocean   .chat-messages-active { background: linear-gradient(160deg,#0d47a1 0%,#006064 100%); }
+.chat-theme-forest  .chat-messages-active { background: linear-gradient(160deg,#1b5e20 0%,#33691e 100%); }
+.chat-theme-sunset  .chat-messages-active { background: linear-gradient(160deg,#bf360c 0%,#f57f17 100%); }
+.chat-theme-midnight .chat-messages-active { background: #0d1117; }
+.chat-theme-rose    .chat-messages-active { background: linear-gradient(160deg,#880e4f 0%,#ad1457 100%); }
+.chat-theme-aurora  .chat-messages-active { background: linear-gradient(160deg,#1a237e 0%,#006064 60%,#1b5e20 100%); }
+.chat-theme-desert  .chat-messages-active { background: linear-gradient(160deg,#4e342e 0%,#bf360c 100%); }
+.chat-theme-lavender .chat-messages-active { background: linear-gradient(160deg,#4a148c 0%,#6a1b9a 100%); }
+.chat-theme-slate   .chat-messages-active { background: linear-gradient(160deg,#263238 0%,#37474f 100%); }
+.chat-theme-sakura  .chat-messages-active { background: linear-gradient(160deg,#fce4ec 0%,#f8bbd0 100%); }
+.chat-theme-neon    .chat-messages-active { background: #0a0a0a; }
+
+/* در تم‌های تاریک، پیام received روشن‌تر باشد */
+.chat-theme-ocean .message-wrapper.received .message-bubble,
+.chat-theme-forest .message-wrapper.received .message-bubble,
+.chat-theme-sunset .message-wrapper.received .message-bubble,
+.chat-theme-midnight .message-wrapper.received .message-bubble,
+.chat-theme-rose .message-wrapper.received .message-bubble,
+.chat-theme-aurora .message-wrapper.received .message-bubble,
+.chat-theme-desert .message-wrapper.received .message-bubble,
+.chat-theme-lavender .message-wrapper.received .message-bubble,
+.chat-theme-slate .message-wrapper.received .message-bubble,
+.chat-theme-neon .message-wrapper.received .message-bubble {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.15);
+    color: white;
+}
+.chat-theme-ocean .message-wrapper.received .msg-time,
+.chat-theme-forest .message-wrapper.received .msg-time,
+.chat-theme-sunset .message-wrapper.received .msg-time,
+.chat-theme-midnight .message-wrapper.received .msg-time,
+.chat-theme-rose .message-wrapper.received .msg-time,
+.chat-theme-aurora .message-wrapper.received .msg-time,
+.chat-theme-desert .message-wrapper.received .msg-time,
+.chat-theme-lavender .message-wrapper.received .msg-time,
+.chat-theme-slate .message-wrapper.received .msg-time,
+.chat-theme-neon .message-wrapper.received .msg-time { color: rgba(255,255,255,0.65); }
 .loading-state{display:flex;align-items:center;justify-content:center;gap:.5rem;color:var(--text-secondary);padding:2rem;font-size:.88rem;}
 
 /* ── Message wrapper ── */
@@ -475,6 +568,8 @@
 .message-meta{display:flex;align-items:center;gap:.3rem;margin-top:.2rem;padding:0 .3rem;}
 .message-wrapper.received .message-meta{flex-direction:row-reverse;}
 .msg-time{font-size:.68rem;color:var(--text-secondary);}
+.message-wrapper.sent .msg-time,
+.message-wrapper.sent .msg-edited-tag { color: rgba(255,255,255,0.75); }
 .msg-edited-tag{font-size:.65rem;color:var(--text-secondary);}
 .msg-ticks{font-size:.8rem;display:flex;align-items:center;}
 .ticks-sent{color:var(--text-secondary);}
@@ -656,10 +751,28 @@
 }
 </style>
 
+
+
 {% endblock %}
 
 {% block scripts %}
 <script>
+
+function saveAllPrivacy() {
+  const data = {
+    last_seen_visibility:  document.getElementById('last-seen-select').value,
+    profile_pic_visibility: document.getElementById('profile-pic-select').value,
+    who_can_message:       document.getElementById('who-can-msg-select').value,
+  };
+  fetch('/api/privacy_settings', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  }).then(r=>r.json()).then(d => {
+    if (d.status === 'success') { showToast('تنظیمات ذخیره شد ✓', 'success'); closeModal('privacy-modal'); }
+  }).catch(()=> showToast('خطا در ذخیره', 'error'));
+}
+
 // ═══════════════════════════════════════════════
 //  CONSTANTS & STATE
 // ═══════════════════════════════════════════════
@@ -1772,6 +1885,7 @@ function handleOverlayClick(event, id) {
 
 // Global click: close emoji picker and dropdowns
 document.addEventListener('click', e => {
+  document.getElementById('chat-theme-panel')?.classList.remove('open');
   const picker = document.getElementById('emoji-picker');
   if (!picker.contains(e.target)) picker.style.display = 'none';
   closeAllDropdowns();
@@ -1813,10 +1927,60 @@ function showToast(msg, type='info') {
   toastTimeout = setTimeout(() => t.remove(), 3200);
 }
 
+/* ── Chat Themes ── */
+const CHAT_THEMES = [
+  { id:'default',  label:'پیش‌فرض', bg:'#f0f0f0' },
+  { id:'ocean',    label:'اقیانوس', bg:'linear-gradient(135deg,#0d47a1,#006064)' },
+  { id:'forest',   label:'جنگل',   bg:'linear-gradient(135deg,#1b5e20,#33691e)' },
+  { id:'sunset',   label:'غروب',   bg:'linear-gradient(135deg,#bf360c,#f57f17)' },
+  { id:'midnight', label:'نیمه‌شب', bg:'#0d1117' },
+  { id:'rose',     label:'رز',     bg:'linear-gradient(135deg,#880e4f,#ad1457)' },
+  { id:'aurora',   label:'شفق',   bg:'linear-gradient(135deg,#1a237e,#006064)' },
+  { id:'desert',   label:'صحرا',   bg:'linear-gradient(135deg,#4e342e,#bf360c)' },
+  { id:'lavender', label:'اسطوخودوس', bg:'linear-gradient(135deg,#4a148c,#6a1b9a)' },
+  { id:'slate',    label:'خاکستری', bg:'linear-gradient(135deg,#263238,#37474f)' },
+  { id:'sakura',   label:'ساکورا', bg:'linear-gradient(135deg,#fce4ec,#f8bbd0)' },
+  { id:'neon',     label:'نئون',   bg:'#0a0a0a' },
+];
+
+let currentChatTheme = localStorage.getItem('chatTheme') || 'default';
+
+function initThemeSwatches() {
+  const container = document.getElementById('theme-swatches');
+  if (!container) return;
+  container.innerHTML = CHAT_THEMES.map(t => `
+    <div class="theme-swatch ${currentChatTheme === t.id ? 'active' : ''}"
+         style="background:${t.bg}"
+         onclick="applyChatTheme('${t.id}')"
+         title="${t.label}">
+      <span>${t.label}</span>
+    </div>`).join('');
+}
+
+function applyChatTheme(themeId) {
+  const chatLayout = document.getElementById('chat-main-area');
+  // حذف همه کلاس‌های تم قدیمی
+  CHAT_THEMES.forEach(t => chatLayout.classList.remove('chat-theme-' + t.id));
+  chatLayout.classList.add('chat-theme-' + themeId);
+  currentChatTheme = themeId;
+  localStorage.setItem('chatTheme', themeId);
+  initThemeSwatches();
+  document.getElementById('chat-theme-panel')?.classList.remove('open');
+}
+
+function toggleThemePanel(event) {
+  event.stopPropagation();
+  const panel = document.getElementById('chat-theme-panel');
+  if (!panel) return;
+  initThemeSwatches();
+  panel.classList.toggle('open');
+}
+
 // ═══════════════════════════════════════════════
 //  INIT ON LOAD
 // ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  applyChatTheme(currentChatTheme);
   // Load all users into allUsers cache
   fetch('/api/all_users').then(r=>r.json()).then(u => { allUsers = u; }).catch(()=>{});
 
