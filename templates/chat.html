@@ -1233,7 +1233,8 @@ function loadChat(typeOrId) {
       if (convoEl) convoEl.classList.add('active');
       initPrivateView(uid, true);
     } else {
-      clearUnreadBadge('private', uid); // ← پاک کردن بج پیام خصوصی
+      clearUnreadBadge('private', uid);
+      window.location.href = '/chat?user_id=' + uid;
     }
   }
   if (window.innerWidth < 768) document.getElementById('chat-sidebar').style.display = 'none';
