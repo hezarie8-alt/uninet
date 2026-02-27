@@ -157,31 +157,31 @@
     </nav>
     
     <!-- Flash Messages -->
-    <div class="container" style="margin-top: 1rem;">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}"
-                         style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem;
-                                display: flex; align-items: center; gap: 0.5rem;
-                                {% if category == 'success' %}
-                                    background-color: rgba(46,125,50,0.1); color: var(--success);
-                                {% elif category == 'error' %}
-                                    background-color: rgba(183,28,28,0.1); color: var(--error);
-                                {% else %}
-                                    background-color: rgba(2,136,209,0.1); color: var(--info);
-                                {% endif %}">
-                        <i class="material-icons">
-                            {% if category == 'success' %}check_circle
-                            {% elif category == 'error' %}error
-                            {% else %}info{% endif %}
-                        </i>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="container" style="margin-top: 1rem;">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}"
+                    style="padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem;
+                            display: flex; align-items: center; gap: 0.5rem;
+                            {% if category == 'success' %}
+                                background-color: rgba(46,125,50,0.1); color: var(--success);
+                            {% elif category == 'error' %}
+                                background-color: rgba(183,28,28,0.1); color: var(--error);
+                            {% else %}
+                                background-color: rgba(2,136,209,0.1); color: var(--info);
+                            {% endif %}">
+                    <i class="material-icons">
+                        {% if category == 'success' %}check_circle
+                        {% elif category == 'error' %}error
+                        {% else %}info{% endif %}
+                    </i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
     
     <!-- محتوای اصلی صفحه -->
     <main class="main-content">
@@ -312,10 +312,17 @@
         });
     </script>
 
+
     {% block scripts %}{% endblock %}
 
     <!-- Navbar و Dropdown styles — درون base.html برای جلوگیری از FOUC -->
     <style>
+
+        .main-content:has(.chat-layout) {
+        padding: 0 !important;
+        margin: 0 !important;
+        }
+        
         /* Navbar Dropdown */
         .nav-item { position: relative; }
 

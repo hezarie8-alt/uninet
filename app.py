@@ -654,19 +654,25 @@ class ChatService:
                 or_(Message.sender_id == user_id, Message.receiver_id == user_id)
             ).group_by(other_user_id).subquery()
 
+            unread_subquery = db.session.query(
+                Message.sender_id.label('sender_id'),
+                func.count(Message.id).label('unread_count')
+            ).filter(
+                Message.receiver_id == user_id,
+                Message.read_at.is_(None)
+            ).group_by(Message.sender_id).subquery()
+
             results = db.session.query(
                 Message,
                 User,
-                func.sum(case(
-                    (and_(Message.receiver_id == user_id, Message.read_at.is_(None)), 1),
-                    else_=0
-                )).label("unread_count")
+                func.coalesce(unread_subquery.c.unread_count, 0).label("unread_count")
             ).join(
                 subquery, Message.id == subquery.c.last_message_id
             ).join(
                 User, User.id == other_user_id
-            ).group_by(Message.id, User.id).order_by(Message.timestamp.desc()).all()
-
+            ).outerjoin(
+                unread_subquery, unread_subquery.c.sender_id == other_user_id
+            ).group_by(Message.id, User.id, unread_subquery.c.unread_count).order_by(Message.timestamp.desc()).all()
             conversations = []
             for msg, other_user, unread in results:
                 # بررسی بلاک
