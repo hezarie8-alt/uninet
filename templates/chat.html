@@ -11,15 +11,26 @@
         <i class="material-icons" style="font-size:1.3rem;color:var(--primary-color);">forum</i>
         <h2 style="font-size:1.1rem;margin:0;color:var(--primary-color);">پیام‌رسان</h2>
       </div>
-      <div style="display:flex;gap:.25rem;">
-        <button class="btn-icon" onclick="openPrivacyModal()" title="تنظیمات حریم خصوصی">
-          <i class="material-icons" style="font-size:1.1rem;">privacy_tip</i>
-        </button>
+      <div style="display:flex;gap:.25rem;align-items:center;">
         <button class="btn-icon" onclick="openNewChatModal()" title="چت جدید">
           <i class="material-icons" style="font-size:1.1rem;">edit</i>
         </button>
+        <div style="position:relative;" id="sidebar-menu-wrapper">
+          <button class="btn-icon" onclick="toggleSidebarMenu(event)" title="منو" style="padding:.5rem;">
+            <i class="material-icons" style="font-size:1.3rem;">menu</i>
+          </button>
+          <div id="sidebar-dropdown" class="sidebar-dropdown" style="display:none;">
+            <div class="sidebar-dropdown-item" onclick="openPrivacyModal();closeSidebarMenu()">
+              <i class="material-icons">privacy_tip</i>
+              <span>حریم خصوصی</span>
+            </div>
+            <div class="sidebar-dropdown-item" onclick="openThemeModal();closeSidebarMenu()">
+              <i class="material-icons">palette</i>
+              <span>تم گفتگو</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
     <div class="chat-special-sections">
       <div class="special-item" id="sidebar-group" onclick="loadChat('group')">
@@ -95,15 +106,6 @@
         <button class="btn-icon" id="group-search-toggle" onclick="toggleSearch('group')" title="جستجو">
           <i class="material-icons">search</i>
         </button>
-        <div style="position:relative;">
-          <button class="btn-icon theme-toggle-btn" onclick="toggleThemePanel(event)" title="تم چت">
-            <i class="material-icons" style="font-size:1rem;">palette</i>
-          </button>
-          <div class="chat-theme-panel" id="chat-theme-panel-group">
-            <div class="theme-panel-title">تم گفتگو</div>
-            <div class="theme-swatches" id="theme-swatches"></div>
-          </div>
-        </div>
         <button class="btn-icon" onclick="openMembersModal()" title="اعضا">
           <i class="material-icons">people</i>
         </button>
@@ -142,8 +144,8 @@
           <i class="material-icons">attach_file</i>
         </label>
         <input id="file-upload-group" type="file" style="display:none" accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip" onchange="handleFileUpload(this,'group')">
-        <div style="flex:1;position:relative;">
-          <input type="text" id="group-msg-input" placeholder="پیام خود را بنویسید..." onkeydown="handleInputKeydown(event,'group')" oninput="handleMentionInput(this)">
+        <div style="flex:1;position:relative;display:flex;flex-direction:column;">
+          <input type="text" id="group-msg-input" placeholder="پیام خود را بنویسید..." onkeydown="handleInputKeydown(event,'group')" oninput="handleMentionInput(this)" style="width:100%;box-sizing:border-box;">
           <div id="mention-suggestions" class="mention-suggestions" style="display:none;"></div>
         </div>
         <button class="send-btn" onclick="sendGroupMessage()"><i class="material-icons">send</i></button>
@@ -198,15 +200,6 @@
           <span id="private-status">آفلاین</span>
         </div>
         <button class="btn-icon" onclick="toggleSearch('private')" title="جستجو"><i class="material-icons">search</i></button>
-        <div style="position:relative;">
-          <button class="btn-icon theme-toggle-btn" onclick="toggleThemePanel(event)" title="تم چت">
-            <i class="material-icons" style="font-size:1rem;">palette</i>
-          </button>
-          <div class="chat-theme-panel" id="chat-theme-panel">
-            <div class="theme-panel-title">تم گفتگو</div>
-            <div class="theme-swatches" id="theme-swatches"></div>
-          </div>
-        </div>
         <a href="#" id="private-profile-link" class="btn-icon" title="پروفایل"><i class="material-icons">account_circle</i></a>
         <button class="btn-icon" id="block-btn" onclick="toggleBlockUser()" title="بلاک کاربر" style="color:var(--error);">
           <i class="material-icons">block</i>
@@ -241,7 +234,7 @@
     </div>
 
     <!-- ——— EMPTY VIEW ——— -->
-    <div id="empty-view" class="chat-empty">
+    <div id="empty-view" class="chat-empty" style="display:none;">
       <div class="empty-icon-wrap"><i class="material-icons">forum</i></div>
       <h3>یک گفتگو انتخاب کنید</h3>
       <p>از لیست سمت راست یک مکالمه را باز کنید</p>
@@ -381,14 +374,24 @@
         <option value="none">هیچ‌کس</option>
       </select>
     </div>
+    <div class="modal-actions" style="margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--border-color);">
+      <button class="btn-primary" onclick="saveAllPrivacy()">
+        <i class="material-icons" style="font-size:1rem;vertical-align:middle;">save</i>
+        ذخیره تنظیمات
+      </button>
+    </div>
   </div>
 </div>
 
-<div style="margin-top:1rem;display:flex;justify-content:flex-end;">
-  <button class="btn-primary" onclick="saveAllPrivacy()">
-    <i class="material-icons" style="font-size:1rem;vertical-align:middle;">save</i>
-    ذخیره تنظیمات
-  </button>
+<!-- Theme Modal -->
+<div id="theme-modal" class="modal-overlay" onclick="handleOverlayClick(event,'theme-modal')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-card-header">
+      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">palette</i> تم گفتگو</h3>
+      <button class="modal-close-btn" onclick="closeModal('theme-modal')"><i class="material-icons">close</i></button>
+    </div>
+    <div id="theme-swatches-modal" class="theme-swatches" style="grid-template-columns:repeat(4,1fr);display:grid;gap:.5rem;"></div>
+  </div>
 </div>
 
 <!-- Message Context Dropdown -->
@@ -749,6 +752,39 @@
   .message-wrapper{max-width:85%;}
   .msg-actions{display:none !important;}
 }
+
+/* ── Sidebar Hamburger Dropdown ── */
+.sidebar-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.15);
+  min-width: 180px;
+  z-index: 500;
+  overflow: hidden;
+  animation: fadeIn .18s ease;
+}
+.sidebar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .7rem 1rem;
+  cursor: pointer;
+  font-size: .88rem;
+  color: var(--text-primary);
+  transition: background .15s;
+}
+.sidebar-dropdown-item:hover {
+  background: var(--background);
+}
+.sidebar-dropdown-item i {
+  font-size: 1.1rem;
+  color: var(--primary-color);
+}
+
 </style>
 
 
@@ -757,6 +793,37 @@
 
 {% block scripts %}
 <script>
+
+// ── Sidebar Menu ──
+function toggleSidebarMenu(event) {
+  event.stopPropagation();
+  const dd = document.getElementById('sidebar-dropdown');
+  const isOpen = dd.style.display !== 'none';
+  dd.style.display = isOpen ? 'none' : 'block';
+}
+
+function closeSidebarMenu() {
+  const dd = document.getElementById('sidebar-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+
+// ── Theme Modal ──
+function openThemeModal() {
+  initThemeSwatchesModal();
+  openModal('theme-modal');
+}
+
+function initThemeSwatchesModal() {
+  const container = document.getElementById('theme-swatches-modal');
+  if (!container) return;
+  container.innerHTML = CHAT_THEMES.map(t => `
+    <div class="theme-swatch ${currentChatTheme === t.id ? 'active' : ''}"
+         style="background:${t.bg}"
+         onclick="applyChatTheme('${t.id}')"
+         title="${t.label}">
+      <span>${t.label}</span>
+    </div>`).join('');
+}
 
 function saveAllPrivacy() {
   const data = {
@@ -1885,7 +1952,7 @@ function handleOverlayClick(event, id) {
 
 // Global click: close emoji picker and dropdowns
 document.addEventListener('click', e => {
-  document.getElementById('chat-theme-panel')?.classList.remove('open');
+  if (!e.target.closest('#sidebar-menu-wrapper')) closeSidebarMenu();
   const picker = document.getElementById('emoji-picker');
   if (!picker.contains(e.target)) picker.style.display = 'none';
   closeAllDropdowns();
@@ -1897,7 +1964,7 @@ document.addEventListener('click', e => {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    ['members-modal','forward-modal','edit-modal','delete-modal','new-chat-modal','group-settings-modal','privacy-modal'].forEach(id => {
+    ['members-modal','forward-modal','edit-modal','delete-modal','new-chat-modal','group-settings-modal','privacy-modal','theme-modal'].forEach(id => {
       const el = document.getElementById(id);
       if (el && el.classList.contains('open')) closeModal(id);
     });
@@ -1959,21 +2026,19 @@ function initThemeSwatches() {
 
 function applyChatTheme(themeId) {
   const chatLayout = document.getElementById('chat-main-area');
-  // حذف همه کلاس‌های تم قدیمی
   CHAT_THEMES.forEach(t => chatLayout.classList.remove('chat-theme-' + t.id));
   chatLayout.classList.add('chat-theme-' + themeId);
   currentChatTheme = themeId;
   localStorage.setItem('chatTheme', themeId);
-  initThemeSwatches();
-  document.getElementById('chat-theme-panel')?.classList.remove('open');
-}
-
-function toggleThemePanel(event) {
-  event.stopPropagation();
-  const panel = document.getElementById('chat-theme-panel');
-  if (!panel) return;
-  initThemeSwatches();
-  panel.classList.toggle('open');
+  // به‌روزرسانی swatches در modal تم
+  initThemeSwatchesModal();
+  // ذخیره تم در سرور
+  fetch('/api/chat_theme', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({theme: themeId})
+  }).catch(() => {});
+  closeModal('theme-modal');
 }
 
 // ═══════════════════════════════════════════════
