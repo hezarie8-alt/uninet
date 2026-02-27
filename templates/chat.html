@@ -40,6 +40,7 @@
           <span class="special-name">گروه عمومی دانشجویان</span>
           <span class="special-desc">گفتگوی آزاد</span>
         </div>
+        <span class="unread-badge" id="badge-group" style="display:none;">0</span>
       </div>
       <div class="special-item" id="sidebar-channel" onclick="loadChat('channel')">
         <div class="special-icon channel-icon"><i class="material-icons">campaign</i></div>
@@ -47,6 +48,7 @@
           <span class="special-name">کانال اطلاعیه‌ها</span>
           <span class="special-desc">اطلاعیه‌های مدیریت</span>
         </div>
+        <span class="unread-badge" id="badge-channel" style="display:none;">0</span>
       </div>
     </div>
 
@@ -78,7 +80,7 @@
             </div>
             <div class="convo-msg-row">
               <span class="convo-last-msg">{{ convo.last_message_content[:35] }}{% if convo.last_message_content|length > 35 %}...{% endif %}</span>
-              {% if convo.has_unread %}<span class="unread-badge">!</span>{% endif %}
+              <span class="unread-badge" id="badge-{{ convo.other_user_id }}" {% if not convo.has_unread %}style="display:none;"{% endif %}>{{ convo.unread_count if convo.unread_count is defined and convo.unread_count else 1 }}</span>
             </div>
           </div>
         </div>
@@ -119,6 +121,11 @@
       <div id="group-search-bar" class="chat-search-bar" style="display:none;">
         <i class="material-icons" style="color:var(--text-secondary);font-size:1.1rem;">search</i>
         <input type="text" id="group-search-input" placeholder="جستجو در پیام‌های گروه..." oninput="debounceSearch('group', this.value)">
+        <span id="group-search-counter" class="search-counter" style="display:none;"></span>
+        <div id="group-search-nav" class="search-nav" style="display:none;">
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('group',-1)" title="قبلی"><i class="material-icons">keyboard_arrow_up</i></button>
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('group',1)" title="بعدی"><i class="material-icons">keyboard_arrow_down</i></button>
+        </div>
         <button class="btn-icon" onclick="toggleSearch('group')"><i class="material-icons">close</i></button>
       </div>
       <div id="group-pinned-bar" class="pinned-bar" style="display:none;" onclick="scrollToPinnedGroup()">
@@ -167,6 +174,11 @@
       <div id="channel-search-bar" class="chat-search-bar" style="display:none;">
         <i class="material-icons" style="color:var(--text-secondary);font-size:1.1rem;">search</i>
         <input type="text" id="channel-search-input" placeholder="جستجو در اطلاعیه‌ها..." oninput="debounceSearch('channel', this.value)">
+        <span id="channel-search-counter" class="search-counter" style="display:none;"></span>
+        <div id="channel-search-nav" class="search-nav" style="display:none;">
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('channel',-1)" title="قبلی"><i class="material-icons">keyboard_arrow_up</i></button>
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('channel',1)" title="بعدی"><i class="material-icons">keyboard_arrow_down</i></button>
+        </div>
         <button class="btn-icon" onclick="toggleSearch('channel')"><i class="material-icons">close</i></button>
       </div>
       <div id="channel-pinned-bar" class="pinned-bar" style="display:none;">
@@ -209,6 +221,11 @@
       <div id="private-search-bar" class="chat-search-bar" style="display:none;">
         <i class="material-icons" style="color:var(--text-secondary);font-size:1.1rem;">search</i>
         <input type="text" id="private-search-input" placeholder="جستجو در پیام‌ها..." oninput="debounceSearch('private', this.value)">
+        <span id="private-search-counter" class="search-counter" style="display:none;"></span>
+        <div id="private-search-nav" class="search-nav" style="display:none;">
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('private',-1)" title="قبلی"><i class="material-icons">keyboard_arrow_up</i></button>
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('private',1)" title="بعدی"><i class="material-icons">keyboard_arrow_down</i></button>
+        </div>
         <button class="btn-icon" onclick="toggleSearch('private')"><i class="material-icons">close</i></button>
       </div>
       <div id="private-pinned-bar" class="pinned-bar" style="display:none;">
@@ -401,7 +418,8 @@
 <!-- ===================== STYLES ===================== -->
 <style>
 /* ── Layout ── */
-.chat-layout{display:flex;height:calc(100vh - 64px);overflow:hidden;background:var(--background);}
+.chat-layout{display:flex;height:calc(100vh - 64px);overflow:hidden;background:var(--background);margin:0;}
+html, body{overflow:hidden;}
 
 /* ── Sidebar ── */
 .chat-sidebar{width:300px;min-width:300px;background:var(--surface);border-left:1px solid var(--border-color);display:flex;flex-direction:column;overflow:hidden;transition:all .3s;}
@@ -746,14 +764,6 @@
 .day-sep::before{right:0;}
 .day-sep::after{left:0;}
 
-@media(max-width:768px){
-  .chat-sidebar{position:absolute;z-index:100;height:100%;width:100%;min-width:unset;}
-  .back-btn{display:flex !important;}
-  .chat-main{width:100%;}
-  .message-wrapper{max-width:85%;}
-  .msg-actions{display:none !important;}
-}
-
 /* ── Sidebar Hamburger Dropdown ── */
 .sidebar-dropdown {
   position: absolute;
@@ -785,6 +795,95 @@
   font-size: 1.1rem;
   color: var(--primary-color);
 }
+
+
+/* ── Search highlight ── */
+.search-highlight {
+  outline: 2px solid rgba(0,131,143,.35);
+  border-radius: 14px;
+  transition: outline .2s;
+}
+.search-active-result {
+  outline: 2.5px solid var(--primary-color) !important;
+  background: rgba(0,131,143,.1);
+  border-radius: 14px;
+  animation: searchPulse .4s ease;
+}
+@keyframes searchPulse {
+  0%   { outline-width: 4px; outline-color: var(--primary-color); }
+  100% { outline-width: 2.5px; }
+}
+.search-counter {
+  font-size: .78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  padding: .2rem .5rem;
+  background: var(--background);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  min-width: 44px;
+  text-align: center;
+}
+.search-nav {
+  display: flex;
+  align-items: center;
+}
+.search-nav-btn { padding: .3rem !important; }
+
+@media(max-width:768px){
+  .chat-sidebar{position:absolute;z-index:100;height:100%;width:100%;min-width:unset;}
+  .back-btn{display:flex !important;}
+  .chat-main{width:100%;}
+  .message-wrapper{max-width:85%;}
+  .msg-actions{display:none !important;}
+}
+
+/* ── Responsive Enhancements ── */
+@media(max-width:768px){
+  /* Modal‌ها در موبایل */
+  .modal-card { max-width: 100% !important; border-radius: 16px 16px 0 0; margin: 0 !important; max-height: 85vh; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+
+  /* سایدبار */
+  .sidebar-header { padding: .7rem .85rem; }
+  .chat-special-sections { padding: .4rem .5rem 0; }
+  .conversation-list { padding: .3rem .5rem; }
+
+  /* هدر چت */
+  .chat-header-active { padding: .6rem .75rem; gap: .4rem; }
+  .chat-header-info h3 { font-size: .88rem; }
+  .chat-header-info span { font-size: .7rem; }
+
+  /* ناحیه ورودی */
+  .chat-input-area { padding: .6rem .75rem; gap: .4rem; }
+  .chat-input-area input[type="text"] { font-size: .85rem; padding: .55rem .85rem; }
+
+  /* پیام‌ها */
+  .message-bubble { font-size: .85rem; padding: .5rem .8rem; }
+  .convo-name { max-width: 130px; }
+  .convo-last-msg { max-width: 120px; }
+
+  /* نوار جستجو */
+  .chat-search-bar { padding: .45rem .75rem; gap: .3rem; }
+  .chat-search-bar input { font-size: .82rem; }
+  .search-counter { font-size: .72rem; padding: .15rem .35rem; }
+}
+
+@media(max-width:480px){
+  .convo-name { max-width: 100px; }
+  .convo-last-msg { max-width: 90px; }
+  .message-wrapper { max-width: 90%; }
+  .msg-reactions { gap: .2rem; }
+  .reaction-chip { padding: .15rem .35rem; font-size: .75rem; }
+  .send-btn { width: 36px; height: 36px; }
+  /* بج‌ها در موبایل کوچک‌تر */
+  .unread-badge { width: 16px; height: 16px; font-size: .62rem; }
+  /* هدر در موبایل کوچک */
+  .chat-header-active { padding: .5rem .6rem; }
+  .btn-icon i { font-size: 1rem; }
+}
+
 
 </style>
 
@@ -825,6 +924,35 @@ function initThemeSwatchesModal() {
       <span>${t.label}</span>
     </div>`).join('');
 }
+
+// ── Unread Badge Management ──
+function updateUnreadBadge(type, id, delta) {
+  let badge;
+  if (type === 'private') badge = document.getElementById('badge-' + id);
+  else badge = document.getElementById('badge-' + type); // 'group' or 'channel'
+  if (!badge) return;
+  const current = parseInt(badge.textContent) || 0;
+  const newCount = Math.max(0, current + delta);
+  if (newCount > 0) {
+    badge.textContent = newCount;
+    badge.style.display = 'flex';
+  } else {
+    badge.textContent = '0';
+    badge.style.display = 'none';
+  }
+}
+
+function clearUnreadBadge(type, id) {
+  let badge;
+  if (type === 'private') badge = document.getElementById('badge-' + id);
+  else badge = document.getElementById('badge-' + type);
+  if (badge) { badge.textContent = '0'; badge.style.display = 'none'; }
+  // Notify server that messages are read
+  if (type === 'private' && id) {
+    fetch('/api/mark_read/' + id, {method:'POST'}).catch(()=>{});
+  }
+}
+
 
 function saveAllPrivacy() {
   const data = {
@@ -939,22 +1067,44 @@ socket.on('connect', () => {
 socket.on('error', d => showToast('خطا: ' + (d.message||''), 'error'));
 
 socket.on('new_message', d => {
-  if (currentView !== 'private') return;
-  const isSent = d.sender_id === CURRENT_USER_ID;
-  appendMsgToContainer('private-messages-container', buildMsgNode(d, 'private', isSent));
+  if (d.sender_id === CURRENT_USER_ID) {
+    // پیام ارسالی خودم - نیازی به بج نیست
+    if (currentView === 'private') {
+      appendMsgToContainer('private-messages-container', buildMsgNode(d, 'private', true));
+    }
+    return;
+  }
+  if (currentView === 'private' && privateRecipientId === d.sender_id) {
+    // چت باز است - نمایش پیام و علامت خوانده‌شده
+    appendMsgToContainer('private-messages-container', buildMsgNode(d, 'private', false));
+    // خودکار mark as read چون داریم نگاه می‌کنیم
+    fetch('/api/mark_read/' + d.sender_id, {method:'POST'}).catch(()=>{});
+  } else {
+    // چت این کاربر باز نیست - بج اضافه کن
+    updateUnreadBadge('private', d.sender_id, 1);
+  }
 });
 
 socket.on('new_group_message', d => {
-  if (currentView !== 'group') return;
-  const isSent = d.sender_id === CURRENT_USER_ID;
-  appendMsgToContainer('group-messages-container', buildMsgNode(d, 'group', isSent));
+  if (currentView === 'group') {
+    const isSent = d.sender_id === CURRENT_USER_ID;
+    appendMsgToContainer('group-messages-container', buildMsgNode(d, 'group', isSent));
+  } else {
+    // گروه باز نیست - بج اضافه کن (فقط برای پیام‌های دیگران)
+    if (d.sender_id !== CURRENT_USER_ID) {
+      updateUnreadBadge('group', null, 1);
+    }
+  }
 });
 
 socket.on('new_channel_message', d => {
-  if (currentView !== 'channel') return;
-  appendMsgToContainer('channel-messages-container', buildMsgNode(d, 'channel', false));
-  // Mark as viewed
-  if (d.id) fetch(`/api/channel/message/${d.id}/view`, {method:'POST'}).catch(()=>{});
+  if (currentView === 'channel') {
+    appendMsgToContainer('channel-messages-container', buildMsgNode(d, 'channel', false));
+    if (d.id) fetch(`/api/channel/message/${d.id}/view`, {method:'POST'}).catch(()=>{});
+  } else {
+    // کانال باز نیست - بج اضافه کن
+    updateUnreadBadge('channel', null, 1);
+  }
 });
 
 // Status events
@@ -1064,11 +1214,13 @@ function loadChat(typeOrId) {
     currentView = 'group';
     document.getElementById('group-view').style.display = 'flex';
     document.getElementById('sidebar-group').classList.add('active');
+    clearUnreadBadge('group');   // ← پاک کردن بج
     initGroupView();
   } else if (typeOrId === 'channel') {
     currentView = 'channel';
     document.getElementById('channel-view').style.display = 'flex';
     document.getElementById('sidebar-channel').classList.add('active');
+    clearUnreadBadge('channel'); // ← پاک کردن بج
     initChannelView();
   } else {
     const uid = parseInt(typeOrId);
@@ -1081,7 +1233,7 @@ function loadChat(typeOrId) {
       if (convoEl) convoEl.classList.add('active');
       initPrivateView(uid, true);
     } else {
-      window.location.href = '/chat?user_id=' + uid;
+      clearUnreadBadge('private', uid); // ← پاک کردن بج پیام خصوصی
     }
   }
   if (window.innerWidth < 768) document.getElementById('chat-sidebar').style.display = 'none';
@@ -1709,51 +1861,128 @@ function loadPinnedMessage(ctx) {
   }
   // Group pinned handled via group_settings pinned_message_id - load from API later
 }
+// ═══════════════════════════════════════════════
+//  SEARCH (Telegram-style navigation)
+// ═══════════════════════════════════════════════
+// State per context: list of matched DOM elements + current index
+const searchState = {
+  group:   { results: [], idx: -1 },
+  channel: { results: [], idx: -1 },
+  private: { results: [], idx: -1 }
+};
 
-// ═══════════════════════════════════════════════
-//  SEARCH
-// ═══════════════════════════════════════════════
 function toggleSearch(ctx) {
   const bar = document.getElementById(ctx + '-search-bar');
   if (!bar) return;
   const isVisible = bar.style.display !== 'none';
-  bar.style.display = isVisible ? 'none' : 'flex';
-  if (!isVisible) {
+  if (isVisible) {
+    // بستن جستجو - پاک کردن هایلایت‌ها
+    bar.style.display = 'none';
+    clearSearchHighlights(ctx);
+  } else {
+    bar.style.display = 'flex';
     const inp = document.getElementById(ctx + '-search-input');
     if (inp) { inp.value = ''; inp.focus(); }
+    // مخفی کردن counter و nav
+    setSearchUI(ctx, 0, 0);
   }
 }
 
 function debounceSearch(ctx, val) {
   clearTimeout(searchTimers[ctx]);
-  searchTimers[ctx] = setTimeout(() => doSearch(ctx, val), 400);
+  // اگر ورودی خالی است، پاک کن
+  if (!val) { clearSearchHighlights(ctx); setSearchUI(ctx, 0, 0); return; }
+  searchTimers[ctx] = setTimeout(() => doSearch(ctx, val), 350);
 }
 
 function doSearch(ctx, q) {
   if (!q) return;
-  let url;
-  if (ctx === 'private') url = `/api/messages/search?q=${encodeURIComponent(q)}&user_id=${privateRecipientId}`;
-  else if (ctx === 'group') url = `/api/group/search?q=${encodeURIComponent(q)}`;
-  else if (ctx === 'channel') url = `/api/channel/search?q=${encodeURIComponent(q)}`;
+  // پاک کردن نتایج قبلی
+  clearSearchHighlights(ctx);
 
-  fetch(url).then(r=>r.json()).then(msgs => {
-    const container = document.getElementById(ctx + '-messages-container');
-    if (!Array.isArray(msgs) || msgs.length === 0) {
-      showToast('نتیجه‌ای یافت نشد', 'info');
-      return;
+  const containerId = ctx + '-messages-container';
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // جستجو در تمام پیام‌های DOM
+  const allWrappers = container.querySelectorAll('.message-wrapper');
+  const matches = [];
+
+  allWrappers.forEach(wrapper => {
+    const textEl = wrapper.querySelector('.msg-text');
+    if (textEl && textEl.textContent.trim().includes(q)) {
+      matches.push(wrapper);
+      wrapper.classList.add('search-highlight');
     }
-    // Highlight first result by scrolling to it
-    const firstId = msgs[0].id;
-    let el = document.querySelector(`[data-msg-id="${firstId}"]`);
-    if (el) {
-      el.scrollIntoView({behavior:'smooth', block:'center'});
-      el.style.outline = '2px solid var(--primary-color)';
-      el.style.borderRadius = '12px';
-      setTimeout(() => { el.style.outline = ''; el.style.borderRadius = ''; }, 2000);
+  });
+
+  searchState[ctx].results = matches;
+
+  if (matches.length === 0) {
+    searchState[ctx].idx = -1;
+    setSearchUI(ctx, 0, 0);
+    showToast('نتیجه‌ای یافت نشد', 'info');
+    return;
+  }
+
+  // رفتن به آخرین نتیجه (مثل تلگرام - از آخر شروع می‌کند)
+  searchState[ctx].idx = matches.length - 1;
+  activateSearchResult(ctx, searchState[ctx].idx);
+  setSearchUI(ctx, searchState[ctx].idx + 1, matches.length);
+}
+
+function navigateSearch(ctx, direction) {
+  const state = searchState[ctx];
+  if (!state.results || state.results.length === 0) return;
+
+  // حذف active از نتیجه فعلی
+  if (state.idx >= 0 && state.results[state.idx]) {
+    state.results[state.idx].classList.remove('search-active-result');
+  }
+
+  // حرکت به نتیجه بعدی/قبلی (circular)
+  state.idx += direction;
+  if (state.idx < 0) state.idx = state.results.length - 1;
+  if (state.idx >= state.results.length) state.idx = 0;
+
+  activateSearchResult(ctx, state.idx);
+  setSearchUI(ctx, state.idx + 1, state.results.length);
+}
+
+function activateSearchResult(ctx, idx) {
+  const el = searchState[ctx].results[idx];
+  if (!el) return;
+  el.classList.add('search-active-result');
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function clearSearchHighlights(ctx) {
+  const containerId = ctx + '-messages-container';
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.querySelectorAll('.search-highlight, .search-active-result').forEach(el => {
+      el.classList.remove('search-highlight', 'search-active-result');
+    });
+  }
+  searchState[ctx].results = [];
+  searchState[ctx].idx = -1;
+}
+
+function setSearchUI(ctx, current, total) {
+  const counter = document.getElementById(ctx + '-search-counter');
+  const nav     = document.getElementById(ctx + '-search-nav');
+  if (counter) {
+    if (total > 0) {
+      counter.textContent = `${current} / ${total}`;
+      counter.style.display = 'inline-block';
+    } else if (total === 0 && searchState[ctx].results !== undefined) {
+      // اگر جستجو انجام شده ولی نتیجه‌ای نیست
+      counter.style.display = 'none';
     } else {
-      showToast(`${msgs.length} پیام یافت شد`, 'success');
+      counter.style.display = 'none';
     }
-  }).catch(()=>{});
+  }
+  if (nav) nav.style.display = total > 1 ? 'flex' : 'none';
 }
 
 // ═══════════════════════════════════════════════

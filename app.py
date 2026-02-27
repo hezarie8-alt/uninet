@@ -687,6 +687,7 @@ class ChatService:
                     ) else msg.content,
                     'last_message_timestamp': fmt_time(msg.timestamp),
                     'has_unread': unread > 0,
+                    'unread_count': int(unread),
                     'is_online': StateManager.is_online(other_user.id),
                     'is_blocked': blocked is not None
                 })
@@ -2035,6 +2036,42 @@ def toggle_block_user(target_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/mark_read/<int:other_user_id>', methods=['POST'])
+@csrf.exempt
+@login_required
+def mark_messages_read(other_user_id):
+    """
+    وقتی کاربر یک مکالمه را باز می‌کند، تمام پیام‌های خوانده‌نشده
+    از طرف other_user را به عنوان خوانده‌شده علامت می‌زند.
+    """
+    try:
+        current_uid = session['current_user_id']
+        now = now_tehran()
+        
+        # تمام پیام‌های دریافتی از این کاربر که هنوز خوانده نشده‌اند
+        updated_msgs = Message.query.filter(
+            Message.sender_id == other_user_id,
+            Message.receiver_id == current_uid,
+            Message.read_at.is_(None)
+        ).all()
+        
+        for msg in updated_msgs:
+            msg.read_at = now
+        
+        db.session.commit()
+        
+        # اطلاع‌رسانی به فرستنده از طریق socket که پیام‌ها خوانده شد
+        for msg in updated_msgs:
+            room = f"chat-{min(current_uid, other_user_id)}-{max(current_uid, other_user_id)}"
+            socketio.emit('message_read_update', {
+                'message_id': msg.id
+            }, room=room)
+        
+        return jsonify({'status': 'success', 'updated': len(updated_msgs)})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+    
 
 @app.route('/api/users/blocked')
 @login_required
