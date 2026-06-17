@@ -1,43 +1,250 @@
 {% extends "base.html" %}
 
-{% block title %}صفحه اصلی | یونی نت{% endblock %}
+{% block title %}یونی‌نت | پلتفرم یکپارچه دانشجویی{% endblock %}
 
 {% block content %}
+
+<style>
+/* ============ Page-specific styles — index.html ============ */
+
+/* ---------- Hero ---------- */
+.hero{
+    padding:5.5rem 0 4rem;
+    position:relative;
+    overflow:hidden;
+}
+.hero-content{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    align-items:center;
+    gap:3rem;
+}
+.hero-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    padding:0.45rem 1rem;
+    border-radius:var(--radius-pill);
+    background:var(--glass-bg-strong);
+    border:1px solid var(--glass-border-strong);
+    font-size:0.82rem;
+    color:var(--brand-light);
+    margin-bottom:1.4rem;
+}
+.hero-badge .material-icons-round{ font-size:1rem; }
+
+.hero-title{
+    font-size:3.1rem;
+    font-weight:800;
+    line-height:1.25;
+    letter-spacing:-1px;
+    margin-bottom:1.2rem;
+    background:linear-gradient(95deg, #fff 35%, var(--brand-light) 70%, var(--accent) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+.hero-subtitle{
+    font-size:1.08rem;
+    color:var(--text-secondary);
+    max-width:540px;
+    margin-bottom:0.5rem;
+}
+
+.btn{
+    display:inline-flex;
+    align-items:center;
+    gap:0.5rem;
+    padding:0.85rem 1.6rem;
+    border-radius:var(--radius-pill);
+    font-weight:600;
+    font-size:0.95rem;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background 0.25s;
+}
+.btn .material-icons-round{ font-size:1.2rem; }
+.btn-primary{
+    background:linear-gradient(135deg, var(--brand-light), var(--brand));
+    color:#03161A;
+    box-shadow:0 8px 24px rgba(38,198,218,0.35);
+}
+.btn-primary:hover{ transform:translateY(-3px); box-shadow:0 12px 32px rgba(38,198,218,0.5); }
+.btn-outline{
+    background:var(--glass-bg-strong);
+    border:1px solid var(--glass-border-strong);
+    color:var(--text-primary);
+}
+.btn-outline:hover{ background:rgba(255,255,255,0.12); transform:translateY(-3px); }
+
+.hero-image-wrap{
+    position:relative;
+    border-radius:var(--radius-lg);
+    overflow:hidden;
+    border:1px solid var(--glass-border-strong);
+    box-shadow:var(--shadow-glass), var(--shadow-glow);
+}
+.hero-image-wrap img{
+    width:100%; height:100%;
+    display:block;
+    object-fit:cover;
+}
+.hero-image-wrap::after{
+    content:'';
+    position:absolute; inset:0;
+    background:linear-gradient(165deg, rgba(0,131,143,0.25), transparent 60%);
+    pointer-events:none;
+}
+
+@media (max-width:880px){
+    .hero-content{ grid-template-columns:1fr; }
+    .hero-title{ font-size:2.2rem; }
+    .hero-image-wrap{ order:-1; }
+}
+
+/* ---------- Section headers ---------- */
+.section-head{ text-align:center; max-width:620px; margin:0 auto 3rem; }
+.section-title{
+    font-size:2.1rem;
+    font-weight:800;
+    margin-bottom:0.7rem;
+}
+.section-subtitle{ color:var(--text-secondary); font-size:1rem; }
+
+/* ---------- Features Bento Grid ---------- */
+.features-section{ padding:5rem 0; position:relative; }
+.bento-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:1.25rem;
+}
+.bento-grid .feature-card:nth-child(1){ grid-column:span 2; }
+.bento-grid .feature-card:nth-child(4){ grid-column:span 2; }
+
+.feature-card{
+    background:var(--glass-bg);
+    border:1px solid var(--glass-border);
+    border-radius:var(--radius-lg);
+    padding:2rem;
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    transition:transform 0.35s var(--ease), border-color 0.35s, box-shadow 0.35s;
+    position:relative;
+    overflow:hidden;
+}
+.feature-card::before{
+    content:'';
+    position:absolute;
+    width:160px; height:160px;
+    border-radius:50%;
+    background:radial-gradient(circle, var(--brand) 0%, transparent 75%);
+    top:-60px; right:-60px;
+    opacity:0;
+    transition:opacity 0.4s;
+}
+.feature-card:hover{
+    transform:translateY(-6px);
+    border-color:var(--glass-border-strong);
+    box-shadow:0 16px 40px rgba(0,0,0,0.4);
+}
+.feature-card:hover::before{ opacity:0.5; }
+
+.feature-icon-wrap{
+    width:54px; height:54px;
+    border-radius:var(--radius-md);
+    background:linear-gradient(135deg, var(--brand), var(--brand-dark));
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:1.2rem;
+    box-shadow:0 6px 18px rgba(0,131,143,0.4);
+}
+.feature-icon-wrap .material-icons-round{ font-size:1.7rem; color:#fff; }
+
+.feature-title{ font-size:1.15rem; font-weight:700; margin-bottom:0.6rem; position:relative; z-index:1; }
+.feature-description{ color:var(--text-secondary); font-size:0.92rem; position:relative; z-index:1; }
+
+@media (max-width:880px){
+    .bento-grid{ grid-template-columns:1fr; }
+    .bento-grid .feature-card:nth-child(1),
+    .bento-grid .feature-card:nth-child(4){ grid-column:span 1; }
+}
+
+/* ---------- Stats ---------- */
+.stats-section{
+    padding:3.5rem 0;
+    position:relative;
+}
+.stats-glass{
+    border-radius:var(--radius-lg);
+    background:var(--glass-bg);
+    border:1px solid var(--glass-border);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    padding:2.5rem 1.5rem;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+    gap:1.5rem;
+    text-align:center;
+}
+.stat-num{
+    font-size:2.6rem; font-weight:800;
+    background:linear-gradient(90deg, var(--brand-light), var(--accent));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+}
+.stat-label{ color:var(--text-secondary); margin-top:0.35rem; font-size:0.9rem; }
+
+/* ---------- CTA ---------- */
+.cta-section{ padding:5rem 0; }
+.cta-glass{
+    border-radius:var(--radius-lg);
+    padding:3.5rem 2rem;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+    border:1px solid var(--glass-border-strong);
+    background:linear-gradient(135deg, rgba(0,131,143,0.25), rgba(124,77,255,0.18));
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+}
+.cta-glass h2{ font-size:2rem; font-weight:800; margin-bottom:0.8rem; }
+.cta-glass p{ color:var(--text-secondary); font-size:1.05rem; margin-bottom:2rem; }
+</style>
+
 <!-- Hero Section -->
 <section class="hero">
     <div class="container">
         <div class="hero-content">
             <div class="hero-text">
+                <span class="hero-badge">
+                    <span class="material-icons-round">auto_awesome</span>
+                    نسخه ۲۰۲۶ — بازطراحی‌شده
+                </span>
                 <h1 class="hero-title">پلتفرم یکپارچه دانشجویی</h1>
                 <p class="hero-subtitle">
                     مدیریت برنامه کلاسی، ارتباط با دوستان و همکلاسی‌ها در یک پلتفرم ساده و کاربردی.
-                    با یونی نت، تجربه دانشجویی خود را ارتقا دهید.
+                    با یونی‌نت، تجربه دانشجویی خود را ارتقا دهید.
                 </p>
-                <div class="hero-buttons" style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.5rem;">
+                <div class="hero-buttons" style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1.8rem;">
                     {% if current_user %}
                         <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
-                            <i class="material-icons" style="margin-left: 8px;">dashboard</i>
+                            <span class="material-icons-round">dashboard</span>
                             داشبورد برنامه
                         </a>
                     {% else %}
                         <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary">
-                            <i class="material-icons">login</i>
+                            <span class="material-icons-round">login</span>
                             شروع کنید
                         </a>
-                        <a href="{{ url_for('about') }}" class="btn btn-outline"
-                           style="color:white; border-color:rgba(255,255,255,0.5);">
-                            <i class="material-icons">info</i>
+                        <a href="{{ url_for('about') }}" class="btn btn-outline">
+                            <span class="material-icons-round">info</span>
                             درباره ما
                         </a>
                     {% endif %}
                 </div>
             </div>
             <div class="hero-image">
-                <img src="https://sfile.chatglm.cn/images-ppt/c8eeb1a1ee7c.jpg"
-                     alt="Student Platform"
-                     style="border-radius: 16px; box-shadow: var(--shadow-lg);
-                            max-width: 100%; height: auto;
-                            border: 2px solid rgba(255,255,255,0.2);">
+                <div class="hero-image-wrap">
+                    <img src="https://sfile.chatglm.cn/images-ppt/c8eeb1a1ee7c.jpg" alt="Student Platform">
+                </div>
             </div>
         </div>
     </div>
@@ -46,61 +253,58 @@
 <!-- Features Section -->
 <section class="features-section">
     <div class="container">
-        <h2 class="section-title">امکانات یونی نت</h2>
-        <p class="section-subtitle">ابزارهایی که برای مدیریت بهتر زندگی دانشجویی نیاز دارید</p>
-        
-        <div class="features-grid">
+        <div class="section-head">
+            <h2 class="section-title">امکانات یونی‌نت</h2>
+            <p class="section-subtitle">ابزارهایی که برای مدیریت بهتر زندگی دانشجویی نیاز دارید</p>
+        </div>
+
+        <div class="bento-grid">
             <div class="feature-card">
-                <i class="material-icons feature-icon">calendar_month</i>
+                <div class="feature-icon-wrap"><span class="material-icons-round">calendar_month</span></div>
                 <h3 class="feature-title">برنامه کلاسی هوشمند</h3>
                 <p class="feature-description">
-                    مدیریت برنامه هفتگی با پشتیبانی از کلاس‌های زوج و فرد به صورت همزمان،
+                    مدیریت برنامه هفتگی با پشتیبانی از کلاس‌های زوج و فرد به‌صورت هم‌زمان،
                     نمایش تقویم شمسی و تعطیلات رسمی.
                 </p>
             </div>
-            
+
             <div class="feature-card">
-                <i class="material-icons feature-icon">forum</i>
+                <div class="feature-icon-wrap"><span class="material-icons-round">forum</span></div>
                 <h3 class="feature-title">پیام‌رسان پیشرفته</h3>
                 <p class="feature-description">
-                    چت خصوصی، گروه عمومی دانشجویان و کانال اطلاعیه‌ها.
-                    با قابلیت ارسال فایل، ری‌اکشن و ریپلای.
+                    چت خصوصی، گروه عمومی و کانال اطلاعیه‌ها با قابلیت فایل، ری‌اکشن و ریپلای.
                 </p>
             </div>
-            
+
             <div class="feature-card">
-                <i class="material-icons feature-icon">event_note</i>
+                <div class="feature-icon-wrap"><span class="material-icons-round">event_note</span></div>
                 <h3 class="feature-title">مدیریت ددلاین</h3>
                 <p class="feature-description">
-                    ثبت، دنبال کردن و اشتراک‌گذاری ددلاین‌های درسی با تقویم شمسی.
-                    افزودن ددلاین دیگران به اکانت خودتان.
+                    ثبت و اشتراک‌گذاری ددلاین‌های درسی با تقویم شمسی و افزودن ددلاین دیگران به اکانت خودتان.
                 </p>
             </div>
-            
+
             <div class="feature-card">
-                <i class="material-icons feature-icon">library_books</i>
+                <div class="feature-icon-wrap"><span class="material-icons-round">library_books</span></div>
                 <h3 class="feature-title">منابع درسی</h3>
                 <p class="feature-description">
-                    آپلود و دانلود جزوه، اسلاید و نمونه سوال.
-                    جستجو بر اساس درس و نوع منبع.
+                    آپلود و دانلود جزوه، اسلاید و نمونه سوال با جستجوی بر اساس درس و نوع منبع.
                 </p>
             </div>
-            
+
             <div class="feature-card">
-                <i class="material-icons feature-icon">meeting_room</i>
+                <div class="feature-icon-wrap"><span class="material-icons-round">meeting_room</span></div>
                 <h3 class="feature-title">رزرو کلاس</h3>
                 <p class="feature-description">
-                    سیستم درخواست رزرو کلاس‌های خالی به صورت هفتگی
-                    و مدیریت توسط ادمین.
+                    درخواست رزرو کلاس‌های خالی به‌صورت هفتگی و مدیریت توسط ادمین.
                 </p>
             </div>
-            
+
             <div class="feature-card">
-                <i class="material-icons feature-icon">palette</i>
+                <div class="feature-icon-wrap"><span class="material-icons-round">palette</span></div>
                 <h3 class="feature-title">تم‌های شخصی‌سازی</h3>
                 <p class="feature-description">
-                    دارک مود حرفه‌ای و بیش از ۱۲ تم رنگی برای پیام‌رسان.
-                    تجربه‌ای شخصی‌سازی‌شده برای هر کاربر.
+                    دارک مود حرفه‌ای و چندین تم رنگی برای پیام‌رسان، تجربه‌ای شخصی برای هر کاربر.
                 </p>
             </div>
         </div>
@@ -108,43 +312,41 @@
 </section>
 
 <!-- Stats Section -->
-<section style="background:var(--surface); padding: 3rem 0; transition: background-color 0.3s;">
+<section class="stats-section">
     <div class="container">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 2rem; text-align: center;">
+        <div class="stats-glass">
             <div>
-                <div style="font-size:2.5rem; font-weight:700; color:var(--primary-color);">۱۲+</div>
-                <div style="color:var(--text-secondary); margin-top:0.25rem;">تم رنگی</div>
+                <div class="stat-num">۱۲+</div>
+                <div class="stat-label">تم رنگی</div>
             </div>
             <div>
-                <div style="font-size:2.5rem; font-weight:700; color:var(--primary-color);">۵</div>
-                <div style="color:var(--text-secondary); margin-top:0.25rem;">روز هفته</div>
+                <div class="stat-num">۵</div>
+                <div class="stat-label">روز هفته</div>
             </div>
             <div>
-                <div style="font-size:2.5rem; font-weight:700; color:var(--primary-color);">۶</div>
-                <div style="color:var(--text-secondary); margin-top:0.25rem;">بازه زمانی کلاس</div>
+                <div class="stat-num">۶</div>
+                <div class="stat-label">بازه زمانی کلاس</div>
             </div>
             <div>
-                <div style="font-size:2.5rem; font-weight:700; color:var(--primary-color);">∞</div>
-                <div style="color:var(--text-secondary); margin-top:0.25rem;">ددلاین قابل ثبت</div>
+                <div class="stat-num">∞</div>
+                <div class="stat-label">ددلاین قابل ثبت</div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- CTA Section -->
-<section class="cta" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-     padding: 4rem 0; text-align: center; color: white;">
+<section class="cta-section">
     <div class="container">
-        <h2 style="font-size:2rem; font-weight:700; margin-bottom:1rem;">همین الان شروع کنید</h2>
-        <p style="font-size:1.1rem; margin-bottom:2rem; opacity:0.9;">
-            با وارد کردن شماره دانشجویی، به جمع یونی نت بپیوندید.
-        </p>
-        <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary"
-           style="background:white; color:var(--primary-color); font-weight:700;
-                  padding: 1rem 2.5rem; font-size:1.1rem;">
-            <i class="material-icons">person_add</i>
-            ثبت‌نام رایگان
-        </a>
+        <div class="cta-glass">
+            <h2>همین الان شروع کنید</h2>
+            <p>با وارد کردن شماره دانشجویی، به جمع یونی‌نت بپیوندید.</p>
+            <a href="{{ url_for('show_auth_page') }}" class="btn btn-primary" style="padding:1rem 2.6rem; font-size:1.05rem;">
+                <span class="material-icons-round">person_add</span>
+                ثبت‌نام رایگان
+            </a>
+        </div>
     </div>
 </section>
+
 {% endblock %}
