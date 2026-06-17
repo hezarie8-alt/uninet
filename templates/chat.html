@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}پیام‌رسان | یونی نت{% endblock %}
+{% block title %}پیام‌رسان | یونی‌نت{% endblock %}
 
 {% block content %}
 <div class="chat-layout">
@@ -8,24 +8,24 @@
   <aside class="chat-sidebar" id="chat-sidebar">
     <div class="sidebar-header">
       <div style="display:flex;align-items:center;gap:.5rem;">
-        <i class="material-icons" style="font-size:1.3rem;color:var(--primary-color);">forum</i>
-        <h2 style="font-size:1.1rem;margin:0;color:var(--primary-color);">پیام‌رسان</h2>
+        <span class="material-icons-round" style="font-size:1.3rem;color:var(--brand-light);">forum</span>
+        <h2 style="font-size:1.1rem;margin:0;color:var(--text-primary);">پیام‌رسان</h2>
       </div>
       <div style="display:flex;gap:.25rem;align-items:center;">
         <button class="btn-icon" onclick="openNewChatModal()" title="چت جدید">
-          <i class="material-icons" style="font-size:1.1rem;">edit</i>
+          <span class="material-icons-round" style="font-size:1.1rem;">edit</span>
         </button>
         <div style="position:relative;" id="sidebar-menu-wrapper">
           <button class="btn-icon" onclick="toggleSidebarMenu(event)" title="منو" style="padding:.5rem;">
-            <i class="material-icons" style="font-size:1.3rem;">menu</i>
+            <span class="material-icons-round" style="font-size:1.3rem;">menu</span>
           </button>
           <div id="sidebar-dropdown" class="sidebar-dropdown" style="display:none;">
             <div class="sidebar-dropdown-item" onclick="openPrivacyModal();closeSidebarMenu()">
-              <i class="material-icons">privacy_tip</i>
+              <span class="material-icons-round">privacy_tip</span>
               <span>حریم خصوصی</span>
             </div>
             <div class="sidebar-dropdown-item" onclick="openThemeModal();closeSidebarMenu()">
-              <i class="material-icons">palette</i>
+              <span class="material-icons-round">palette</span>
               <span>تم گفتگو</span>
             </div>
           </div>
@@ -35,7 +35,7 @@
 
     <div class="chat-special-sections">
       <div class="special-item" id="sidebar-group" onclick="loadChat('group')">
-        <div class="special-icon group-icon"><i class="material-icons">groups</i></div>
+        <div class="special-icon group-icon"><span class="material-icons-round">groups</span></div>
         <div class="special-info">
           <span class="special-name">گروه عمومی دانشجویان</span>
           <span class="special-desc">گفتگوی آزاد</span>
@@ -43,7 +43,7 @@
         <span class="unread-badge" id="badge-group" style="display:none;">0</span>
       </div>
       <div class="special-item" id="sidebar-channel" onclick="loadChat('channel')">
-        <div class="special-icon channel-icon"><i class="material-icons">campaign</i></div>
+        <div class="special-icon channel-icon"><span class="material-icons-round">campaign</span></div>
         <div class="special-info">
           <span class="special-name">کانال اطلاعیه‌ها</span>
           <span class="special-desc">اطلاعیه‌های مدیریت</span>
@@ -87,7 +87,7 @@
         {% endfor %}
       {% else %}
         <div class="empty-state-small">
-          <i class="material-icons">chat_bubble_outline</i>
+          <span class="material-icons-round">chat_bubble_outline</span>
           <p>هنوز گفتگویی ندارید</p>
         </div>
       {% endif %}
@@ -100,36 +100,36 @@
     <!-- ——— GROUP VIEW ——— -->
     <div id="group-view" class="chat-window" style="display:none;">
       <div class="chat-header-active">
-        <button class="btn-icon back-btn" onclick="showSidebar()"><i class="material-icons">arrow_forward_ios</i></button>
-        <div class="header-avatar group-avatar"><i class="material-icons">groups</i></div>
+        <button class="btn-icon back-btn" onclick="showSidebar()"><span class="material-icons-round">arrow_forward_ios</span></button>
+        <div class="header-avatar group-avatar"><span class="material-icons-round">groups</span></div>
         <div class="chat-header-info">
           <h3>گروه عمومی دانشجویان</h3>
           <span id="group-member-count">...</span>
         </div>
         <button class="btn-icon" id="group-search-toggle" onclick="toggleSearch('group')" title="جستجو">
-          <i class="material-icons">search</i>
+          <span class="material-icons-round">search</span>
         </button>
         <button class="btn-icon" onclick="openMembersModal()" title="اعضا">
-          <i class="material-icons">people</i>
+          <span class="material-icons-round">people</span>
         </button>
         {% if is_admin or is_group_admin %}
         <button class="btn-icon" onclick="openGroupSettings()" title="تنظیمات">
-          <i class="material-icons">settings</i>
+          <span class="material-icons-round">settings</span>
         </button>
         {% endif %}
       </div>
       <div id="group-search-bar" class="chat-search-bar" style="display:none;">
-        <i class="material-icons" style="color:var(--text-secondary);font-size:1.1rem;">search</i>
+        <span class="material-icons-round" style="color:var(--text-secondary);font-size:1.1rem;">search</span>
         <input type="text" id="group-search-input" placeholder="جستجو در پیام‌های گروه..." oninput="debounceSearch('group', this.value)">
         <span id="group-search-counter" class="search-counter" style="display:none;"></span>
         <div id="group-search-nav" class="search-nav" style="display:none;">
-          <button class="btn-icon search-nav-btn" onclick="navigateSearch('group',-1)" title="قبلی"><i class="material-icons">keyboard_arrow_up</i></button>
-          <button class="btn-icon search-nav-btn" onclick="navigateSearch('group',1)" title="بعدی"><i class="material-icons">keyboard_arrow_down</i></button>
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('group',-1)" title="قبلی"><span class="material-icons-round">keyboard_arrow_up</span></button>
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('group',1)" title="بعدی"><span class="material-icons-round">keyboard_arrow_down</span></button>
         </div>
-        <button class="btn-icon" onclick="toggleSearch('group')"><i class="material-icons">close</i></button>
+        <button class="btn-icon" onclick="toggleSearch('group')"><span class="material-icons-round">close</span></button>
       </div>
       <div id="group-pinned-bar" class="pinned-bar" style="display:none;" onclick="scrollToPinnedGroup()">
-        <i class="material-icons" style="font-size:.95rem;color:var(--primary-color);">push_pin</i>
+        <span class="material-icons-round" style="font-size:.95rem;color:var(--brand-light);">push_pin</span>
         <span id="group-pinned-text" class="pinned-text"></span>
       </div>
       <div class="chat-messages-active" id="group-messages-container"></div>
@@ -141,61 +141,61 @@
             <div class="reply-preview-text" id="group-reply-text"></div>
           </div>
         </div>
-        <button class="btn-icon" onclick="cancelReply('group')"><i class="material-icons">close</i></button>
+        <button class="btn-icon" onclick="cancelReply('group')"><span class="material-icons-round">close</span></button>
       </div>
       <div id="group-readonly-notice" class="readonly-bar" style="display:{% if group_setting and group_setting.is_readonly and not is_admin and not is_group_admin %}flex{% else %}none{% endif %};">
-        <i class="material-icons" style="font-size:1rem;">lock</i>
+        <span class="material-icons-round" style="font-size:1rem;">lock</span>
         <span>گروه در حالت فقط خواندنی است</span>
       </div>
       <div class="chat-input-area" id="group-input-area" {% if group_setting and group_setting.is_readonly and not is_admin and not is_group_admin %}style="display:none;"{% endif %}>
         <label for="file-upload-group" class="attach-btn" title="پیوست فایل">
-          <i class="material-icons">attach_file</i>
+          <span class="material-icons-round">attach_file</span>
         </label>
         <input id="file-upload-group" type="file" style="display:none" accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip" onchange="handleFileUpload(this,'group')">
         <div style="flex:1;position:relative;display:flex;flex-direction:column;">
           <input type="text" id="group-msg-input" placeholder="پیام خود را بنویسید..." onkeydown="handleInputKeydown(event,'group')" oninput="handleMentionInput(this)" style="width:100%;box-sizing:border-box;">
           <div id="mention-suggestions" class="mention-suggestions" style="display:none;"></div>
         </div>
-        <button class="send-btn" onclick="sendGroupMessage()"><i class="material-icons">send</i></button>
+        <button class="send-btn" onclick="sendGroupMessage()"><span class="material-icons-round">send</span></button>
       </div>
     </div>
 
     <!-- ——— CHANNEL VIEW ——— -->
     <div id="channel-view" class="chat-window" style="display:none;">
       <div class="chat-header-active">
-        <button class="btn-icon back-btn" onclick="showSidebar()"><i class="material-icons">arrow_forward_ios</i></button>
-        <div class="header-avatar channel-avatar"><i class="material-icons">campaign</i></div>
+        <button class="btn-icon back-btn" onclick="showSidebar()"><span class="material-icons-round">arrow_forward_ios</span></button>
+        <div class="header-avatar channel-avatar"><span class="material-icons-round">campaign</span></div>
         <div class="chat-header-info">
           <h3>کانال اطلاعیه‌ها</h3>
           <span>فقط مدیریت پیام ارسال می‌کند</span>
         </div>
-        <button class="btn-icon" onclick="toggleSearch('channel')" title="جستجو"><i class="material-icons">search</i></button>
+        <button class="btn-icon" onclick="toggleSearch('channel')" title="جستجو"><span class="material-icons-round">search</span></button>
       </div>
       <div id="channel-search-bar" class="chat-search-bar" style="display:none;">
-        <i class="material-icons" style="color:var(--text-secondary);font-size:1.1rem;">search</i>
+        <span class="material-icons-round" style="color:var(--text-secondary);font-size:1.1rem;">search</span>
         <input type="text" id="channel-search-input" placeholder="جستجو در اطلاعیه‌ها..." oninput="debounceSearch('channel', this.value)">
         <span id="channel-search-counter" class="search-counter" style="display:none;"></span>
         <div id="channel-search-nav" class="search-nav" style="display:none;">
-          <button class="btn-icon search-nav-btn" onclick="navigateSearch('channel',-1)" title="قبلی"><i class="material-icons">keyboard_arrow_up</i></button>
-          <button class="btn-icon search-nav-btn" onclick="navigateSearch('channel',1)" title="بعدی"><i class="material-icons">keyboard_arrow_down</i></button>
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('channel',-1)" title="قبلی"><span class="material-icons-round">keyboard_arrow_up</span></button>
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('channel',1)" title="بعدی"><span class="material-icons-round">keyboard_arrow_down</span></button>
         </div>
-        <button class="btn-icon" onclick="toggleSearch('channel')"><i class="material-icons">close</i></button>
+        <button class="btn-icon" onclick="toggleSearch('channel')"><span class="material-icons-round">close</span></button>
       </div>
       <div id="channel-pinned-bar" class="pinned-bar" style="display:none;">
-        <i class="material-icons" style="font-size:.95rem;color:#7b1fa2;">push_pin</i>
+        <span class="material-icons-round" style="font-size:.95rem;color:#CE93D8;">push_pin</span>
         <span id="channel-pinned-text" class="pinned-text"></span>
       </div>
       <div class="chat-messages-active" id="channel-messages-container"></div>
       {% if is_admin %}
       <div class="chat-input-area">
-        <label for="file-upload-channel" class="attach-btn"><i class="material-icons">attach_file</i></label>
+        <label for="file-upload-channel" class="attach-btn"><span class="material-icons-round">attach_file</span></label>
         <input id="file-upload-channel" type="file" style="display:none" accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip" onchange="handleFileUpload(this,'channel')">
         <input type="text" id="channel-msg-input" placeholder="اطلاعیه جدید..." onkeydown="handleInputKeydown(event,'channel')">
-        <button class="send-btn" onclick="sendChannelMessage()"><i class="material-icons">send</i></button>
+        <button class="send-btn" onclick="sendChannelMessage()"><span class="material-icons-round">send</span></button>
       </div>
       {% else %}
       <div class="chat-input-area input-disabled">
-        <i class="material-icons" style="opacity:.5;">lock</i>
+        <span class="material-icons-round" style="opacity:.5;">lock</span>
         <span>فقط مدیریت می‌تواند پیام ارسال کند</span>
       </div>
       {% endif %}
@@ -204,7 +204,7 @@
     <!-- ——— PRIVATE VIEW ——— -->
     <div id="private-view" class="chat-window" style="display:none;">
       <div class="chat-header-active">
-        <button class="btn-icon back-btn" onclick="showSidebar()"><i class="material-icons">arrow_forward_ios</i></button>
+        <button class="btn-icon back-btn" onclick="showSidebar()"><span class="material-icons-round">arrow_forward_ios</span></button>
         <div class="header-avatar private-avatar" id="private-header-avatar">
           <span id="private-avatar-initial">؟</span>
         </div>
@@ -212,24 +212,24 @@
           <h3 id="private-name">—</h3>
           <span id="private-status">آفلاین</span>
         </div>
-        <button class="btn-icon" onclick="toggleSearch('private')" title="جستجو"><i class="material-icons">search</i></button>
-        <a href="#" id="private-profile-link" class="btn-icon" title="پروفایل"><i class="material-icons">account_circle</i></a>
+        <button class="btn-icon" onclick="toggleSearch('private')" title="جستجو"><span class="material-icons-round">search</span></button>
+        <a href="#" id="private-profile-link" class="btn-icon" title="پروفایل"><span class="material-icons-round">account_circle</span></a>
         <button class="btn-icon" id="block-btn" onclick="toggleBlockUser()" title="بلاک کاربر" style="color:var(--error);">
-          <i class="material-icons">block</i>
+          <span class="material-icons-round">block</span>
         </button>
       </div>
       <div id="private-search-bar" class="chat-search-bar" style="display:none;">
-        <i class="material-icons" style="color:var(--text-secondary);font-size:1.1rem;">search</i>
+        <span class="material-icons-round" style="color:var(--text-secondary);font-size:1.1rem;">search</span>
         <input type="text" id="private-search-input" placeholder="جستجو در پیام‌ها..." oninput="debounceSearch('private', this.value)">
         <span id="private-search-counter" class="search-counter" style="display:none;"></span>
         <div id="private-search-nav" class="search-nav" style="display:none;">
-          <button class="btn-icon search-nav-btn" onclick="navigateSearch('private',-1)" title="قبلی"><i class="material-icons">keyboard_arrow_up</i></button>
-          <button class="btn-icon search-nav-btn" onclick="navigateSearch('private',1)" title="بعدی"><i class="material-icons">keyboard_arrow_down</i></button>
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('private',-1)" title="قبلی"><span class="material-icons-round">keyboard_arrow_up</span></button>
+          <button class="btn-icon search-nav-btn" onclick="navigateSearch('private',1)" title="بعدی"><span class="material-icons-round">keyboard_arrow_down</span></button>
         </div>
-        <button class="btn-icon" onclick="toggleSearch('private')"><i class="material-icons">close</i></button>
+        <button class="btn-icon" onclick="toggleSearch('private')"><span class="material-icons-round">close</span></button>
       </div>
       <div id="private-pinned-bar" class="pinned-bar" style="display:none;">
-        <i class="material-icons" style="font-size:.95rem;color:var(--primary-color);">push_pin</i>
+        <span class="material-icons-round" style="font-size:.95rem;color:var(--brand-light);">push_pin</span>
         <span id="private-pinned-text" class="pinned-text"></span>
       </div>
       <div class="chat-messages-active" id="private-messages-container"></div>
@@ -241,19 +241,19 @@
             <div class="reply-preview-text" id="private-reply-text"></div>
           </div>
         </div>
-        <button class="btn-icon" onclick="cancelReply('private')"><i class="material-icons">close</i></button>
+        <button class="btn-icon" onclick="cancelReply('private')"><span class="material-icons-round">close</span></button>
       </div>
       <div class="chat-input-area" id="private-input-area">
-        <label for="file-upload-private" class="attach-btn"><i class="material-icons">attach_file</i></label>
+        <label for="file-upload-private" class="attach-btn"><span class="material-icons-round">attach_file</span></label>
         <input id="file-upload-private" type="file" style="display:none" accept=".png,.jpg,.jpeg,.gif,.pdf,.docx,.zip" onchange="handleFileUpload(this,'private')">
         <input type="text" id="private-msg-input" placeholder="پیام خصوصی..." onkeydown="handleInputKeydown(event,'private')">
-        <button class="send-btn" onclick="sendPrivateMessage()"><i class="material-icons">send</i></button>
+        <button class="send-btn" onclick="sendPrivateMessage()"><span class="material-icons-round">send</span></button>
       </div>
     </div>
 
     <!-- ——— EMPTY VIEW ——— -->
     <div id="empty-view" class="chat-empty" style="display:none;">
-      <div class="empty-icon-wrap"><i class="material-icons">forum</i></div>
+      <div class="empty-icon-wrap"><span class="material-icons-round">forum</span></div>
       <h3>یک گفتگو انتخاب کنید</h3>
       <p>از لیست سمت راست یک مکالمه را باز کنید</p>
     </div>
@@ -267,10 +267,10 @@
 <div id="members-modal" class="modal-overlay" onclick="handleOverlayClick(event,'members-modal')">
   <div class="modal-card wide-modal" onclick="event.stopPropagation()">
     <div class="modal-card-header">
-      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">groups</i> اعضای گروه</h3>
-      <button class="modal-close-btn" onclick="closeModal('members-modal')"><i class="material-icons">close</i></button>
+      <h3><span class="material-icons-round" style="vertical-align:middle;font-size:1.2rem;">groups</span> اعضای گروه</h3>
+      <button class="modal-close-btn" onclick="closeModal('members-modal')"><span class="material-icons-round">close</span></button>
     </div>
-    <div id="members-list-container"><div class="loading-state"><i class="material-icons spin">sync</i> در حال بارگذاری...</div></div>
+    <div id="members-list-container"><div class="loading-state"><span class="material-icons-round spin">sync</span> در حال بارگذاری...</div></div>
   </div>
 </div>
 
@@ -278,15 +278,15 @@
 <div id="forward-modal" class="modal-overlay" onclick="handleOverlayClick(event,'forward-modal')">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-card-header">
-      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">forward</i> فوروارد پیام</h3>
-      <button class="modal-close-btn" onclick="closeModal('forward-modal')"><i class="material-icons">close</i></button>
+      <h3><span class="material-icons-round" style="vertical-align:middle;font-size:1.2rem;">forward</span> فوروارد پیام</h3>
+      <button class="modal-close-btn" onclick="closeModal('forward-modal')"><span class="material-icons-round">close</span></button>
     </div>
     <div class="forward-option" onclick="doForwardToGroup()">
-      <div class="special-icon group-icon" style="width:36px;height:36px;border-radius:8px;flex-shrink:0;"><i class="material-icons" style="font-size:1.1rem;">groups</i></div>
+      <div class="special-icon group-icon" style="width:36px;height:36px;border-radius:8px;flex-shrink:0;"><span class="material-icons-round" style="font-size:1.1rem;">groups</span></div>
       <span>گروه عمومی دانشجویان</span>
     </div>
     <div style="font-size:.82rem;color:var(--text-secondary);margin:.75rem 0 .4rem;">پیام خصوصی:</div>
-    <div id="forward-users-list"><div class="loading-state"><i class="material-icons spin">sync</i></div></div>
+    <div id="forward-users-list"><div class="loading-state"><span class="material-icons-round spin">sync</span></div></div>
   </div>
 </div>
 
@@ -294,8 +294,8 @@
 <div id="edit-modal" class="modal-overlay" onclick="handleOverlayClick(event,'edit-modal')">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-card-header">
-      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">edit</i> ویرایش پیام</h3>
-      <button class="modal-close-btn" onclick="closeModal('edit-modal')"><i class="material-icons">close</i></button>
+      <h3><span class="material-icons-round" style="vertical-align:middle;font-size:1.2rem;">edit</span> ویرایش پیام</h3>
+      <button class="modal-close-btn" onclick="closeModal('edit-modal')"><span class="material-icons-round">close</span></button>
     </div>
     <textarea id="edit-textarea" class="modal-textarea" rows="4"></textarea>
     <div class="modal-actions">
@@ -309,8 +309,8 @@
 <div id="delete-modal" class="modal-overlay" onclick="handleOverlayClick(event,'delete-modal')">
   <div class="modal-card small-modal" onclick="event.stopPropagation()">
     <div class="modal-card-header">
-      <h3 style="color:var(--error);"><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">delete_outline</i> حذف پیام</h3>
-      <button class="modal-close-btn" onclick="closeModal('delete-modal')"><i class="material-icons">close</i></button>
+      <h3 style="color:var(--error);"><span class="material-icons-round" style="vertical-align:middle;font-size:1.2rem;">delete_outline</span> حذف پیام</h3>
+      <button class="modal-close-btn" onclick="closeModal('delete-modal')"><span class="material-icons-round">close</span></button>
     </div>
     <p style="font-size:.9rem;color:var(--text-secondary);margin-bottom:1.25rem;">می‌خواهید این پیام را چطور حذف کنید؟</p>
     <div style="display:flex;flex-direction:column;gap:.6rem;">
@@ -334,8 +334,8 @@
 <div id="new-chat-modal" class="modal-overlay" onclick="handleOverlayClick(event,'new-chat-modal')">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-card-header">
-      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">person_add</i> شروع گفتگوی جدید</h3>
-      <button class="modal-close-btn" onclick="closeModal('new-chat-modal')"><i class="material-icons">close</i></button>
+      <h3><span class="material-icons-round" style="vertical-align:middle;font-size:1.2rem;">person_add</span> شروع گفتگوی جدید</h3>
+      <button class="modal-close-btn" onclick="closeModal('new-chat-modal')"><span class="material-icons-round">close</span></button>
     </div>
     <input type="text" id="user-search-input" class="modal-search-input" placeholder="جستجوی نام یا شماره دانشجویی..." oninput="searchUsersDebounced(this.value)">
     <div id="user-search-results" class="user-search-results"><div style="text-align:center;color:var(--text-secondary);padding:1.5rem;font-size:.88rem;">برای شروع تایپ کنید</div></div>
@@ -346,8 +346,8 @@
 <div id="group-settings-modal" class="modal-overlay" onclick="handleOverlayClick(event,'group-settings-modal')">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-card-header">
-      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">settings</i> تنظیمات گروه</h3>
-      <button class="modal-close-btn" onclick="closeModal('group-settings-modal')"><i class="material-icons">close</i></button>
+      <h3><span class="material-icons-round" style="vertical-align:middle;font-size:1.2rem;">settings</span> تنظیمات گروه</h3>
+      <button class="modal-close-btn" onclick="closeModal('group-settings-modal')"><span class="material-icons-round">close</span></button>
     </div>
     <div class="settings-row">
       <div>
@@ -366,8 +366,8 @@
 <div id="privacy-modal" class="modal-overlay" onclick="handleOverlayClick(event,'privacy-modal')">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-card-header">
-      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">privacy_tip</i> تنظیمات حریم خصوصی</h3>
-      <button class="modal-close-btn" onclick="closeModal('privacy-modal')"><i class="material-icons">close</i></button>
+      <h3><span class="material-icons-round" style="vertical-align:middle;font-size:1.2rem;">privacy_tip</span> تنظیمات حریم خصوصی</h3>
+      <button class="modal-close-btn" onclick="closeModal('privacy-modal')"><span class="material-icons-round">close</span></button>
     </div>
     <div class="settings-row">
       <div style="font-size:.9rem;font-weight:600;">نمایش آخرین بازدید</div>
@@ -392,9 +392,9 @@
         <option value="none">هیچ‌کس</option>
       </select>
     </div>
-    <div class="modal-actions" style="margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--border-color);">
+    <div class="modal-actions" style="margin-top:1rem;padding-top:.75rem;border-top:1px solid var(--glass-border);">
       <button class="btn-primary" onclick="saveAllPrivacy()">
-        <i class="material-icons" style="font-size:1rem;vertical-align:middle;">save</i>
+        <span class="material-icons-round" style="font-size:1rem;vertical-align:middle;">save</span>
         ذخیره تنظیمات
       </button>
     </div>
@@ -405,8 +405,8 @@
 <div id="theme-modal" class="modal-overlay" onclick="handleOverlayClick(event,'theme-modal')">
   <div class="modal-card" onclick="event.stopPropagation()">
     <div class="modal-card-header">
-      <h3><i class="material-icons" style="vertical-align:middle;font-size:1.2rem;">palette</i> تم گفتگو</h3>
-      <button class="modal-close-btn" onclick="closeModal('theme-modal')"><i class="material-icons">close</i></button>
+      <h3><span class="material-icons-round" style="vertical-align:middle;font-size:1.2rem;">palette</span> تم گفتگو</h3>
+      <button class="modal-close-btn" onclick="closeModal('theme-modal')"><span class="material-icons-round">close</span></button>
     </div>
     <div id="theme-swatches-modal" class="theme-swatches" style="grid-template-columns:repeat(4,1fr);display:grid;gap:.5rem;"></div>
   </div>
@@ -417,109 +417,107 @@
 
 <!-- ===================== STYLES ===================== -->
 <style>
+/* =====================================================
+   Light mode variable overrides — برای استقلال فایل
+   ===================================================== */
+body.light-mode{
+    --bg-0:#F3F5F9; --bg-1:#FFFFFF; --bg-2:#F8FAFC;
+    --glass-bg: rgba(15,23,42,0.035);
+    --glass-bg-strong: rgba(15,23,42,0.06);
+    --glass-border: rgba(15,23,42,0.08);
+    --glass-border-strong: rgba(15,23,42,0.16);
+    --text-primary:#0F172A; --text-secondary:#4B5566; --text-muted:#8A93A3;
+    --shadow-glass: 0 8px 28px rgba(15,23,42,0.08);
+}
+
 /* ── Layout ── */
-.chat-layout{display:flex;height:calc(100vh - 64px);overflow:hidden;background:var(--background);margin:0;}
+.chat-layout{display:flex;height:calc(100vh - 68px);overflow:hidden;background:var(--bg-0);margin:0;position:relative;z-index:1;}
 html, body{overflow:hidden;}
 
 /* ── Sidebar ── */
-.chat-sidebar{width:300px;min-width:300px;background:var(--surface);border-left:1px solid var(--border-color);display:flex;flex-direction:column;overflow:hidden;transition:all .3s;}
-.sidebar-header{padding:.85rem 1rem;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;}
+.chat-sidebar{width:300px;min-width:300px;background:var(--bg-1);border-left:1px solid var(--glass-border);display:flex;flex-direction:column;overflow:hidden;transition:all .3s;}
+.sidebar-header{padding:.85rem 1rem;border-bottom:1px solid var(--glass-border);display:flex;align-items:center;justify-content:space-between;}
 .chat-special-sections{padding:.5rem .6rem 0;}
-.special-item{display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;border-radius:10px;cursor:pointer;margin-bottom:.35rem;transition:background .2s;border:1px solid transparent;}
-.special-item:hover{background:var(--background);border-color:var(--border-color);}
-.special-item.active{background:rgba(0,131,143,.08);border-color:rgba(0,131,143,.25);}
-.special-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.special-item{display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;border-radius:var(--radius-sm);cursor:pointer;margin-bottom:.35rem;transition:background .2s;border:1px solid transparent;}
+.special-item:hover{background:var(--glass-bg-strong);border-color:var(--glass-border);}
+.special-item.active{background:rgba(38,198,218,.1);border-color:rgba(38,198,218,.3);}
+.special-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .group-icon{background:linear-gradient(135deg,#00838f,#006064);color:white;}
-.channel-icon{background:linear-gradient(135deg,#7b1fa2,#4a148c);color:white;}
+.channel-icon{background:linear-gradient(135deg,#8E24AA,#4a148c);color:white;}
 .special-info{display:flex;flex-direction:column;gap:.1rem;overflow:hidden;}
-.special-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.special-name{font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary);}
 .special-desc{font-size:.74rem;color:var(--text-secondary);}
-.sidebar-divider{padding:.55rem 1rem .35rem;font-size:.7rem;color:var(--text-secondary);font-weight:700;letter-spacing:.05em;display:flex;align-items:center;gap:.5rem;margin-top:.15rem;}
-.sidebar-divider::before{content:'';flex:1;height:1px;background:var(--border-color);order:2;}
+.sidebar-divider{padding:.55rem 1rem .35rem;font-size:.7rem;color:var(--text-muted);font-weight:700;letter-spacing:.05em;display:flex;align-items:center;gap:.5rem;margin-top:.15rem;}
+.sidebar-divider::before{content:'';flex:1;height:1px;background:var(--glass-border);order:2;}
 .conversation-list{flex:1;overflow-y:auto;padding:.4rem .6rem;}
-.conversation-list::-webkit-scrollbar{width:3px;}
-.conversation-list::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px;}
-.convo-item{display:flex;align-items:center;gap:.7rem;padding:.6rem .8rem;border-radius:10px;cursor:pointer;transition:background .2s;margin-bottom:.2rem;border:1px solid transparent;}
-.convo-item:hover{background:var(--background);border-color:var(--border-color);}
-.convo-item.active{background:rgba(0,131,143,.08);border-color:rgba(0,131,143,.25);}
-.convo-avatar{position:relative;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:visible;}
+.conversation-list::-webkit-scrollbar{width:4px;}
+.conversation-list::-webkit-scrollbar-thumb{background:linear-gradient(var(--brand),var(--accent));border-radius:3px;}
+.convo-item{display:flex;align-items:center;gap:.7rem;padding:.6rem .8rem;border-radius:var(--radius-sm);cursor:pointer;transition:background .2s;margin-bottom:.2rem;border:1px solid transparent;}
+.convo-item:hover{background:var(--glass-bg-strong);border-color:var(--glass-border);}
+.convo-item.active{background:rgba(38,198,218,.1);border-color:rgba(38,198,218,.3);}
+.convo-avatar{position:relative;width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--accent));color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:visible;box-shadow:0 4px 12px rgba(0,131,143,.3);}
 .convo-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;}
 .avatar-initial{font-weight:700;font-size:.95rem;}
-.online-dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:var(--success);border-radius:50%;border:2px solid var(--surface);}
+.online-dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:var(--success);border-radius:50%;border:2px solid var(--bg-1);}
 .convo-info{flex:1;min-width:0;}
 .convo-header-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.15rem;}
-.convo-name{font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
-.convo-time{font-size:.7rem;color:var(--text-secondary);flex-shrink:0;}
+.convo-name{font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;color:var(--text-primary);}
+.convo-time{font-size:.7rem;color:var(--text-muted);flex-shrink:0;}
 .convo-msg-row{display:flex;align-items:center;justify-content:space-between;}
 .convo-last-msg{font-size:.78rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:155px;}
-.unread-badge{background:var(--primary-color);color:white;border-radius:50%;width:18px;height:18px;font-size:.68rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.unread-badge{background:linear-gradient(135deg,var(--brand-light),var(--brand));color:#03161A;border-radius:50%;width:18px;height:18px;font-size:.68rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;}
 .empty-state-small{text-align:center;padding:2rem 1rem;color:var(--text-secondary);}
-.empty-state-small i{font-size:2.5rem;color:var(--border-color);display:block;margin-bottom:.5rem;}
+.empty-state-small .material-icons-round{font-size:2.5rem;color:var(--glass-border-strong);display:block;margin-bottom:.5rem;}
 .empty-state-small p{font-size:.85rem;}
 
 /* ── Chat Main ── */
 .chat-main{flex:1;overflow:hidden;display:flex;flex-direction:column;}
 .chat-window{flex:1;display:flex;flex-direction:column;height:100%;overflow:hidden;}
-.chat-header-active{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;background:var(--surface);border-bottom:1px solid var(--border-color);box-shadow:0 2px 8px rgba(0,0,0,.05);z-index:10;}
+.chat-header-active{display:flex;align-items:center;gap:.6rem;padding:.75rem 1rem;background:var(--bg-1);border-bottom:1px solid var(--glass-border);box-shadow:0 2px 10px rgba(0,0,0,.25);z-index:10;}
 .header-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;color:white;}
 .group-avatar{background:linear-gradient(135deg,#00838f,#006064);}
-.channel-avatar{background:linear-gradient(135deg,#7b1fa2,#4a148c);}
-.private-avatar{background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));}
+.channel-avatar{background:linear-gradient(135deg,#8E24AA,#4a148c);}
+.private-avatar{background:linear-gradient(135deg,var(--brand),var(--accent));}
 .chat-header-info{flex:1;display:flex;flex-direction:column;gap:.05rem;min-width:0;}
-.chat-header-info h3{font-size:.95rem;margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chat-header-info h3{font-size:.95rem;margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-primary);}
 .chat-header-info span{font-size:.75rem;color:var(--text-secondary);}
 .btn-icon{background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:.45rem;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:background .2s,color .2s;flex-shrink:0;}
-.btn-icon:hover{background:var(--background);color:var(--primary-color);}
-.btn-icon i{font-size:1.1rem;}
+.btn-icon:hover{background:var(--glass-bg-strong);color:var(--brand-light);}
+.btn-icon .material-icons-round{font-size:1.1rem;}
 .back-btn{display:none;}
 
 /* ── Search bar ── */
-.chat-search-bar{display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--surface);border-bottom:1px solid var(--border-color);}
-.chat-search-bar input{flex:1;padding:.45rem .75rem;border-radius:20px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.88rem;color:var(--text-primary);outline:none;}
-.chat-search-bar input:focus{border-color:var(--primary-color);}
+.chat-search-bar{display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--bg-1);border-bottom:1px solid var(--glass-border);}
+.chat-search-bar input{flex:1;padding:.45rem .75rem;border-radius:20px;border:1.5px solid var(--glass-border-strong);background:rgba(255,255,255,.04);font-family:inherit;font-size:.88rem;color:var(--text-primary);outline:none;}
+.chat-search-bar input:focus{border-color:var(--brand-light);}
 
 /* ── Pinned bar ── */
-.pinned-bar{display:flex;align-items:center;gap:.5rem;padding:.45rem 1rem;background:rgba(0,131,143,.06);border-bottom:1px solid rgba(0,131,143,.15);cursor:pointer;font-size:.82rem;color:var(--text-primary);}
+.pinned-bar{display:flex;align-items:center;gap:.5rem;padding:.45rem 1rem;background:rgba(38,198,218,.08);border-bottom:1px solid rgba(38,198,218,.2);cursor:pointer;font-size:.82rem;color:var(--text-primary);}
 .pinned-text{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
 /* ── Readonly bar ── */
-.readonly-bar{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem 1rem;background:rgba(244,67,54,.06);border-bottom:1px solid rgba(244,67,54,.15);font-size:.82rem;color:var(--error);}
+.readonly-bar{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem 1rem;background:rgba(255,92,114,.08);border-bottom:1px solid rgba(255,92,114,.2);font-size:.82rem;color:var(--error);}
 
 /* ── Messages ── */
-.chat-messages-active{flex:1;overflow-y:auto;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.35rem;background:var(--background);}
+.chat-messages-active{flex:1;overflow-y:auto;padding:.85rem 1rem;display:flex;flex-direction:column;gap:.35rem;background:var(--bg-0);}
 .chat-messages-active::-webkit-scrollbar{width:4px;}
-.chat-messages-active::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:4px;}
-/* ── Chat Theme Selector ── */
-.theme-toggle-btn {
-    background: none; border: 1px solid var(--border-color);
-    border-radius: 20px; padding: .25rem .65rem;
-    display: flex; align-items: center; gap: .3rem;
-    cursor: pointer; font-size: .78rem; color: var(--text-secondary);
-    transition: all .18s;
-}
-.theme-toggle-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+.chat-messages-active::-webkit-scrollbar-thumb{background:var(--glass-border-strong);border-radius:4px;}
 
-.chat-theme-panel {
-    display: none; position: absolute; bottom: calc(100% + 8px);
-    left: 50%; transform: translateX(-50%);
-    background: var(--surface); border: 1px solid var(--border-color);
-    border-radius: 14px; padding: .85rem; box-shadow: 0 8px 28px rgba(0,0,0,.15);
-    z-index: 200; width: 260px;
-}
+/* ── Chat Theme Selector ── */
+.theme-toggle-btn { background: none; border: 1px solid var(--glass-border-strong); border-radius: 20px; padding: .25rem .65rem; display: flex; align-items: center; gap: .3rem; cursor: pointer; font-size: .78rem; color: var(--text-secondary); transition: all .18s; }
+.theme-toggle-btn:hover { border-color: var(--brand-light); color: var(--brand-light); }
+
+.chat-theme-panel { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--bg-1); border: 1px solid var(--glass-border-strong); border-radius: var(--radius-md); padding: .85rem; box-shadow: 0 8px 28px rgba(0,0,0,.4); z-index: 200; width: 260px; }
 .chat-theme-panel.open { display: block; animation: fadeIn .18s ease; }
 .theme-panel-title { font-size: .78rem; font-weight: 700; color: var(--text-secondary); margin-bottom: .6rem; }
 .theme-swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
-.theme-swatch {
-    width: 100%; aspect-ratio: 1; border-radius: 10px; cursor: pointer;
-    border: 2px solid transparent; transition: transform .15s, border-color .15s;
-    position: relative; overflow: hidden;
-}
+.theme-swatch { width: 100%; aspect-ratio: 1; border-radius: var(--radius-sm); cursor: pointer; border: 2px solid transparent; transition: transform .15s, border-color .15s; position: relative; overflow: hidden; }
 .theme-swatch:hover { transform: scale(1.08); }
-.theme-swatch.active { border-color: var(--primary-color); }
+.theme-swatch.active { border-color: var(--brand-light); }
 .theme-swatch span { position: absolute; bottom: 2px; left: 0; right: 0; text-align: center; font-size: .6rem; color: white; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
 
 /* Theme backgrounds */
-.chat-theme-default .chat-messages-active { background: var(--background); }
+.chat-theme-default .chat-messages-active { background: var(--bg-0); }
 .chat-theme-ocean   .chat-messages-active { background: linear-gradient(160deg,#0d47a1 0%,#006064 100%); }
 .chat-theme-forest  .chat-messages-active { background: linear-gradient(160deg,#1b5e20 0%,#33691e 100%); }
 .chat-theme-sunset  .chat-messages-active { background: linear-gradient(160deg,#bf360c 0%,#f57f17 100%); }
@@ -532,7 +530,7 @@ html, body{overflow:hidden;}
 .chat-theme-sakura  .chat-messages-active { background: linear-gradient(160deg,#fce4ec 0%,#f8bbd0 100%); }
 .chat-theme-neon    .chat-messages-active { background: #0a0a0a; }
 
-/* در تم‌های تاریک، پیام received روشن‌تر باشد */
+/* در تم‌های تاریک/رنگی پیام received روشن‌تر باشد */
 .chat-theme-ocean .message-wrapper.received .message-bubble,
 .chat-theme-forest .message-wrapper.received .message-bubble,
 .chat-theme-sunset .message-wrapper.received .message-bubble,
@@ -543,8 +541,8 @@ html, body{overflow:hidden;}
 .chat-theme-lavender .message-wrapper.received .message-bubble,
 .chat-theme-slate .message-wrapper.received .message-bubble,
 .chat-theme-neon .message-wrapper.received .message-bubble {
-    background: rgba(255,255,255,0.12);
-    border-color: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.14);
+    border-color: rgba(255,255,255,0.18);
     color: white;
 }
 .chat-theme-ocean .message-wrapper.received .msg-time,
@@ -556,7 +554,7 @@ html, body{overflow:hidden;}
 .chat-theme-desert .message-wrapper.received .msg-time,
 .chat-theme-lavender .message-wrapper.received .msg-time,
 .chat-theme-slate .message-wrapper.received .msg-time,
-.chat-theme-neon .message-wrapper.received .msg-time { color: rgba(255,255,255,0.65); }
+.chat-theme-neon .message-wrapper.received .msg-time { color: rgba(255,255,255,0.7); }
 .loading-state{display:flex;align-items:center;justify-content:center;gap:.5rem;color:var(--text-secondary);padding:2rem;font-size:.88rem;}
 
 /* ── Message wrapper ── */
@@ -565,16 +563,14 @@ html, body{overflow:hidden;}
 .message-wrapper.received{align-self:flex-start;align-items:flex-start;}
 @keyframes msgFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-.message-sender-name{font-size:.72rem;color:var(--primary-color);font-weight:700;margin-bottom:.2rem;padding:0 .35rem;cursor:pointer;}
+.message-sender-name{font-size:.72rem;color:var(--brand-light);font-weight:700;margin-bottom:.2rem;padding:0 .35rem;cursor:pointer;}
 .message-sender-name:hover{text-decoration:underline;}
 
-/* Forwarded indicator */
 .forwarded-badge{font-size:.72rem;color:var(--text-secondary);display:flex;align-items:center;gap:.2rem;padding:0 .35rem;margin-bottom:.15rem;}
-.forwarded-badge i{font-size:.85rem;}
+.forwarded-badge .material-icons-round{font-size:.85rem;}
 
-/* Reply quote */
-.reply-quote{border-radius:8px;padding:.35rem .65rem;margin-bottom:.3rem;font-size:.78rem;border-right:3px solid var(--primary-color);background:rgba(0,131,143,.07);cursor:pointer;}
-.reply-quote-name{font-weight:700;color:var(--primary-color);margin-bottom:.1rem;}
+.reply-quote{border-radius:8px;padding:.35rem .65rem;margin-bottom:.3rem;font-size:.78rem;border-right:3px solid var(--brand-light);background:rgba(38,198,218,.1);cursor:pointer;}
+.reply-quote-name{font-weight:700;color:var(--brand-light);margin-bottom:.1rem;}
 .reply-quote-text{color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;}
 .message-wrapper.sent .reply-quote{border-right-color:rgba(255,255,255,.7);background:rgba(255,255,255,.15);}
 .message-wrapper.sent .reply-quote-name{color:rgba(255,255,255,.9);}
@@ -582,253 +578,201 @@ html, body{overflow:hidden;}
 
 /* Bubble */
 .message-bubble{padding:.55rem .9rem;border-radius:14px;word-wrap:break-word;position:relative;font-size:.9rem;line-height:1.55;}
-.message-wrapper.sent .message-bubble{background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;border-bottom-left-radius:4px;}
-.message-wrapper.received .message-bubble{background:var(--surface);color:var(--text-primary);border:1px solid var(--border-color);border-bottom-right-radius:4px;}
+.message-wrapper.sent .message-bubble{background:linear-gradient(135deg,var(--brand-light),var(--brand));color:#03161A;border-bottom-left-radius:4px;}
+.message-wrapper.received .message-bubble{background:var(--glass-bg-strong);color:var(--text-primary);border:1px solid var(--glass-border-strong);border-bottom-right-radius:4px;}
 .deleted-bubble{opacity:.55;font-style:italic;font-size:.85rem;}
 
 /* Message meta */
 .message-meta{display:flex;align-items:center;gap:.3rem;margin-top:.2rem;padding:0 .3rem;}
 .message-wrapper.received .message-meta{flex-direction:row-reverse;}
-.msg-time{font-size:.68rem;color:var(--text-secondary);}
+.msg-time{font-size:.68rem;color:var(--text-muted);}
 .message-wrapper.sent .msg-time,
-.message-wrapper.sent .msg-edited-tag { color: rgba(255,255,255,0.75); }
-.msg-edited-tag{font-size:.65rem;color:var(--text-secondary);}
+.message-wrapper.sent .msg-edited-tag { color: rgba(3,22,26,0.65); }
+.msg-edited-tag{font-size:.65rem;color:var(--text-muted);}
 .msg-ticks{font-size:.8rem;display:flex;align-items:center;}
-.ticks-sent{color:var(--text-secondary);}
-.ticks-delivered{color:var(--text-secondary);}
-.ticks-read{color:#2196F3;}
+.ticks-sent{color:rgba(3,22,26,.55);}
+.ticks-delivered{color:rgba(3,22,26,.55);}
+.ticks-read{color:#1565C0;}
 
 /* File attachment */
 .msg-file{display:inline-flex;align-items:center;gap:.4rem;margin-top:.4rem;padding:.35rem .75rem;border-radius:8px;background:rgba(255,255,255,.15);text-decoration:none;font-size:.82rem;color:inherit;border:1px solid rgba(255,255,255,.2);transition:background .2s;}
-.message-wrapper.received .msg-file{background:rgba(0,131,143,.07);border-color:rgba(0,131,143,.2);color:var(--primary-color);}
+.message-wrapper.received .msg-file{background:rgba(38,198,218,.1);border-color:rgba(38,198,218,.25);color:var(--brand-light);}
 .msg-file:hover{background:rgba(255,255,255,.25);}
-.msg-file i{font-size:.95rem;}
+.msg-file .material-icons-round{font-size:.95rem;}
 
 /* Reactions */
 .msg-reactions{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem;padding:0 .2rem;}
-.reaction-chip{display:flex;align-items:center;gap:.25rem;padding:.2rem .45rem;border-radius:12px;background:var(--surface);border:1.5px solid var(--border-color);font-size:.8rem;cursor:pointer;transition:background .15s,border-color .15s;user-select:none;}
-.reaction-chip:hover{border-color:var(--primary-color);background:rgba(0,131,143,.06);}
-.reaction-chip.mine{border-color:var(--primary-color);background:rgba(0,131,143,.1);}
+.reaction-chip{display:flex;align-items:center;gap:.25rem;padding:.2rem .45rem;border-radius:12px;background:var(--glass-bg-strong);border:1.5px solid var(--glass-border-strong);font-size:.8rem;cursor:pointer;transition:background .15s,border-color .15s;user-select:none;}
+.reaction-chip:hover{border-color:var(--brand-light);background:rgba(38,198,218,.1);}
+.reaction-chip.mine{border-color:var(--brand-light);background:rgba(38,198,218,.15);}
 .reaction-chip .rc-count{font-size:.72rem;color:var(--text-secondary);}
 
 /* Message actions toolbar */
-.msg-actions{display:none;position:absolute;top:50%;transform:translateY(-50%);background:var(--surface);border:1px solid var(--border-color);border-radius:24px;padding:.2rem .4rem;box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:20;gap:.1rem;align-items:center;}
+.msg-actions{display:none;position:absolute;top:50%;transform:translateY(-50%);background:var(--bg-1);border:1px solid var(--glass-border-strong);border-radius:24px;padding:.2rem .4rem;box-shadow:0 4px 16px rgba(0,0,0,.35);z-index:20;gap:.1rem;align-items:center;}
 .message-wrapper.sent .msg-actions{left:-12px;transform:translate(-100%,-50%);}
 .message-wrapper.received .msg-actions{right:-12px;transform:translate(100%,-50%);}
 .message-wrapper:hover .msg-actions{display:flex;}
 .msg-action-btn{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:.3rem;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:color .15s,background .15s;}
-.msg-action-btn:hover{color:var(--primary-color);background:var(--background);}
-.msg-action-btn i{font-size:.95rem;}
+.msg-action-btn:hover{color:var(--brand-light);background:var(--glass-bg-strong);}
+.msg-action-btn .material-icons-round{font-size:.95rem;}
 
 /* Dropdown inside action toolbar */
 .action-dropdown{position:relative;}
-.action-dropdown-menu{display:none;position:absolute;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:130px;z-index:100;overflow:hidden;}
+.action-dropdown-menu{display:none;position:absolute;top:calc(100% + 4px);background:var(--bg-1);border:1px solid var(--glass-border-strong);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.35);min-width:130px;z-index:100;overflow:hidden;}
 .action-dropdown-menu.open-up{top:auto;bottom:calc(100% + 4px);}
 .action-dropdown.open .action-dropdown-menu{display:block;}
 .message-wrapper.sent .action-dropdown-menu{right:0;}
 .message-wrapper.received .action-dropdown-menu{left:0;}
 .dropdown-item{display:flex;align-items:center;gap:.5rem;padding:.55rem .85rem;font-size:.82rem;cursor:pointer;color:var(--text-primary);transition:background .15s;white-space:nowrap;}
-.dropdown-item:hover{background:var(--background);}
+.dropdown-item:hover{background:var(--glass-bg-strong);}
 .dropdown-item.danger{color:var(--error);}
-.dropdown-item i{font-size:.9rem;color:var(--text-secondary);}
-.dropdown-item.danger i{color:var(--error);}
+.dropdown-item .material-icons-round{font-size:.9rem;color:var(--text-secondary);}
+.dropdown-item.danger .material-icons-round{color:var(--error);}
 
 /* Pinned message bubble indicator */
-.pinned-msg-indicator{font-size:.68rem;color:var(--primary-color);display:flex;align-items:center;gap:.2rem;margin-bottom:.15rem;padding:0 .3rem;}
+.pinned-msg-indicator{font-size:.68rem;color:var(--brand-light);display:flex;align-items:center;gap:.2rem;margin-bottom:.15rem;padding:0 .3rem;}
+.pinned-msg-indicator .material-icons-round{font-size:.75rem;}
 
 /* ── Reply preview ── */
-.reply-preview{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:var(--surface);border-top:1px solid rgba(0,131,143,.2);}
+.reply-preview{display:flex;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:var(--bg-1);border-top:1px solid rgba(38,198,218,.25);}
 .reply-preview-inner{display:flex;align-items:center;gap:.6rem;flex:1;min-width:0;}
-.reply-bar{width:3px;height:36px;background:var(--primary-color);border-radius:3px;flex-shrink:0;}
-.reply-preview-name{font-size:.78rem;font-weight:700;color:var(--primary-color);}
+.reply-bar{width:3px;height:36px;background:var(--brand-light);border-radius:3px;flex-shrink:0;}
+.reply-preview-name{font-size:.78rem;font-weight:700;color:var(--brand-light);}
 .reply-preview-text{font-size:.78rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:250px;}
 
 /* ── Mention suggestions ── */
-.mention-suggestions{position:absolute;bottom:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border-color);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.1);max-height:160px;overflow-y:auto;z-index:50;}
+.mention-suggestions{position:absolute;bottom:100%;left:0;right:0;background:var(--bg-1);border:1px solid var(--glass-border-strong);border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.35);max-height:160px;overflow-y:auto;z-index:50;}
 .mention-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;cursor:pointer;font-size:.85rem;transition:background .15s;}
-.mention-item:hover{background:var(--background);}
-.mention-item .m-name{font-weight:600;}
+.mention-item:hover{background:var(--glass-bg-strong);}
+.mention-item .m-name{font-weight:600;color:var(--text-primary);}
 .mention-item .m-sid{font-size:.72rem;color:var(--text-secondary);}
 
 /* ── Chat input ── */
-.chat-input-area{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;background:var(--surface);border-top:1px solid var(--border-color);}
+.chat-input-area{display:flex;align-items:center;gap:.5rem;padding:.75rem 1rem;background:var(--bg-1);border-top:1px solid var(--glass-border);}
 .input-disabled{justify-content:center;opacity:.7;gap:.5rem;font-size:.85rem;color:var(--text-secondary);}
 .attach-btn{cursor:pointer;color:var(--text-secondary);padding:.4rem;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:color .2s,background .2s;flex-shrink:0;}
-.attach-btn:hover{color:var(--primary-color);background:var(--background);}
-.chat-input-area input[type="text"]{flex:1;padding:.65rem 1rem;border-radius:22px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.9rem;color:var(--text-primary);outline:none;transition:border-color .2s;}
-.chat-input-area input[type="text"]:focus{border-color:var(--primary-color);}
-.send-btn{width:40px;height:40px;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,box-shadow .15s;box-shadow:0 3px 10px rgba(0,131,143,.3);}
-.send-btn:hover{transform:scale(1.07);box-shadow:0 5px 14px rgba(0,131,143,.4);}
+.attach-btn:hover{color:var(--brand-light);background:var(--glass-bg-strong);}
+.chat-input-area input[type="text"]{flex:1;padding:.65rem 1rem;border-radius:22px;border:1.5px solid var(--glass-border-strong);background:rgba(255,255,255,.04);font-family:inherit;font-size:.9rem;color:var(--text-primary);outline:none;transition:border-color .2s;}
+.chat-input-area input[type="text"]:focus{border-color:var(--brand-light);}
+.send-btn{width:40px;height:40px;background:linear-gradient(135deg,var(--brand-light),var(--brand));color:#03161A;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s,box-shadow .15s;box-shadow:0 3px 12px rgba(38,198,218,.4);}
+.send-btn:hover{transform:scale(1.07);box-shadow:0 5px 16px rgba(38,198,218,.5);}
 .send-btn:active{transform:scale(.95);}
 
 /* ── Empty view ── */
 .chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-secondary);gap:.75rem;}
-.empty-icon-wrap{width:76px;height:76px;background:linear-gradient(135deg,rgba(0,131,143,.1),rgba(0,131,143,.04));border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px dashed rgba(0,131,143,.2);}
-.empty-icon-wrap i{font-size:2.3rem;color:var(--primary-color);opacity:.5;}
+.empty-icon-wrap{width:76px;height:76px;background:rgba(38,198,218,.08);border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px dashed rgba(38,198,218,.3);}
+.empty-icon-wrap .material-icons-round{font-size:2.3rem;color:var(--brand-light);opacity:.8;}
 .chat-empty h3{font-size:1.05rem;color:var(--text-primary);margin:0;}
 .chat-empty p{font-size:.85rem;margin:0;}
 
 /* ── Modals ── */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);z-index:3000;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(2,4,10,.72);backdrop-filter:blur(6px);z-index:3000;align-items:center;justify-content:center;padding:1rem;}
 .modal-overlay.open{display:flex;animation:fadeIn .2s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-.modal-card{background:var(--surface);border-radius:16px;padding:1.5rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:80vh;overflow-y:auto;}
+.modal-card{background:rgba(15,22,38,.94);border:1px solid var(--glass-border-strong);backdrop-filter:blur(24px) saturate(150%);-webkit-backdrop-filter:blur(24px) saturate(150%);border-radius:var(--radius-lg);padding:1.5rem;width:100%;max-width:440px;box-shadow:0 24px 70px rgba(0,0,0,.55);max-height:80vh;overflow-y:auto;}
 .wide-modal{max-width:520px;}
 .small-modal{max-width:360px;}
 .modal-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;}
 .modal-card-header h3{font-size:1.05rem;margin:0;color:var(--text-primary);}
 .modal-close-btn{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:.25rem;border-radius:50%;display:flex;align-items:center;transition:background .2s;}
-.modal-close-btn:hover{background:var(--background);color:var(--text-primary);}
-.modal-textarea{width:100%;min-height:90px;padding:.75rem;border-radius:10px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.9rem;resize:vertical;color:var(--text-primary);outline:none;box-sizing:border-box;}
-.modal-textarea:focus{border-color:var(--primary-color);}
+.modal-close-btn:hover{background:var(--glass-bg-strong);color:var(--text-primary);}
+.modal-textarea{width:100%;min-height:90px;padding:.75rem;border-radius:10px;border:1.5px solid var(--glass-border-strong);background:rgba(255,255,255,.04);font-family:inherit;font-size:.9rem;resize:vertical;color:var(--text-primary);outline:none;box-sizing:border-box;}
+.modal-textarea:focus{border-color:var(--brand-light);}
 .modal-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.85rem;}
-.modal-search-input{width:100%;padding:.65rem 1rem;border-radius:10px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.9rem;color:var(--text-primary);outline:none;margin-bottom:.85rem;box-sizing:border-box;}
-.modal-search-input:focus{border-color:var(--primary-color);}
+.modal-search-input{width:100%;padding:.65rem 1rem;border-radius:10px;border:1.5px solid var(--glass-border-strong);background:rgba(255,255,255,.04);font-family:inherit;font-size:.9rem;color:var(--text-primary);outline:none;margin-bottom:.85rem;box-sizing:border-box;}
+.modal-search-input:focus{border-color:var(--brand-light);}
 .user-search-results{max-height:280px;overflow-y:auto;}
-.user-result-item{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;cursor:pointer;border:1px solid var(--border-color);margin-bottom:.4rem;transition:background .15s,border-color .15s;}
-.user-result-item:hover{background:var(--background);border-color:var(--primary-color);}
+.user-result-item{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;cursor:pointer;border:1px solid var(--glass-border);margin-bottom:.4rem;transition:background .15s,border-color .15s;}
+.user-result-item:hover{background:var(--glass-bg-strong);border-color:var(--brand-light);}
 
 /* Settings */
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border-color);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--glass-border);color:var(--text-primary);}
 .settings-row:last-child{border-bottom:none;}
-.settings-select{padding:.4rem .65rem;border-radius:8px;border:1.5px solid var(--border-color);background:var(--background);font-family:inherit;font-size:.85rem;color:var(--text-primary);cursor:pointer;outline:none;}
-.settings-select:focus{border-color:var(--primary-color);}
+.settings-select{padding:.4rem .65rem;border-radius:8px;border:1.5px solid var(--glass-border-strong);background:rgba(255,255,255,.04);font-family:inherit;font-size:.85rem;color:var(--text-primary);cursor:pointer;outline:none;}
+.settings-select:focus{border-color:var(--brand-light);}
 
 /* Toggle switch */
 .toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0;}
 .toggle-switch input{opacity:0;width:0;height:0;}
-.toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:24px;transition:.3s;}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--glass-border-strong);border-radius:24px;transition:.3s;}
 .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;}
-.toggle-switch input:checked+.toggle-slider{background:var(--primary-color);}
+.toggle-switch input:checked+.toggle-slider{background:linear-gradient(135deg,var(--brand-light),var(--brand));}
 .toggle-switch input:checked+.toggle-slider::before{transform:translateX(20px);}
 
 /* Member items */
-.member-item{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;border:1px solid var(--border-color);margin-bottom:.4rem;transition:background .15s;}
-.member-item:hover{background:var(--background);}
-.member-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary-color),var(--primary-dark));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;position:relative;overflow:hidden;}
+.member-item{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;border:1px solid var(--glass-border);margin-bottom:.4rem;transition:background .15s;}
+.member-item:hover{background:var(--glass-bg-strong);}
+.member-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--accent));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;position:relative;overflow:hidden;}
 .member-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.member-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;background:var(--success);border-radius:50%;border:1.5px solid var(--surface);}
-.member-info{flex:1;min-width:0;}
+.member-dot{position:absolute;bottom:1px;right:1px;width:9px;height:9px;background:var(--success);border-radius:50%;border:1.5px solid var(--bg-1);}
+.member-info{flex:1;min-width:0;color:var(--text-primary);}
 .member-name{font-weight:600;font-size:.88rem;}
 .member-sub{font-size:.74rem;color:var(--text-secondary);}
 .member-role-badge{font-size:.68rem;padding:.15rem .45rem;border-radius:10px;font-weight:700;}
-.role-admin{background:rgba(0,131,143,.12);color:var(--primary-color);}
-.role-muted{background:rgba(255,152,0,.12);color:#f57c00;}
-.role-banned{background:rgba(244,67,54,.12);color:var(--error);}
+.role-admin{background:rgba(38,198,218,.15);color:var(--brand-light);}
+.role-muted{background:rgba(255,181,71,.15);color:var(--warning);}
+.role-banned{background:rgba(255,92,114,.15);color:var(--error);}
 .member-actions{display:flex;gap:.25rem;margin-top:.3rem;flex-wrap:wrap;}
-.member-action-btn{font-size:.72rem;padding:.2rem .5rem;border-radius:6px;border:1px solid var(--border-color);background:none;cursor:pointer;color:var(--text-secondary);transition:background .15s,color .15s;}
-.member-action-btn:hover{background:var(--background);color:var(--primary-color);}
+.member-action-btn{font-size:.72rem;padding:.2rem .5rem;border-radius:6px;border:1px solid var(--glass-border-strong);background:none;cursor:pointer;color:var(--text-secondary);transition:background .15s,color .15s;}
+.member-action-btn:hover{background:var(--glass-bg-strong);color:var(--brand-light);}
 .member-action-btn.danger:hover{color:var(--error);}
 
 /* Forward option */
-.forward-option{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;border:1px solid var(--border-color);cursor:pointer;margin-bottom:.4rem;transition:background .15s,border-color .15s;}
-.forward-option:hover{background:var(--background);border-color:var(--primary-color);}
+.forward-option{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;border-radius:10px;border:1px solid var(--glass-border);cursor:pointer;margin-bottom:.4rem;transition:background .15s,border-color .15s;color:var(--text-primary);}
+.forward-option:hover{background:var(--glass-bg-strong);border-color:var(--brand-light);}
 
 /* Emoji picker */
-.emoji-picker-popup{position:fixed;background:var(--surface);border:1px solid var(--border-color);border-radius:14px;padding:.6rem;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:4000;}
+.emoji-picker-popup{position:fixed;background:var(--bg-1);border:1px solid var(--glass-border-strong);border-radius:14px;padding:.6rem;box-shadow:0 8px 32px rgba(0,0,0,.45);z-index:4000;}
 .emoji-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.25rem;}
 .emoji-btn{width:36px;height:36px;border:none;background:none;cursor:pointer;border-radius:8px;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:background .15s;}
-.emoji-btn:hover{background:var(--background);}
+.emoji-btn:hover{background:var(--glass-bg-strong);}
 
 /* Context menu */
-.context-menu{position:fixed;background:var(--surface);border:1px solid var(--border-color);border-radius:12px;padding:.35rem;box-shadow:0 8px 28px rgba(0,0,0,.15);z-index:3500;min-width:150px;}
+.context-menu{position:fixed;background:var(--bg-1);border:1px solid var(--glass-border-strong);border-radius:12px;padding:.35rem;box-shadow:0 8px 28px rgba(0,0,0,.4);z-index:3500;min-width:150px;}
 .context-menu-item{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--text-primary);transition:background .15s;}
-.context-menu-item:hover{background:var(--background);}
+.context-menu-item:hover{background:var(--glass-bg-strong);}
 .context-menu-item.danger{color:var(--error);}
-.context-menu-item i{font-size:.9rem;color:var(--text-secondary);}
-.context-menu-item.danger i{color:var(--error);}
+.context-menu-item .material-icons-round{font-size:.9rem;color:var(--text-secondary);}
+.context-menu-item.danger .material-icons-round{color:var(--error);}
 
 /* Buttons */
-.btn-primary{padding:.55rem 1.25rem;background:var(--primary-color);color:white;border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:600;transition:background .2s;}
-.btn-primary:hover{background:var(--primary-dark);}
-.btn-secondary{padding:.55rem 1.25rem;background:var(--background);color:var(--text-primary);border:1.5px solid var(--border-color);border-radius:10px;cursor:pointer;font-family:inherit;font-size:.88rem;transition:background .2s;}
-.btn-secondary:hover{background:var(--border-color);}
+.btn-primary{padding:.55rem 1.25rem;background:linear-gradient(135deg,var(--brand-light),var(--brand));color:#03161A;border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:700;transition:transform .2s;}
+.btn-primary:hover{transform:translateY(-1px);}
+.btn-secondary{padding:.55rem 1.25rem;background:var(--glass-bg-strong);color:var(--text-primary);border:1.5px solid var(--glass-border-strong);border-radius:10px;cursor:pointer;font-family:inherit;font-size:.88rem;transition:background .2s;}
+.btn-secondary:hover{background:rgba(255,255,255,.12);}
 .btn-danger{padding:.55rem 1.25rem;background:var(--error);color:white;border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-size:.88rem;transition:opacity .2s;}
 .btn-danger:hover{opacity:.85;}
 
 /* Search results highlight */
-.search-result-msg{padding:.6rem .75rem;border-radius:8px;border:1px solid var(--border-color);margin-bottom:.4rem;cursor:pointer;font-size:.85rem;transition:background .15s;}
-.search-result-msg:hover{background:var(--background);}
-.search-result-msg .sr-name{font-weight:700;color:var(--primary-color);margin-bottom:.15rem;font-size:.78rem;}
+.search-result-msg{padding:.6rem .75rem;border-radius:8px;border:1px solid var(--glass-border);margin-bottom:.4rem;cursor:pointer;font-size:.85rem;transition:background .15s;}
+.search-result-msg:hover{background:var(--glass-bg-strong);}
+.search-result-msg .sr-name{font-weight:700;color:var(--brand-light);margin-bottom:.15rem;font-size:.78rem;}
 .search-result-msg .sr-text{color:var(--text-primary);}
 
 /* Toast */
-.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);color:white;padding:.65rem 1.4rem;border-radius:24px;font-size:.85rem;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:msgFadeIn .25s ease;}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);color:white;padding:.65rem 1.4rem;border-radius:24px;font-size:.85rem;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.4);animation:msgFadeIn .25s ease;}
 
 .spin{animation:spin 1s linear infinite;display:inline-block;}
 @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 
 /* Day separator */
 .day-sep{text-align:center;margin:.5rem 0;color:var(--text-secondary);font-size:.72rem;position:relative;}
-.day-sep::before,.day-sep::after{content:'';position:absolute;top:50%;width:30%;height:1px;background:var(--border-color);}
+.day-sep::before,.day-sep::after{content:'';position:absolute;top:50%;width:30%;height:1px;background:var(--glass-border);}
 .day-sep::before{right:0;}
 .day-sep::after{left:0;}
 
 /* ── Sidebar Hamburger Dropdown ── */
-.sidebar-dropdown {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  background: var(--surface);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 8px 28px rgba(0,0,0,.15);
-  min-width: 180px;
-  z-index: 500;
-  overflow: hidden;
-  animation: fadeIn .18s ease;
-}
-.sidebar-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: .65rem;
-  padding: .7rem 1rem;
-  cursor: pointer;
-  font-size: .88rem;
-  color: var(--text-primary);
-  transition: background .15s;
-}
-.sidebar-dropdown-item:hover {
-  background: var(--background);
-}
-.sidebar-dropdown-item i {
-  font-size: 1.1rem;
-  color: var(--primary-color);
-}
-
+.sidebar-dropdown { position: absolute; top: calc(100% + 6px); left: 0; background: var(--bg-1); border: 1px solid var(--glass-border-strong); border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.4); min-width: 180px; z-index: 500; overflow: hidden; animation: fadeIn .18s ease; }
+.sidebar-dropdown-item { display: flex; align-items: center; gap: .65rem; padding: .7rem 1rem; cursor: pointer; font-size: .88rem; color: var(--text-primary); transition: background .15s; }
+.sidebar-dropdown-item:hover { background: var(--glass-bg-strong); }
+.sidebar-dropdown-item .material-icons-round { font-size: 1.1rem; color: var(--brand-light); }
 
 /* ── Search highlight ── */
-.search-highlight {
-  outline: 2px solid rgba(0,131,143,.35);
-  border-radius: 14px;
-  transition: outline .2s;
-}
-.search-active-result {
-  outline: 2.5px solid var(--primary-color) !important;
-  background: rgba(0,131,143,.1);
-  border-radius: 14px;
-  animation: searchPulse .4s ease;
-}
-@keyframes searchPulse {
-  0%   { outline-width: 4px; outline-color: var(--primary-color); }
-  100% { outline-width: 2.5px; }
-}
-.search-counter {
-  font-size: .78rem;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  padding: .2rem .5rem;
-  background: var(--background);
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  font-weight: 600;
-  min-width: 44px;
-  text-align: center;
-}
-.search-nav {
-  display: flex;
-  align-items: center;
-}
+.search-highlight { outline: 2px solid rgba(38,198,218,.4); border-radius: 14px; transition: outline .2s; }
+.search-active-result { outline: 2.5px solid var(--brand-light) !important; background: rgba(38,198,218,.12); border-radius: 14px; animation: searchPulse .4s ease; }
+@keyframes searchPulse { 0% { outline-width: 4px; outline-color: var(--brand-light); } 100% { outline-width: 2.5px; } }
+.search-counter { font-size: .78rem; color: var(--text-secondary); white-space: nowrap; padding: .2rem .5rem; background: var(--glass-bg-strong); border-radius: 10px; border: 1px solid var(--glass-border-strong); font-weight: 600; min-width: 44px; text-align: center; }
+.search-nav { display: flex; align-items: center; }
 .search-nav-btn { padding: .3rem !important; }
 
 @media(max-width:768px){
@@ -839,32 +783,20 @@ html, body{overflow:hidden;}
   .msg-actions{display:none !important;}
 }
 
-/* ── Responsive Enhancements ── */
 @media(max-width:768px){
-  /* Modal‌ها در موبایل */
   .modal-card { max-width: 100% !important; border-radius: 16px 16px 0 0; margin: 0 !important; max-height: 85vh; }
   .modal-overlay { align-items: flex-end; padding: 0; }
-
-  /* سایدبار */
   .sidebar-header { padding: .7rem .85rem; }
   .chat-special-sections { padding: .4rem .5rem 0; }
   .conversation-list { padding: .3rem .5rem; }
-
-  /* هدر چت */
   .chat-header-active { padding: .6rem .75rem; gap: .4rem; }
   .chat-header-info h3 { font-size: .88rem; }
   .chat-header-info span { font-size: .7rem; }
-
-  /* ناحیه ورودی */
   .chat-input-area { padding: .6rem .75rem; gap: .4rem; }
   .chat-input-area input[type="text"] { font-size: .85rem; padding: .55rem .85rem; }
-
-  /* پیام‌ها */
   .message-bubble { font-size: .85rem; padding: .5rem .8rem; }
   .convo-name { max-width: 130px; }
   .convo-last-msg { max-width: 120px; }
-
-  /* نوار جستجو */
   .chat-search-bar { padding: .45rem .75rem; gap: .3rem; }
   .chat-search-bar input { font-size: .82rem; }
   .search-counter { font-size: .72rem; padding: .15rem .35rem; }
@@ -877,18 +809,11 @@ html, body{overflow:hidden;}
   .msg-reactions { gap: .2rem; }
   .reaction-chip { padding: .15rem .35rem; font-size: .75rem; }
   .send-btn { width: 36px; height: 36px; }
-  /* بج‌ها در موبایل کوچک‌تر */
   .unread-badge { width: 16px; height: 16px; font-size: .62rem; }
-  /* هدر در موبایل کوچک */
   .chat-header-active { padding: .5rem .6rem; }
-  .btn-icon i { font-size: 1rem; }
+  .btn-icon .material-icons-round { font-size: 1rem; }
 }
-
-
 </style>
-
-
-
 {% endblock %}
 
 {% block scripts %}
@@ -929,7 +854,7 @@ function initThemeSwatchesModal() {
 function updateUnreadBadge(type, id, delta) {
   let badge;
   if (type === 'private') badge = document.getElementById('badge-' + id);
-  else badge = document.getElementById('badge-' + type); // 'group' or 'channel'
+  else badge = document.getElementById('badge-' + type);
   if (!badge) return;
   const current = parseInt(badge.textContent) || 0;
   const newCount = Math.max(0, current + delta);
@@ -947,12 +872,10 @@ function clearUnreadBadge(type, id) {
   if (type === 'private') badge = document.getElementById('badge-' + id);
   else badge = document.getElementById('badge-' + type);
   if (badge) { badge.textContent = '0'; badge.style.display = 'none'; }
-  // Notify server that messages are read
   if (type === 'private' && id) {
     fetch('/api/mark_read/' + id, {method:'POST'}).catch(()=>{});
   }
 }
-
 
 function saveAllPrivacy() {
   const data = {
@@ -979,16 +902,15 @@ const IS_GROUP_ADMIN = {{ 'true' if is_group_admin else 'false' }};
 
 let currentView = 'empty';
 let privateRecipientId = null;
-let replyState = { group: null, private: null };  // {id, content, sender_name}
+let replyState = { group: null, private: null };
 let forwardMsgId = null, forwardCtx = null;
 let editMsgId = null, editCtx = null;
 let deleteMsgId = null, deleteCtx = null, deleteIsMine = false;
-let emojiTarget = null;  // {msgId, ctx, element}
+let emojiTarget = null;
 let allUsers = [];
 let searchTimers = {};
 let groupReadonly = {{ 'true' if group_setting and group_setting.is_readonly else 'false' }};
 
-// Initial data from server
 const INIT_PRIVATE_MSGS = [
 {% for msg in messages %}
 {
@@ -1068,19 +990,15 @@ socket.on('error', d => showToast('خطا: ' + (d.message||''), 'error'));
 
 socket.on('new_message', d => {
   if (d.sender_id === CURRENT_USER_ID) {
-    // پیام ارسالی خودم - نیازی به بج نیست
     if (currentView === 'private') {
       appendMsgToContainer('private-messages-container', buildMsgNode(d, 'private', true));
     }
     return;
   }
   if (currentView === 'private' && privateRecipientId === d.sender_id) {
-    // چت باز است - نمایش پیام و علامت خوانده‌شده
     appendMsgToContainer('private-messages-container', buildMsgNode(d, 'private', false));
-    // خودکار mark as read چون داریم نگاه می‌کنیم
     fetch('/api/mark_read/' + d.sender_id, {method:'POST'}).catch(()=>{});
   } else {
-    // چت این کاربر باز نیست - بج اضافه کن
     updateUnreadBadge('private', d.sender_id, 1);
   }
 });
@@ -1090,7 +1008,6 @@ socket.on('new_group_message', d => {
     const isSent = d.sender_id === CURRENT_USER_ID;
     appendMsgToContainer('group-messages-container', buildMsgNode(d, 'group', isSent));
   } else {
-    // گروه باز نیست - بج اضافه کن (فقط برای پیام‌های دیگران)
     if (d.sender_id !== CURRENT_USER_ID) {
       updateUnreadBadge('group', null, 1);
     }
@@ -1102,28 +1019,24 @@ socket.on('new_channel_message', d => {
     appendMsgToContainer('channel-messages-container', buildMsgNode(d, 'channel', false));
     if (d.id) fetch(`/api/channel/message/${d.id}/view`, {method:'POST'}).catch(()=>{});
   } else {
-    // کانال باز نیست - بج اضافه کن
     updateUnreadBadge('channel', null, 1);
   }
 });
 
-// Status events
 socket.on('message_delivered', d => {
   const el = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-ticks`);
-  if (el) el.innerHTML = `<i class="material-icons ticks-delivered" style="font-size:.85rem;">done_all</i>`;
+  if (el) el.innerHTML = `<span class="material-icons-round ticks-delivered" style="font-size:.85rem;">done_all</span>`;
 });
 
 socket.on('message_read_update', d => {
   const el = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-ticks`);
-  if (el) el.innerHTML = `<i class="material-icons ticks-read" style="font-size:.85rem;">done_all</i>`;
+  if (el) el.innerHTML = `<span class="material-icons-round ticks-read" style="font-size:.85rem;">done_all</span>`;
 });
 
-// Reaction events
 socket.on('message_reaction_updated', d => updateReactions(d.message_id, d.reactions, 'private'));
 socket.on('group_message_reaction_updated', d => updateReactions(d.message_id, d.reactions, 'group'));
 socket.on('channel_message_reaction_updated', d => updateReactions(d.message_id, d.reactions, 'channel'));
 
-// Edit events
 socket.on('message_edited', d => {
   const bubble = document.querySelector(`[data-msg-id="${d.message_id}"] .msg-text`);
   if (bubble) bubble.textContent = d.new_content;
@@ -1138,7 +1051,6 @@ socket.on('channel_message_edited', d => {
   if (edited) edited.style.display = 'inline';
 });
 
-// Delete events
 socket.on('message_deleted', d => {
   const el = document.querySelector(`[data-msg-id="${d.message_id}"]`);
   if (el) {
@@ -1160,7 +1072,6 @@ socket.on('channel_message_deleted', d => {
   if (el) el.remove();
 });
 
-// Pin events
 socket.on('message_pinned', d => {
   if (d.is_pinned) loadPinnedMessage('private');
   else document.getElementById('private-pinned-bar').style.display = 'none';
@@ -1176,7 +1087,6 @@ socket.on('channel_message_pinned', d => {
   else document.getElementById('channel-pinned-bar').style.display = 'none';
 });
 
-// Group admin events
 socket.on('group_settings_updated', d => {
   groupReadonly = d.is_readonly;
   const noticeEl = document.getElementById('group-readonly-notice');
@@ -1214,17 +1124,16 @@ function loadChat(typeOrId) {
     currentView = 'group';
     document.getElementById('group-view').style.display = 'flex';
     document.getElementById('sidebar-group').classList.add('active');
-    clearUnreadBadge('group');   // ← پاک کردن بج
+    clearUnreadBadge('group');
     initGroupView();
   } else if (typeOrId === 'channel') {
     currentView = 'channel';
     document.getElementById('channel-view').style.display = 'flex';
     document.getElementById('sidebar-channel').classList.add('active');
-    clearUnreadBadge('channel'); // ← پاک کردن بج
+    clearUnreadBadge('channel');
     initChannelView();
   } else {
     const uid = parseInt(typeOrId);
-    // If same user already loaded, just show; otherwise reload page
     if (INIT_PRIVATE_UID && INIT_PRIVATE_UID === uid) {
       currentView = 'private';
       privateRecipientId = uid;
@@ -1290,7 +1199,6 @@ function initChannelView() {
   });
   scrollToBottom('channel-messages-container');
   loadPinnedMessage('channel');
-  // Mark visible messages as viewed
   INIT_CHANNEL_MSGS.forEach(m => {
     if (!m.is_deleted) fetch(`/api/channel/message/${m.id}/view`, {method:'POST'}).catch(()=>{});
   });
@@ -1312,7 +1220,6 @@ function initPrivateView(uid, useInitial) {
   privateRecipientId = uid;
   socket.emit('join_chat', {other_user_id: uid});
 
-  // Update header
   const convoEl = document.getElementById('convo-' + uid);
   const name = convoEl ? convoEl.dataset.name : (INIT_PRIVATE_NAME || '—');
   const sid = convoEl ? convoEl.dataset.studentId : '';
@@ -1320,14 +1227,12 @@ function initPrivateView(uid, useInitial) {
   document.getElementById('private-avatar-initial').textContent = name[0] || '؟';
   document.getElementById('private-profile-link').href = '/profile/' + uid;
 
-  // Online status
   fetch('/api/user_status/' + uid).then(r=>r.json()).then(d => {
     const el = document.getElementById('private-status');
     el.textContent = d.online ? 'آنلاین' : ('آخرین بازدید: ' + (d.last_seen || 'نامشخص'));
     el.style.color = d.online ? 'var(--success)' : 'var(--text-secondary)';
   }).catch(()=>{});
 
-  // Load messages
   const c = document.getElementById('private-messages-container');
   c.innerHTML = '';
   if (useInitial) {
@@ -1368,12 +1273,10 @@ function buildMsgNode(data, ctx, isSent, noAnim = false) {
   wrapper.dataset.ctx = ctx;
   if (!noAnim) wrapper.style.animation = 'msgFadeIn .25s ease';
 
-  // Determine if deleted
   const isDeleted = data.is_deleted || false;
 
   let html = '';
 
-  // Sender name (group, channel received)
   if (!isSent && ctx === 'group' && data.sender_name) {
     html += `<span class="message-sender-name" onclick="window.location.href='/profile/${data.sender_id}'">${esc(data.sender_name)} <small style="font-weight:400;color:var(--text-secondary);font-size:.68rem;">#${esc(data.sender_student_id||'')}</small></span>`;
   }
@@ -1381,21 +1284,17 @@ function buildMsgNode(data, ctx, isSent, noAnim = false) {
     html += `<span class="message-sender-name" style="cursor:default;">${esc(data.sender_name)}</span>`;
   }
 
-  // Forwarded badge
   if (data.forwarded_info || data.forwarded_from_id) {
     const fwdText = data.forwarded_info || 'فوروارد شده';
-    html += `<div class="forwarded-badge"><i class="material-icons" style="font-size:.85rem;">forward</i>${esc(fwdText)}</div>`;
+    html += `<div class="forwarded-badge"><span class="material-icons-round" style="font-size:.85rem;">forward</span>${esc(fwdText)}</div>`;
   }
 
-  // Pinned indicator
   if (data.is_pinned) {
-    html += `<div class="pinned-msg-indicator"><i class="material-icons" style="font-size:.75rem;">push_pin</i>پین شده</div>`;
+    html += `<div class="pinned-msg-indicator"><span class="material-icons-round" style="font-size:.75rem;">push_pin</span>پین شده</div>`;
   }
 
-  // Bubble start
   html += `<div class="message-bubble${isDeleted ? ' deleted-bubble' : ''}">`;
 
-  // Reply quote
   if (data.reply_to) {
     html += `<div class="reply-quote" onclick="scrollToMsg(${data.reply_to.id})">
       <div class="reply-quote-name">${esc(data.reply_to.sender_name)}</div>
@@ -1403,11 +1302,9 @@ function buildMsgNode(data, ctx, isSent, noAnim = false) {
     </div>`;
   }
 
-  // Content
   const displayContent = isDeleted ? '[پیام حذف شده]' : (data.content || '');
   html += `<span class="msg-text">${esc(displayContent)}</span>`;
 
-  // File
   if (!isDeleted && data.file_path) {
     const fname = data.file_path.split('/').pop();
     const ext = fname.split('.').pop().toLowerCase();
@@ -1416,36 +1313,33 @@ function buildMsgNode(data, ctx, isSent, noAnim = false) {
       html += `<div style="margin-top:.4rem;"><img src="${data.file_path}" style="max-width:220px;max-height:180px;border-radius:10px;display:block;cursor:pointer;" onclick="window.open('${data.file_path}','_blank')"></div>`;
     } else {
       html += `<a class="msg-file" href="${data.file_path}" target="_blank" download>
-        <i class="material-icons">attach_file</i><span>${esc(fname)}</span>
+        <span class="material-icons-round">attach_file</span><span>${esc(fname)}</span>
       </a>`;
     }
   }
 
-  // Meta row
   html += `<div class="message-meta">`;
   if (data.is_edited) html += `<span class="msg-edited-tag">(ویرایش شده)</span>`;
   if (ctx === 'channel' && IS_ADMIN && data.view_count !== undefined) {
-    html += `<span class="msg-edited-tag" style="display:flex;align-items:center;gap:.15rem;"><i class="material-icons" style="font-size:.75rem;">visibility</i>${data.view_count}</span>`;
+    html += `<span class="msg-edited-tag" style="display:flex;align-items:center;gap:.15rem;"><span class="material-icons-round" style="font-size:.75rem;">visibility</span>${data.view_count}</span>`;
   }
   html += `<span class="msg-time">${data.timestamp || ''}</span>`;
   if (isSent && ctx === 'private') {
-    let tickHtml = '<i class="material-icons ticks-sent" style="font-size:.85rem;">done</i>';
-    if (data.read_at) tickHtml = '<i class="material-icons ticks-read" style="font-size:.85rem;">done_all</i>';
-    else if (data.delivered_at) tickHtml = '<i class="material-icons ticks-delivered" style="font-size:.85rem;">done_all</i>';
+    let tickHtml = '<span class="material-icons-round ticks-sent" style="font-size:.85rem;">done</span>';
+    if (data.read_at) tickHtml = '<span class="material-icons-round ticks-read" style="font-size:.85rem;">done_all</span>';
+    else if (data.delivered_at) tickHtml = '<span class="material-icons-round ticks-delivered" style="font-size:.85rem;">done_all</span>';
     html += `<span class="msg-ticks">${tickHtml}</span>`;
   }
   html += `</div>`;
 
-  html += `</div>`; // end bubble
+  html += `</div>`;
 
-  // Reactions area
   html += `<div class="msg-reactions" id="reactions-${data.id}">`;
   if (data.reactions) {
     html += buildReactionsHTML(data.reactions, data.id || 0, ctx);
   }
   html += `</div>`;
 
-  // Action toolbar (not for deleted)
   if (!isDeleted && data.id) {
     html += buildActionsHTML(data, ctx, isSent);
   }
@@ -1463,30 +1357,25 @@ function buildActionsHTML(data, ctx, isSent) {
   const canForward = ctx !== 'channel';
 
   let html = `<div class="msg-actions">`;
-  html += `<button class="msg-action-btn" onclick="startReply(${msgId},'${ctx}')" title="ریپلای"><i class="material-icons">reply</i></button>`;
-  if (ctx !== 'channel') {
-    html += `<button class="msg-action-btn" onclick="openEmojiPicker(event,${msgId},'${ctx}')" title="ری‌اکشن"><i class="material-icons">add_reaction</i></button>`;
-  } else {
-    html += `<button class="msg-action-btn" onclick="openEmojiPicker(event,${msgId},'${ctx}')" title="ری‌اکشن"><i class="material-icons">add_reaction</i></button>`;
-  }
+  html += `<button class="msg-action-btn" onclick="startReply(${msgId},'${ctx}')" title="ریپلای"><span class="material-icons-round">reply</span></button>`;
+  html += `<button class="msg-action-btn" onclick="openEmojiPicker(event,${msgId},'${ctx}')" title="ری‌اکشن"><span class="material-icons-round">add_reaction</span></button>`;
   if (canForward) {
-    html += `<button class="msg-action-btn" onclick="openForwardModal(${msgId},'${ctx}')" title="فوروارد"><i class="material-icons">forward</i></button>`;
+    html += `<button class="msg-action-btn" onclick="openForwardModal(${msgId},'${ctx}')" title="فوروارد"><span class="material-icons-round">forward</span></button>`;
   }
-  // More dropdown
   html += `<div class="action-dropdown" id="dd-${msgId}">`;
-  html += `<button class="msg-action-btn" onclick="toggleDropdown(${msgId})" title="بیشتر"><i class="material-icons">more_vert</i></button>`;
+  html += `<button class="msg-action-btn" onclick="toggleDropdown(${msgId})" title="بیشتر"><span class="material-icons-round">more_vert</span></button>`;
   html += `<div class="action-dropdown-menu">`;
   if (canEdit || canEditCh) {
-    html += `<div class="dropdown-item" onclick="openEditModal(${msgId},'${ctx}')"><i class="material-icons">edit</i>ویرایش</div>`;
+    html += `<div class="dropdown-item" onclick="openEditModal(${msgId},'${ctx}')"><span class="material-icons-round">edit</span>ویرایش</div>`;
   }
   if (canPin) {
-    html += `<div class="dropdown-item" onclick="doPinMsg(${msgId},'${ctx}')"><i class="material-icons">push_pin</i>پین کردن</div>`;
+    html += `<div class="dropdown-item" onclick="doPinMsg(${msgId},'${ctx}')"><span class="material-icons-round">push_pin</span>پین کردن</div>`;
   }
   if (canDelete) {
-    html += `<div class="dropdown-item danger" onclick="openDeleteModal(${msgId},'${ctx}',${isSent})"><i class="material-icons">delete_outline</i>حذف</div>`;
+    html += `<div class="dropdown-item danger" onclick="openDeleteModal(${msgId},'${ctx}',${isSent})"><span class="material-icons-round">delete_outline</span>حذف</div>`;
   }
   if (ctx === 'group' && (IS_ADMIN || IS_GROUP_ADMIN) && !isSent) {
-    html += `<div class="dropdown-item danger" onclick="adminDeleteGroupMsg(${msgId})"><i class="material-icons">delete_outline</i>حذف (ادمین)</div>`;
+    html += `<div class="dropdown-item danger" onclick="adminDeleteGroupMsg(${msgId})"><span class="material-icons-round">delete_outline</span>حذف (ادمین)</div>`;
   }
   html += `</div></div>`;
   html += `</div>`;
@@ -1523,7 +1412,7 @@ function scrollToBottom(cid) {
 
 function scrollToMsg(msgId) {
   const el = document.querySelector(`[data-msg-id="${msgId}"]`);
-  if (el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.background='rgba(0,131,143,.1)'; setTimeout(()=>el.style.background='',1200); }
+  if (el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.background='rgba(38,198,218,.12)'; setTimeout(()=>el.style.background='',1200); }
 }
 
 // ═══════════════════════════════════════════════
@@ -1538,7 +1427,6 @@ function handleInputKeydown(event, type) {
   }
 }
 
-// @mention handler
 let mentionQuery = null, mentionStartPos = 0;
 function handleMentionInput(inputEl) {
   const val = inputEl.value;
@@ -1574,7 +1462,6 @@ function insertMention(sid) {
   inp.focus();
 }
 
-// File upload
 function handleFileUpload(inputEl, type) {
   const file = inputEl.files[0];
   if (!file) return;
@@ -1637,7 +1524,6 @@ function openEmojiPicker(event, msgId, ctx) {
   emojiTarget = {msgId, ctx};
   const picker = document.getElementById('emoji-picker');
   picker.style.display = 'block';
-  // Position near click
   const x = Math.min(event.clientX, window.innerWidth - 200);
   const y = Math.min(event.clientY + 8, window.innerHeight - 180);
   picker.style.left = x + 'px';
@@ -1678,7 +1564,7 @@ function openForwardModal(msgId, ctx) {
   forwardCtx = ctx;
   openModal('forward-modal');
   const ul = document.getElementById('forward-users-list');
-  ul.innerHTML = '<div class="loading-state"><i class="material-icons spin">sync</i></div>';
+  ul.innerHTML = '<div class="loading-state"><span class="material-icons-round spin">sync</span></div>';
   fetch('/api/all_users').then(r=>r.json()).then(users => {
     ul.innerHTML = users.map(u => `
       <div class="forward-option" onclick="doForwardToUser(${u.id})">
@@ -1696,11 +1582,6 @@ function openForwardModal(msgId, ctx) {
 
 function doForwardToGroup() {
   if (!forwardMsgId) return;
-  const url = forwardCtx === 'channel'
-    ? `/api/channel/message/${forwardMsgId}/forward`  // doesn't exist but we can use general
-    : `/api/messages/${forwardMsgId}/forward`;
-
-  // For group messages, use group forward endpoint
   let endpoint;
   if (forwardCtx === 'private') endpoint = `/api/messages/${forwardMsgId}/forward`;
   else if (forwardCtx === 'group') endpoint = `/api/group/message/${forwardMsgId}/forward`;
@@ -1839,7 +1720,7 @@ function loadPinnedMessage(ctx) {
     if (!privateRecipientId) return;
     url = `/api/chat/${privateRecipientId}/pinned`;
   } else if (ctx === 'group') {
-    url = '/api/group/pinned'; // we'll use settings
+    url = '/api/group/pinned';
   } else if (ctx === 'channel') {
     url = '/api/channel/pinned';
   }
@@ -1860,12 +1741,11 @@ function loadPinnedMessage(ctx) {
       }
     }).catch(()=>{});
   }
-  // Group pinned handled via group_settings pinned_message_id - load from API later
 }
+
 // ═══════════════════════════════════════════════
 //  SEARCH (Telegram-style navigation)
 // ═══════════════════════════════════════════════
-// State per context: list of matched DOM elements + current index
 const searchState = {
   group:   { results: [], idx: -1 },
   channel: { results: [], idx: -1 },
@@ -1877,35 +1757,30 @@ function toggleSearch(ctx) {
   if (!bar) return;
   const isVisible = bar.style.display !== 'none';
   if (isVisible) {
-    // بستن جستجو - پاک کردن هایلایت‌ها
     bar.style.display = 'none';
     clearSearchHighlights(ctx);
   } else {
     bar.style.display = 'flex';
     const inp = document.getElementById(ctx + '-search-input');
     if (inp) { inp.value = ''; inp.focus(); }
-    // مخفی کردن counter و nav
     setSearchUI(ctx, 0, 0);
   }
 }
 
 function debounceSearch(ctx, val) {
   clearTimeout(searchTimers[ctx]);
-  // اگر ورودی خالی است، پاک کن
   if (!val) { clearSearchHighlights(ctx); setSearchUI(ctx, 0, 0); return; }
   searchTimers[ctx] = setTimeout(() => doSearch(ctx, val), 350);
 }
 
 function doSearch(ctx, q) {
   if (!q) return;
-  // پاک کردن نتایج قبلی
   clearSearchHighlights(ctx);
 
   const containerId = ctx + '-messages-container';
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  // جستجو در تمام پیام‌های DOM
   const allWrappers = container.querySelectorAll('.message-wrapper');
   const matches = [];
 
@@ -1926,7 +1801,6 @@ function doSearch(ctx, q) {
     return;
   }
 
-  // رفتن به آخرین نتیجه (مثل تلگرام - از آخر شروع می‌کند)
   searchState[ctx].idx = matches.length - 1;
   activateSearchResult(ctx, searchState[ctx].idx);
   setSearchUI(ctx, searchState[ctx].idx + 1, matches.length);
@@ -1936,12 +1810,10 @@ function navigateSearch(ctx, direction) {
   const state = searchState[ctx];
   if (!state.results || state.results.length === 0) return;
 
-  // حذف active از نتیجه فعلی
   if (state.idx >= 0 && state.results[state.idx]) {
     state.results[state.idx].classList.remove('search-active-result');
   }
 
-  // حرکت به نتیجه بعدی/قبلی (circular)
   state.idx += direction;
   if (state.idx < 0) state.idx = state.results.length - 1;
   if (state.idx >= state.results.length) state.idx = 0;
@@ -1977,7 +1849,6 @@ function setSearchUI(ctx, current, total) {
       counter.textContent = `${current} / ${total}`;
       counter.style.display = 'inline-block';
     } else if (total === 0 && searchState[ctx].results !== undefined) {
-      // اگر جستجو انجام شده ولی نتیجه‌ای نیست
       counter.style.display = 'none';
     } else {
       counter.style.display = 'none';
@@ -2005,7 +1876,7 @@ function toggleBlockUser() {
 function openMembersModal() {
   openModal('members-modal');
   const c = document.getElementById('members-list-container');
-  c.innerHTML = '<div class="loading-state"><i class="material-icons spin">sync</i> در حال بارگذاری...</div>';
+  c.innerHTML = '<div class="loading-state"><span class="material-icons-round spin">sync</span> در حال بارگذاری...</div>';
   fetch('/api/group/members').then(r=>r.json()).then(members => {
     renderMembersList(members, c);
   }).catch(()=> { c.innerHTML = '<div class="loading-state">خطا در بارگذاری</div>'; });
@@ -2181,7 +2052,6 @@ function handleOverlayClick(event, id) {
   if (event.target.id === id) closeModal(id);
 }
 
-// Global click: close emoji picker and dropdowns
 document.addEventListener('click', e => {
   if (!e.target.closest('#sidebar-menu-wrapper')) closeSidebarMenu();
   const picker = document.getElementById('emoji-picker');
@@ -2219,7 +2089,7 @@ function showToast(msg, type='info') {
   if (old) old.remove();
   const t = document.createElement('div');
   t.className = 'toast';
-  t.style.background = type === 'error' ? 'var(--error)' : type === 'success' ? '#2e7d32' : 'var(--primary-color)';
+  t.style.background = type === 'error' ? 'var(--error)' : type === 'success' ? '#2ECC71' : 'var(--brand)';
   t.textContent = msg;
   document.body.appendChild(t);
   toastTimeout = setTimeout(() => t.remove(), 3200);
@@ -2227,7 +2097,7 @@ function showToast(msg, type='info') {
 
 /* ── Chat Themes ── */
 const CHAT_THEMES = [
-  { id:'default',  label:'پیش‌فرض', bg:'#f0f0f0' },
+  { id:'default',  label:'پیش‌فرض', bg:'#0A0F1C' },
   { id:'ocean',    label:'اقیانوس', bg:'linear-gradient(135deg,#0d47a1,#006064)' },
   { id:'forest',   label:'جنگل',   bg:'linear-gradient(135deg,#1b5e20,#33691e)' },
   { id:'sunset',   label:'غروب',   bg:'linear-gradient(135deg,#bf360c,#f57f17)' },
@@ -2261,9 +2131,7 @@ function applyChatTheme(themeId) {
   chatLayout.classList.add('chat-theme-' + themeId);
   currentChatTheme = themeId;
   localStorage.setItem('chatTheme', themeId);
-  // به‌روزرسانی swatches در modal تم
   initThemeSwatchesModal();
-  // ذخیره تم در سرور
   fetch('/api/chat_theme', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -2277,7 +2145,6 @@ function applyChatTheme(themeId) {
 // ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   applyChatTheme(currentChatTheme);
-  // Load all users into allUsers cache
   fetch('/api/all_users').then(r=>r.json()).then(u => { allUsers = u; }).catch(()=>{});
 
   {% if active_chat_user %}
