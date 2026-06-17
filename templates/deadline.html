@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}ددلاین‌ها | یونی نت{% endblock %}
+{% block title %}ددلاین‌ها | یونی‌نت{% endblock %}
 
 {% block content %}
 <div class="deadline-page">
@@ -9,7 +9,7 @@
     <div class="deadline-header">
         <div class="deadline-header-info">
             <div class="deadline-header-icon">
-                <i class="material-icons">event_note</i>
+                <span class="material-icons-round">event_note</span>
             </div>
             <div>
                 <h1 class="deadline-title">ددلاین‌های من</h1>
@@ -17,39 +17,30 @@
             </div>
         </div>
         <button class="btn btn-custom add-deadline-top-btn" onclick="openAddModal()">
-            <i class="material-icons">add</i>
+            <span class="material-icons-round">add</span>
             <span>ددلاین جدید</span>
         </button>
     </div>
 
-    <!-- ===== Main Layout: 2×2 Grid ===== -->
-    <!--
-        تغییر ۱۰: چیدمان جدید به صورت دو ردیف دو ستونی:
-        ردیف اول: تقویم (چپ) | جزئیات روز انتخابی (راست)
-        ردیف دوم: ددلاین‌های نزدیک (چپ) | همه ددلاین‌ها (راست)
-        این کار تعادل بصری بهتری ایجاد می‌کند و هر بخش فضای مناسب خودش را دارد.
-    -->
     <div class="deadline-layout">
 
         <!-- ── ردیف اول: تقویم + جزئیات روز ── -->
         <div class="deadline-row deadline-row--top">
 
-            <!-- Calendar Card -->
             <div class="calendar-card">
                 <div class="calendar-header">
                     <button class="cal-nav-btn" onclick="changeMonth(-1)" title="ماه قبل">
-                        <i class="material-icons">chevron_right</i>
+                        <span class="material-icons-round">chevron_right</span>
                     </button>
                     <div class="cal-month-title">
                         <span id="cal-month-name">—</span>
                         <span id="cal-year">—</span>
                     </div>
                     <button class="cal-nav-btn" onclick="changeMonth(1)" title="ماه بعد">
-                        <i class="material-icons">chevron_left</i>
+                        <span class="material-icons-round">chevron_left</span>
                     </button>
                 </div>
 
-                <!-- نشانگر بارگذاری تعطیلات -->
                 <div id="holiday-loading" class="holiday-loading-bar" style="display:none;">
                     <div class="holiday-loading-inner"></div>
                 </div>
@@ -71,14 +62,12 @@
                     <div class="cal-legend-item">
                         <span class="cal-legend-dot near-dot"></span><span>نزدیک (کمتر از ۷ روز)</span>
                     </div>
-                    <!-- تغییر ۱۱: اضافه شدن راهنمای تعطیلات به legend -->
                     <div class="cal-legend-item">
                         <span class="cal-legend-dot holiday-legend-dot"></span><span>تعطیل رسمی</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Day Detail Card (کنار تقویم در ردیف اول) -->
             <div class="day-detail-card" id="day-detail-card">
                 <div class="day-detail-header">
                     <div class="day-detail-date" id="day-detail-date">
@@ -86,18 +75,17 @@
                         <div class="day-info">
                             <span id="day-month-name">روزی انتخاب نشده</span>
                             <span id="day-year-label" class="day-year"></span>
-                            <!-- تغییر ۱۱: نام تعطیل رسمی روز انتخاب‌شده -->
                             <span id="day-holiday-name" class="day-holiday-name" style="display:none;"></span>
                         </div>
                     </div>
                     <button class="btn btn-outline btn-sm" onclick="openAddModal()" id="add-to-day-btn">
-                        <i class="material-icons">add</i> افزودن
+                        <span class="material-icons-round">add</span> افزودن
                     </button>
                 </div>
 
                 <div id="day-deadlines-list" class="day-deadlines-list">
                     <div class="select-day-hint">
-                        <i class="material-icons">touch_app</i>
+                        <span class="material-icons-round">touch_app</span>
                         <p>روی یک روز در تقویم کلیک کنید</p>
                     </div>
                 </div>
@@ -107,26 +95,24 @@
         <!-- ── ردیف دوم: ددلاین‌های نزدیک + همه ددلاین‌ها ── -->
         <div class="deadline-row deadline-row--bottom">
 
-            <!-- Upcoming / Near Deadlines -->
             <div class="upcoming-card" id="upcoming-card">
                 <div class="upcoming-header">
-                    <i class="material-icons">warning_amber</i>
+                    <span class="material-icons-round">warning_amber</span>
                     <h3>ددلاین‌های نزدیک</h3>
                     <span class="upcoming-badge" id="upcoming-count">0</span>
                 </div>
                 <div id="upcoming-list" class="upcoming-list">
                     <div class="empty-upcoming">
-                        <i class="material-icons">check_circle_outline</i>
+                        <span class="material-icons-round">check_circle_outline</span>
                         <span>هیچ ددلاین نزدیکی ندارید</span>
                     </div>
                 </div>
             </div>
 
-            <!-- All Deadlines List -->
             <div class="all-deadlines-card">
                 <div class="all-deadlines-header">
                     <div style="display:flex; align-items:center; gap:.5rem;">
-                        <i class="material-icons" style="color:var(--primary-color);">list_alt</i>
+                        <span class="material-icons-round" style="color:var(--brand-light);">list_alt</span>
                         <h3>همه ددلاین‌ها</h3>
                     </div>
                     <div class="filter-chips">
@@ -138,7 +124,7 @@
                 </div>
                 <div id="all-deadlines-list" class="all-deadlines-list">
                     <div class="loading-state">
-                        <i class="material-icons spin-icon">sync</i>
+                        <span class="material-icons-round spin-icon">sync</span>
                         <span>در حال بارگذاری...</span>
                     </div>
                 </div>
@@ -153,17 +139,17 @@
     <div class="dl-modal-card">
         <div class="dl-modal-header">
             <h3 id="modal-title-label">
-                <i class="material-icons">add_task</i> ددلاین جدید
+                <span class="material-icons-round">add_task</span> ددلاین جدید
             </h3>
             <button class="dl-modal-close" onclick="closeDeadlineModal()">
-                <i class="material-icons">close</i>
+                <span class="material-icons-round">close</span>
             </button>
         </div>
 
         <div class="dl-modal-body">
             <div class="dl-form-group">
                 <label class="dl-form-label">
-                    <i class="material-icons">title</i> عنوان <span class="req">*</span>
+                    <span class="material-icons-round">title</span> عنوان <span class="req">*</span>
                 </label>
                 <input type="text" id="dl-title" class="dl-form-input"
                        placeholder="مثال: پروژه پایانی برنامه‌سازی">
@@ -171,34 +157,34 @@
 
             <div class="dl-form-group">
                 <label class="dl-form-label">
-                    <i class="material-icons">category</i> نوع
+                    <span class="material-icons-round">category</span> نوع
                 </label>
                 <div class="dl-type-chips">
                     <label class="dl-type-chip">
                         <input type="radio" name="dl-type" value="project" checked>
-                        <span><i class="material-icons">engineering</i> پروژه</span>
+                        <span><span class="material-icons-round">engineering</span> پروژه</span>
                     </label>
                     <label class="dl-type-chip">
                         <input type="radio" name="dl-type" value="exam">
-                        <span><i class="material-icons">quiz</i> امتحان</span>
+                        <span><span class="material-icons-round">quiz</span> امتحان</span>
                     </label>
                     <label class="dl-type-chip">
                         <input type="radio" name="dl-type" value="assignment">
-                        <span><i class="material-icons">assignment</i> تکلیف</span>
+                        <span><span class="material-icons-round">assignment</span> تکلیف</span>
                     </label>
                     <label class="dl-type-chip">
                         <input type="radio" name="dl-type" value="other">
-                        <span><i class="material-icons">more_horiz</i> سایر</span>
+                        <span><span class="material-icons-round">more_horiz</span> سایر</span>
                     </label>
                 </div>
             </div>
 
             <div class="dl-form-group">
                 <label class="dl-form-label">
-                    <i class="material-icons">event</i> تاریخ ددلاین <span class="req">*</span>
+                    <span class="material-icons-round">event</span> تاریخ ددلاین <span class="req">*</span>
                 </label>
                 <div class="dl-date-display" id="dl-date-display" onclick="openDatePickerForModal()">
-                    <i class="material-icons">calendar_month</i>
+                    <span class="material-icons-round">calendar_month</span>
                     <span id="dl-date-label">انتخاب تاریخ...</span>
                 </div>
                 <input type="hidden" id="dl-date-hidden">
@@ -206,7 +192,7 @@
 
             <div class="dl-form-group">
                 <label class="dl-form-label">
-                    <i class="material-icons">notes</i> توضیحات
+                    <span class="material-icons-round">notes</span> توضیحات
                 </label>
                 <textarea id="dl-desc" class="dl-form-input dl-textarea"
                           placeholder="توضیحات اضافی (اختیاری)..." rows="3"></textarea>
@@ -214,7 +200,7 @@
 
             <div class="dl-form-group">
                 <label class="dl-form-label">
-                    <i class="material-icons">palette</i> رنگ
+                    <span class="material-icons-round">palette</span> رنگ
                 </label>
                 <div class="color-palette">
                     <button type="button" class="color-swatch active" data-color="#00838F"
@@ -239,7 +225,7 @@
 
         <div class="dl-modal-footer">
             <button class="btn btn-custom" onclick="saveDeadline()" id="save-deadline-btn">
-                <i class="material-icons">save</i> ذخیره
+                <span class="material-icons-round">save</span> ذخیره
             </button>
             <button class="btn btn-outline" onclick="closeDeadlineModal()">انصراف</button>
         </div>
@@ -251,14 +237,14 @@
     <div class="mini-picker-card">
         <div class="mini-picker-header">
             <button type="button" class="cal-nav-btn" onclick="changeMiniMonth(-1)">
-                <i class="material-icons">chevron_right</i>
+                <span class="material-icons-round">chevron_right</span>
             </button>
             <div class="cal-month-title">
                 <span id="mini-month-name">—</span>
                 <span id="mini-year">—</span>
             </div>
             <button type="button" class="cal-nav-btn" onclick="changeMiniMonth(1)">
-                <i class="material-icons">chevron_left</i>
+                <span class="material-icons-round">chevron_left</span>
             </button>
         </div>
         <div class="calendar-weekdays">
@@ -268,7 +254,7 @@
         <div class="calendar-grid mini-grid" id="mini-picker-grid"></div>
         <div class="mini-picker-footer">
             <button type="button" class="mini-today-btn" onclick="miniGoToToday()">
-                <i class="material-icons">today</i> امروز
+                <span class="material-icons-round">today</span> امروز
             </button>
         </div>
     </div>
@@ -278,18 +264,18 @@
 <div id="share-modal" class="dl-modal-overlay" onclick="if(event.target===this)closeShareModal()">
     <div class="dl-modal-card share-modal-card">
         <div class="dl-modal-header">
-            <h3><i class="material-icons">share</i> اشتراک‌گذاری ددلاین</h3>
+            <h3><span class="material-icons-round">share</span> اشتراک‌گذاری ددلاین</h3>
             <button class="dl-modal-close" onclick="closeShareModal()">
-                <i class="material-icons">close</i>
+                <span class="material-icons-round">close</span>
             </button>
         </div>
         <div class="dl-modal-body">
             <div class="share-deadline-preview" id="share-preview"></div>
             <div class="share-options">
                 <button class="share-option-btn share-group-btn" onclick="shareDeadline('group')">
-                    <i class="material-icons">group</i>
+                    <span class="material-icons-round">group</span>
                     <span>اشتراک در گروه کلاسی</span>
-                    <i class="material-icons arrow-icon">arrow_back</i>
+                    <span class="material-icons-round arrow-icon">arrow_back</span>
                 </button>
             </div>
         </div>
@@ -298,378 +284,234 @@
 
 <!-- ===================== Styles ===================== -->
 <style>
-/* ─── Page Layout ─── */
-.deadline-page { max-width: 1300px; margin: 0 auto; padding-bottom: 3rem; }
-
-.deadline-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem;
+/* =====================================================
+   Light mode variable overrides — برای استقلال فایل
+   ===================================================== */
+body.light-mode{
+    --bg-0:#F3F5F9; --bg-1:#FFFFFF; --bg-2:#F8FAFC;
+    --glass-bg: rgba(15,23,42,0.035);
+    --glass-bg-strong: rgba(15,23,42,0.06);
+    --glass-border: rgba(15,23,42,0.08);
+    --glass-border-strong: rgba(15,23,42,0.16);
+    --text-primary:#0F172A; --text-secondary:#4B5566; --text-muted:#8A93A3;
+    --shadow-glass: 0 8px 28px rgba(15,23,42,0.08);
 }
+
+/* ─── Page Layout ─── */
+.deadline-page { max-width: 1300px; margin: 0 auto; padding: 1.75rem 1rem 3rem; position:relative; z-index:1; }
+
+.deadline-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; flex-wrap: wrap; gap: 1rem; }
 .deadline-header-info { display: flex; align-items: center; gap: 1rem; }
 .deadline-header-icon {
-    width: 52px; height: 52px; border-radius: 14px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    width: 54px; height: 54px; border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 16px rgba(0,131,143,.3);
+    box-shadow: 0 6px 20px rgba(0,131,143,.4);
 }
-.deadline-header-icon i { color: white; font-size: 1.6rem; }
-.deadline-title { font-size: 1.5rem; font-weight: 800; margin: 0 0 .15rem; }
+.deadline-header-icon .material-icons-round { color: white; font-size: 1.7rem; }
+.deadline-title { font-size: 1.55rem; font-weight: 800; margin: 0 0 .15rem; color:var(--text-primary); }
 .deadline-subtitle { font-size: .88rem; color: var(--text-secondary); margin: 0; }
 .add-deadline-top-btn { display: flex; align-items: center; gap: .4rem; }
 
-/*
- * تغییر ۱۰: چیدمان جدید
- * به جای یک گرید دو‌ستونه ساده، از دو ردیف مجزا استفاده می‌کنیم:
- * ردیف اول: تقویم (380px ثابت) + جزئیات روز (انعطاف‌پذیر)
- * ردیف دوم: ددلاین‌های نزدیک (380px ثابت) + همه ددلاین‌ها (انعطاف‌پذیر)
- * این باعث می‌شود ستون‌ها با هم تراز بمانند و UX بسیار بهتری داشته باشیم.
- */
 .deadline-layout { display: flex; flex-direction: column; gap: 1.25rem; }
+.deadline-row { display: grid; grid-template-columns: 390px 1fr; gap: 1.25rem; align-items: start; }
+@media (max-width: 960px) { .deadline-row { grid-template-columns: 1fr; } }
 
-.deadline-row {
-    display: grid;
-    grid-template-columns: 390px 1fr;
-    gap: 1.25rem;
-    align-items: start;
-}
-
-/* در صفحات کوچکتر از ۹۰۰px، ستون‌ها به صورت عمودی قرار می‌گیرند */
-@media (max-width: 960px) {
-    .deadline-row { grid-template-columns: 1fr; }
-}
+/* ─── Buttons ─── */
+.btn{ display:inline-flex; align-items:center; gap:0.4rem; padding:0.65rem 1.1rem; border-radius:var(--radius-pill); font-weight:600; font-size:0.88rem; border:1px solid transparent; cursor:pointer; font-family:inherit; transition:all 0.25s var(--ease); }
+.btn .material-icons-round{ font-size:1.1rem; }
+.btn-outline{ background:var(--glass-bg-strong); border:1px solid var(--glass-border-strong); color:var(--text-primary); }
+.btn-outline:hover{ background:rgba(255,255,255,0.12); transform:translateY(-2px); }
+.btn-custom{ background:linear-gradient(135deg, var(--brand-light), var(--brand)); color:#03161A; box-shadow:0 6px 18px rgba(38,198,218,0.35); }
+.btn-custom:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(38,198,218,0.5); }
+.btn-sm { padding: .4rem .85rem; font-size: .8rem; }
 
 /* ─── Holiday Loading Bar ─── */
-/* یک نوار پیشرفت کوچک زیر header تقویم نشان می‌دهد که تعطیلات در حال بارگذاری است */
-.holiday-loading-bar {
-    height: 2px; background: var(--border-color); border-radius: 2px;
-    margin-bottom: .6rem; overflow: hidden;
-}
-.holiday-loading-inner {
-    height: 100%; width: 40%; background: var(--primary-color);
-    border-radius: 2px; animation: loadSlide 1s ease-in-out infinite alternate;
-}
+.holiday-loading-bar { height: 3px; background: var(--glass-border); border-radius: 2px; margin-bottom: .6rem; overflow: hidden; }
+.holiday-loading-inner { height: 100%; width: 40%; background: linear-gradient(90deg, var(--brand-light), var(--accent)); border-radius: 2px; animation: loadSlide 1s ease-in-out infinite alternate; }
 @keyframes loadSlide { from{transform:translateX(-100%)} to{transform:translateX(300%)} }
 
 /* ─── Calendar Card ─── */
-.calendar-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 18px;
-    padding: 1.25rem;
-    box-shadow: var(--shadow-sm);
+.calendar-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); padding: 1.25rem;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--shadow-glass);
 }
-
-.calendar-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: .75rem;
-}
-.cal-month-title {
-    display: flex; gap: .4rem; font-weight: 800; font-size: 1.1rem;
-    color: var(--text-primary);
-}
+.calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+.cal-month-title { display: flex; gap: .4rem; font-weight: 800; font-size: 1.1rem; color: var(--text-primary); }
 .cal-nav-btn {
-    width: 34px; height: 34px; border-radius: 10px;
-    border: 1px solid var(--border-color); background: var(--background);
+    width: 34px; height: 34px; border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border-strong); background: var(--glass-bg-strong);
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    color: var(--text-secondary); transition: all .18s;
+    color: var(--text-secondary); transition: all .2s var(--ease);
 }
-.cal-nav-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(0,131,143,.06); }
+.cal-nav-btn:hover { border-color: var(--brand-light); color: var(--brand-light); background: rgba(38,198,218,.1); }
 
-.calendar-weekdays {
-    display: grid; grid-template-columns: repeat(7,1fr);
-    text-align: center; margin-bottom: .4rem;
-}
-.calendar-weekdays span {
-    font-size: .78rem; font-weight: 700; color: var(--text-secondary);
-    padding: .3rem 0;
-}
-
-.calendar-grid {
-    display: grid; grid-template-columns: repeat(7,1fr);
-    gap: 3px;
-}
+.calendar-weekdays { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: .4rem; }
+.calendar-weekdays span { font-size: .78rem; font-weight: 700; color: var(--text-muted); padding: .3rem 0; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
 
 .cal-day {
-    aspect-ratio: 1;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    border-radius: 10px; cursor: pointer;
-    font-size: .88rem; font-weight: 500;
-    border: none; background: none; font-family: inherit;
-    color: var(--text-primary); position: relative;
-    transition: background .15s, color .15s, transform .1s;
-    gap: 2px;
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm); cursor: pointer; font-size: .88rem; font-weight: 500;
+    border: none; background: none; font-family: inherit; color: var(--text-primary);
+    position: relative; transition: background .15s, color .15s, transform .1s; gap: 2px;
 }
-.cal-day:hover:not(.empty-day) { background: rgba(0,131,143,.1); color: var(--primary-color); transform: scale(1.05); }
-.cal-day.selected-day { background: var(--primary-color); color: white; box-shadow: 0 3px 10px rgba(0,131,143,.35); }
+.cal-day:hover:not(.empty-day) { background: rgba(38,198,218,.12); color: var(--brand-light); transform: scale(1.05); }
+.cal-day.selected-day { background: linear-gradient(135deg, var(--brand-light), var(--brand)); color: #03161A; box-shadow: 0 3px 12px rgba(38,198,218,.4); }
 .cal-day.today-day { font-weight: 800; }
-.cal-day.today-day:not(.selected-day) {
-    background: rgba(0,131,143,.12);
-    color: var(--primary-color);
-    border: 1.5px solid var(--primary-color);
-}
-.cal-day.has-deadline:not(.selected-day) .cal-day-num { position: relative; }
+.cal-day.today-day:not(.selected-day) { background: rgba(38,198,218,.14); color: var(--brand-light); border: 1.5px solid var(--brand-light); }
 .cal-day.empty-day { cursor: default; color: transparent; pointer-events: none; }
 
-/*
- * تغییر ۱۱: استایل روزهای تعطیل رسمی
- * اگر روز تعطیل رسمی باشد، عدد آن به رنگ قرمز نشان داده می‌شود
- * مگر اینکه انتخاب شده باشد (که رنگ سفید می‌شود)
- */
-.cal-day.holiday-day:not(.selected-day) {
-    color: #E53935;
-}
-.cal-day.holiday-day.today-day:not(.selected-day) {
-    color: #E53935;
-    border-color: #E53935;
-    background: rgba(229, 57, 53, .08);
-}
-/* توضیح تعطیل به صورت tooltip */
+.cal-day.holiday-day:not(.selected-day) { color: #FF6B7A; }
+.cal-day.holiday-day.today-day:not(.selected-day) { color: #FF6B7A; border-color: #FF6B7A; background: rgba(255,92,114,.1); }
 .cal-day.holiday-day::after {
-    content: attr(data-holiday);
-    position: absolute;
-    bottom: calc(100% + 6px);
-    right: 50%;
-    transform: translateX(50%);
-    background: rgba(229,57,53,.95);
-    color: white;
-    font-size: .68rem;
-    padding: .25rem .55rem;
-    border-radius: 8px;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 100;
-    transition: opacity .2s;
-    max-width: 140px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-weight: 600;
+    content: attr(data-holiday); position: absolute; bottom: calc(100% + 6px); right: 50%;
+    transform: translateX(50%); background: rgba(255,92,114,.95); color: white; font-size: .68rem;
+    padding: .25rem .55rem; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none;
+    z-index: 100; transition: opacity .2s; max-width: 140px; overflow: hidden; text-overflow: ellipsis; font-weight: 600;
 }
 .cal-day.holiday-day:hover::after { opacity: 1; }
 
-/* نقطه‌های ددلاین روی روز */
-.cal-day-dots {
-    display: flex; gap: 2px; justify-content: center;
-    min-height: 5px;
-}
-.cal-day-dot {
-    width: 5px; height: 5px; border-radius: 50%;
-    flex-shrink: 0;
-}
-.cal-day.selected-day .cal-day-dot { background: rgba(255,255,255,.8) !important; }
+.cal-day-dots { display: flex; gap: 2px; justify-content: center; min-height: 5px; }
+.cal-day-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.cal-day.selected-day .cal-day-dot { background: rgba(3,22,26,.7) !important; }
 
-.calendar-legend {
-    display: flex; gap: .8rem; margin-top: 1rem; padding-top: .75rem;
-    border-top: 1px solid var(--border-color); flex-wrap: wrap;
-}
+.calendar-legend { display: flex; gap: .8rem; margin-top: 1rem; padding-top: .75rem; border-top: 1px solid var(--glass-border); flex-wrap: wrap; }
 .cal-legend-item { display: flex; align-items: center; gap: .35rem; font-size: .75rem; color: var(--text-secondary); }
 .cal-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-.today-dot { background: var(--primary-color); border: 1.5px solid var(--primary-color); }
-.deadline-dot { background: var(--primary-color); }
+.today-dot { background: var(--brand-light); border: 1.5px solid var(--brand-light); }
+.deadline-dot { background: var(--brand-light); }
 .near-dot { background: var(--error); }
-/* تغییر ۱۱: نقطه قرمز برای تعطیلات رسمی در legend */
-.holiday-legend-dot { background: #E53935; }
+.holiday-legend-dot { background: #FF6B7A; }
 
 /* ─── Upcoming Card ─── */
-.upcoming-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 18px; padding: 1.25rem;
-    box-shadow: var(--shadow-sm);
+.upcoming-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); padding: 1.25rem;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--shadow-glass);
 }
-.upcoming-header {
-    display: flex; align-items: center; gap: .5rem;
-    margin-bottom: 1rem; padding-bottom: .75rem;
-    border-bottom: 1px solid var(--border-color);
-}
-.upcoming-header i { color: #f57c00; font-size: 1.3rem; }
-.upcoming-header h3 { font-size: .95rem; font-weight: 700; margin: 0; flex: 1; }
-.upcoming-badge {
-    background: var(--error); color: white;
-    border-radius: 20px; padding: .05rem .55rem;
-    font-size: .72rem; font-weight: 700;
-}
+.upcoming-header { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 1px solid var(--glass-border); }
+.upcoming-header .material-icons-round { color: var(--warning); font-size: 1.3rem; }
+.upcoming-header h3 { font-size: .95rem; font-weight: 700; margin: 0; flex: 1; color:var(--text-primary); }
+.upcoming-badge { background: var(--error); color: white; border-radius: 20px; padding: .05rem .55rem; font-size: .72rem; font-weight: 700; }
 .upcoming-list { display: flex; flex-direction: column; gap: .75rem; }
-.empty-upcoming {
-    display: flex; align-items: center; gap: .5rem;
-    color: var(--text-secondary); font-size: .84rem; padding: .5rem 0;
-}
-.empty-upcoming i { color: var(--success); }
+.empty-upcoming { display: flex; align-items: center; gap: .5rem; color: var(--text-secondary); font-size: .84rem; padding: .5rem 0; }
+.empty-upcoming .material-icons-round { color: var(--success); }
 
-/* ── Countdown Ring Item ── */
 .countdown-item {
-    display: flex; align-items: center; gap: .85rem;
-    padding: .65rem .75rem;
-    border-radius: 12px; background: var(--background);
-    border: 1px solid var(--border-color);
-    transition: box-shadow .18s;
+    display: flex; align-items: center; gap: .85rem; padding: .65rem .75rem;
+    border-radius: var(--radius-sm); background: var(--glass-bg-strong); border: 1px solid var(--glass-border);
+    transition: box-shadow .18s, transform .2s var(--ease);
 }
-.countdown-item:hover { box-shadow: var(--shadow-sm); }
+.countdown-item:hover { box-shadow: var(--shadow-glass); transform: translateY(-2px); }
 .countdown-ring-wrap { flex-shrink: 0; position: relative; width: 48px; height: 48px; }
 .countdown-ring-wrap svg { transform: rotate(-90deg); }
-.ring-bg { fill: none; stroke: var(--border-color); stroke-width: 3.5; }
+.ring-bg { fill: none; stroke: var(--glass-border-strong); stroke-width: 3.5; }
 .ring-fg { fill: none; stroke-width: 3.5; stroke-linecap: round; transition: stroke-dashoffset .6s ease; }
-.ring-label {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: .75rem; font-weight: 800;
-    line-height: 1;
-}
+.ring-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: .75rem; font-weight: 800; line-height: 1; }
 .countdown-info { flex: 1; min-width: 0; }
-.countdown-title { font-size: .88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.countdown-title { font-size: .88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color:var(--text-primary); }
 .countdown-meta { font-size: .75rem; color: var(--text-secondary); margin-top: .15rem; }
-.countdown-type-badge {
-    font-size: .7rem; padding: .1rem .45rem;
-    border-radius: 20px; font-weight: 600; white-space: nowrap;
-}
+.countdown-type-badge { font-size: .7rem; padding: .1rem .45rem; border-radius: 20px; font-weight: 600; white-space: nowrap; }
 
 /* ─── Day Detail Card ─── */
-.day-detail-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 18px; padding: 1.25rem;
-    box-shadow: var(--shadow-sm);
+.day-detail-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); padding: 1.25rem;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--shadow-glass);
 }
-.day-detail-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1rem; padding-bottom: .75rem;
-    border-bottom: 1px solid var(--border-color);
-}
+.day-detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 1px solid var(--glass-border); }
 .day-detail-date { display: flex; align-items: center; gap: .75rem; }
 .day-number {
-    width: 52px; height: 52px; border-radius: 14px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    width: 54px; height: 54px; border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
     color: white; display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem; font-weight: 800;
-    box-shadow: 0 3px 10px rgba(0,131,143,.3);
-    flex-shrink: 0;
+    font-size: 1.4rem; font-weight: 800; box-shadow: 0 4px 14px rgba(0,131,143,.4); flex-shrink: 0;
 }
 .day-info { display: flex; flex-direction: column; }
-.day-info span:first-child { font-size: 1rem; font-weight: 700; }
+.day-info span:first-child { font-size: 1rem; font-weight: 700; color:var(--text-primary); }
 .day-year { font-size: .82rem; color: var(--text-secondary); }
-
-/* تغییر ۱۱: نمایش نام تعطیل در کارت جزئیات روز */
-.day-holiday-name {
-    font-size: .75rem;
-    color: #E53935;
-    font-weight: 700;
-    margin-top: .1rem;
-    display: flex;
-    align-items: center;
-    gap: .2rem;
-}
-.day-holiday-name::before {
-    content: '🔴';
-    font-size: .65rem;
-}
+.day-holiday-name { font-size: .75rem; color: #FF6B7A; font-weight: 700; margin-top: .1rem; display: flex; align-items: center; gap: .2rem; }
+.day-holiday-name::before { content: '🔴'; font-size: .65rem; }
 
 .day-deadlines-list { display: flex; flex-direction: column; gap: .6rem; min-height: 80px; }
-
-.select-day-hint {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: .5rem; color: var(--text-secondary); padding: 1.5rem 0;
-    font-size: .88rem;
-}
-.select-day-hint i { font-size: 2rem; color: var(--border-color); }
-
-.btn-sm { padding: .35rem .8rem; font-size: .82rem; }
+.select-day-hint { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; color: var(--text-secondary); padding: 1.5rem 0; font-size: .88rem; }
+.select-day-hint .material-icons-round { font-size: 2rem; color: var(--glass-border-strong); }
 
 /* ─── Deadline Item Card ─── */
 .dl-item {
-    display: flex; align-items: center; gap: .75rem;
-    padding: .7rem .85rem;
-    border-radius: 12px; border: 1px solid var(--border-color);
-    background: var(--background);
-    transition: box-shadow .18s, border-color .18s;
-    position: relative;
+    display: flex; align-items: center; gap: .75rem; padding: .7rem .85rem;
+    border-radius: var(--radius-sm); border: 1px solid var(--glass-border); background: var(--glass-bg-strong);
+    transition: box-shadow .18s, border-color .18s; position: relative;
 }
-.dl-item:hover { box-shadow: var(--shadow-sm); border-color: rgba(0,131,143,.2); }
+.dl-item:hover { box-shadow: var(--shadow-glass); border-color: rgba(38,198,218,.3); }
 .dl-item-color { width: 5px; height: 38px; border-radius: 10px; flex-shrink: 0; }
 .dl-item-info { flex: 1; min-width: 0; }
-.dl-item-title { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-item-title { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color:var(--text-primary); }
 .dl-item-meta { display: flex; align-items: center; gap: .5rem; margin-top: .2rem; flex-wrap: wrap; }
 .dl-item-date { font-size: .76rem; color: var(--text-secondary); }
 .dl-item-days { font-size: .72rem; padding: .1rem .45rem; border-radius: 20px; font-weight: 700; }
 .dl-item-actions { display: flex; gap: .3rem; flex-shrink: 0; }
 .dl-action-btn {
-    width: 30px; height: 30px; border-radius: 8px;
-    border: 1px solid var(--border-color); background: none;
+    width: 30px; height: 30px; border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border-strong); background: none;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    color: var(--text-secondary); transition: all .18s; font-size: 0;
+    color: var(--text-secondary); transition: all .18s;
 }
-.dl-action-btn i { font-size: 1rem; }
-.dl-action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(0,131,143,.06); }
-.dl-action-btn.delete-btn:hover { border-color: var(--error); color: var(--error); background: rgba(183,28,28,.06); }
-.dl-action-btn.done-btn.is-done { background: rgba(46,125,50,.1); border-color: var(--success); color: var(--success); }
+.dl-action-btn .material-icons-round { font-size: 1rem; }
+.dl-action-btn:hover { border-color: var(--brand-light); color: var(--brand-light); background: rgba(38,198,218,.1); }
+.dl-action-btn.delete-btn:hover { border-color: var(--error); color: var(--error); background: rgba(255,92,114,.1); }
+.dl-action-btn.done-btn.is-done { background: rgba(46,204,113,.12); border-color: var(--success); color: var(--success); }
 .dl-item.is-done .dl-item-title { text-decoration: line-through; opacity: .6; }
 
 /* ─── All Deadlines Card ─── */
-.all-deadlines-card {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 18px; padding: 1.25rem;
-    box-shadow: var(--shadow-sm);
+.all-deadlines-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); padding: 1.25rem;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--shadow-glass);
 }
-.all-deadlines-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1rem; flex-wrap: wrap; gap: .75rem;
-}
-.all-deadlines-header h3 { font-size: .95rem; font-weight: 700; margin: 0; }
+.all-deadlines-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: .75rem; }
+.all-deadlines-header h3 { font-size: .95rem; font-weight: 700; margin: 0; color:var(--text-primary); }
 .filter-chips { display: flex; gap: .4rem; flex-wrap: wrap; }
 .filter-chip {
-    padding: .28rem .75rem; border-radius: 20px;
-    border: 1.5px solid var(--border-color); background: none;
-    font-family: inherit; font-size: .78rem; font-weight: 600;
+    padding: .3rem .8rem; border-radius: 20px; border: 1.5px solid var(--glass-border-strong);
+    background: none; font-family: inherit; font-size: .78rem; font-weight: 600;
     color: var(--text-secondary); cursor: pointer; transition: all .18s;
 }
-.filter-chip:hover { border-color: var(--primary-color); color: var(--primary-color); }
-.filter-chip.active { background: var(--primary-color); border-color: var(--primary-color); color: white; }
+.filter-chip:hover { border-color: var(--brand-light); color: var(--brand-light); }
+.filter-chip.active { background: linear-gradient(135deg, var(--brand-light), var(--brand)); border-color: transparent; color: #03161A; }
 .all-deadlines-list { display: flex; flex-direction: column; gap: .6rem; min-height: 60px; }
 
 /* ─── Loading / Empty ─── */
-.loading-state {
-    display: flex; align-items: center; gap: .6rem;
-    color: var(--text-secondary); padding: 1rem 0; font-size: .88rem;
-}
-.spin-icon { animation: spin 1s linear infinite; }
-.empty-dl-state {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: .5rem; color: var(--text-secondary); padding: 2rem 0;
-    font-size: .88rem;
-}
-.empty-dl-state i { font-size: 2.5rem; color: var(--border-color); }
+.loading-state { display: flex; align-items: center; gap: .6rem; color: var(--text-secondary); padding: 1rem 0; font-size: .88rem; }
+.spin-icon { animation: spin 1s linear infinite; display:inline-block; }
+.empty-dl-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; color: var(--text-secondary); padding: 2rem 0; font-size: .88rem; }
+.empty-dl-state .material-icons-round { font-size: 2.5rem; color: var(--glass-border-strong); }
 
 /* ─── Modal ─── */
-.dl-modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
-    z-index: 2000; align-items: center; justify-content: center; padding: 1rem;
-}
+.dl-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(2,4,10,.72); backdrop-filter: blur(6px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; }
 .dl-modal-overlay.open { display: flex; animation: fadeUp .25s ease; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 
-.dl-modal-card {
-    background: var(--surface); border-radius: 20px; padding: 1.75rem;
-    width: 100%; max-width: 480px; box-shadow: 0 24px 64px rgba(0,0,0,.2);
-    max-height: 92vh; overflow-y: auto;
-    border: 1px solid var(--border-color);
+.dl-modal-card{
+    background: rgba(15,22,38,.94); border: 1px solid var(--glass-border-strong);
+    backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border-radius: var(--radius-lg); padding: 1.75rem; width: 100%; max-width: 480px;
+    box-shadow: 0 24px 70px rgba(0,0,0,.55); max-height: 92vh; overflow-y: auto;
 }
 .share-modal-card { max-width: 400px; }
 
-.dl-modal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.5rem;
-}
-.dl-modal-header h3 {
-    display: flex; align-items: center; gap: .4rem;
-    font-size: 1.1rem; font-weight: 800; margin: 0;
-    color: var(--primary-color);
-}
-.dl-modal-header h3 i { font-size: 1.25rem; }
+.dl-modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.dl-modal-header h3 { display: flex; align-items: center; gap: .4rem; font-size: 1.1rem; font-weight: 800; margin: 0; color: var(--brand-light); }
+.dl-modal-header h3 .material-icons-round { font-size: 1.25rem; }
 .dl-modal-close {
     width: 34px; height: 34px; border-radius: 50%;
-    border: 1px solid var(--border-color); background: var(--background);
+    border: 1px solid var(--glass-border-strong); background: var(--glass-bg-strong);
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     color: var(--text-secondary); transition: all .18s;
 }
@@ -679,101 +521,72 @@
 .dl-modal-footer { display: flex; gap: .75rem; margin-top: 1.5rem; }
 
 .dl-form-group { display: flex; flex-direction: column; gap: .45rem; }
-.dl-form-label {
-    display: flex; align-items: center; gap: .3rem;
-    font-size: .88rem; font-weight: 700; color: var(--text-primary);
-}
-.dl-form-label i { font-size: .95rem; color: var(--primary-color); }
+.dl-form-label { display: flex; align-items: center; gap: .3rem; font-size: .88rem; font-weight: 700; color: var(--text-primary); }
+.dl-form-label .material-icons-round { font-size: .95rem; color: var(--brand-light); }
 .req { color: var(--error); margin-right: .1rem; }
 .dl-form-input {
-    border: 1.5px solid var(--border-color); border-radius: 10px;
+    border: 1.5px solid var(--glass-border-strong); border-radius: var(--radius-sm);
     padding: .65rem .9rem; font-family: inherit; font-size: .9rem;
-    background: var(--background); color: var(--text-primary);
-    transition: border-color .18s, box-shadow .18s;
-    outline: none; width: 100%; box-sizing: border-box;
-    resize: none;
+    background: rgba(255,255,255,.04); color: var(--text-primary);
+    transition: border-color .18s, box-shadow .18s; outline: none; width: 100%; box-sizing: border-box; resize: none;
 }
-.dl-form-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0,131,143,.12); }
+.dl-form-input:focus { border-color: var(--brand-light); box-shadow: 0 0 0 3px rgba(38,198,218,.15); }
 
 .dl-type-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
 .dl-type-chip { cursor: pointer; }
 .dl-type-chip input { display: none; }
 .dl-type-chip span {
-    display: inline-flex; align-items: center; gap: .3rem;
-    padding: .4rem .85rem; border-radius: 20px;
-    border: 1.5px solid var(--border-color); background: var(--background);
-    font-size: .82rem; font-weight: 600; color: var(--text-secondary);
-    cursor: pointer; transition: all .18s;
+    display: inline-flex; align-items: center; gap: .3rem; padding: .4rem .85rem; border-radius: 20px;
+    border: 1.5px solid var(--glass-border-strong); background: rgba(255,255,255,.03);
+    font-size: .82rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all .18s;
 }
-.dl-type-chip span i { font-size: .95rem; }
-.dl-type-chip input:checked + span {
-    border-color: var(--primary-color);
-    background: rgba(0,131,143,.12); color: var(--primary-color);
-}
-.dl-type-chip:hover span { border-color: var(--primary-color); color: var(--primary-color); }
+.dl-type-chip span .material-icons-round { font-size: .95rem; }
+.dl-type-chip input:checked + span { border-color: var(--brand-light); background: rgba(38,198,218,.15); color: var(--brand-light); }
+.dl-type-chip:hover span { border-color: var(--brand-light); color: var(--brand-light); }
 
 .dl-date-display {
-    display: flex; align-items: center; gap: .6rem;
-    padding: .65rem .9rem; border-radius: 10px;
-    border: 1.5px dashed var(--border-color); cursor: pointer;
-    background: var(--background); color: var(--text-secondary);
-    transition: border-color .18s, color .18s;
-    font-size: .9rem;
+    display: flex; align-items: center; gap: .6rem; padding: .65rem .9rem; border-radius: var(--radius-sm);
+    border: 1.5px dashed var(--glass-border-strong); cursor: pointer; background: rgba(255,255,255,.03);
+    color: var(--text-secondary); transition: border-color .18s, color .18s; font-size: .9rem;
 }
-.dl-date-display:hover { border-color: var(--primary-color); color: var(--primary-color); }
-.dl-date-display.has-date { border-style: solid; border-color: var(--primary-color); color: var(--text-primary); font-weight: 600; }
-.dl-date-display i { color: var(--primary-color); }
+.dl-date-display:hover { border-color: var(--brand-light); color: var(--brand-light); }
+.dl-date-display.has-date { border-style: solid; border-color: var(--brand-light); color: var(--text-primary); font-weight: 600; }
+.dl-date-display .material-icons-round { color: var(--brand-light); }
 
 .color-palette { display: flex; gap: .5rem; flex-wrap: wrap; }
-.color-swatch {
-    width: 30px; height: 30px; border-radius: 50%;
-    border: 3px solid transparent; cursor: pointer;
-    transition: transform .18s, border-color .18s;
-    outline: none;
-}
+.color-swatch { width: 30px; height: 30px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: transform .18s, border-color .18s; outline: none; }
 .color-swatch:hover { transform: scale(1.15); }
 .color-swatch.active { border-color: var(--text-primary); transform: scale(1.15); }
 
-.mini-picker-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.4); backdrop-filter: blur(3px);
-    z-index: 3000; align-items: center; justify-content: center; padding: 1rem;
-}
+.mini-picker-overlay { display: none; position: fixed; inset: 0; background: rgba(2,4,10,.6); backdrop-filter: blur(5px); z-index: 3000; align-items: center; justify-content: center; padding: 1rem; }
 .mini-picker-overlay.open { display: flex; animation: fadeUp .2s ease; }
-.mini-picker-card {
-    background: var(--surface); border-radius: 16px; padding: 1.25rem;
-    width: 300px; box-shadow: 0 16px 48px rgba(0,0,0,.2);
-    border: 1px solid var(--border-color);
+.mini-picker-card{
+    background: rgba(15,22,38,.94); border: 1px solid var(--glass-border-strong);
+    backdrop-filter: blur(24px); border-radius: var(--radius-md); padding: 1.25rem; width: 300px;
+    box-shadow: 0 16px 48px rgba(0,0,0,.5);
 }
 .mini-grid { gap: 2px; }
-.mini-picker-footer { display: flex; justify-content: center; margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--border-color); }
+.mini-picker-footer { display: flex; justify-content: center; margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--glass-border); }
 .mini-today-btn {
-    display: flex; align-items: center; gap: .3rem;
-    background: none; border: none; cursor: pointer;
-    color: var(--primary-color); font-size: .85rem; font-weight: 600;
-    font-family: inherit; padding: .3rem .6rem; border-radius: 8px;
-    transition: background .15s;
+    display: flex; align-items: center; gap: .3rem; background: none; border: none; cursor: pointer;
+    color: var(--brand-light); font-size: .85rem; font-weight: 600; font-family: inherit;
+    padding: .3rem .6rem; border-radius: var(--radius-sm); transition: background .15s;
 }
-.mini-today-btn:hover { background: rgba(0,131,143,.08); }
+.mini-today-btn:hover { background: rgba(38,198,218,.1); }
 
-.share-deadline-preview {
-    background: var(--background); border-radius: 12px; padding: 1rem;
-    border: 1px solid var(--border-color); margin-bottom: 1.25rem;
-    font-size: .9rem; line-height: 1.6;
-}
+.share-deadline-preview { background: var(--glass-bg-strong); border-radius: var(--radius-sm); padding: 1rem; border: 1px solid var(--glass-border); margin-bottom: 1.25rem; font-size: .9rem; line-height: 1.6; color:var(--text-primary); }
 .share-options { display: flex; flex-direction: column; gap: .6rem; }
 .share-option-btn {
-    display: flex; align-items: center; gap: .75rem;
-    padding: .85rem 1rem; border-radius: 12px;
-    border: 1.5px solid var(--border-color); background: var(--background);
+    display: flex; align-items: center; gap: .75rem; padding: .85rem 1rem; border-radius: var(--radius-md);
+    border: 1.5px solid var(--glass-border-strong); background: rgba(255,255,255,.03);
     cursor: pointer; font-family: inherit; font-size: .9rem; font-weight: 600;
     color: var(--text-primary); transition: all .18s; text-align: right;
 }
-.share-option-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(0,131,143,.05); }
-.share-option-btn i:first-child { font-size: 1.4rem; color: var(--primary-color); }
-.share-option-btn span { flex: 1; }
+.share-option-btn:hover { border-color: var(--brand-light); color: var(--brand-light); background: rgba(38,198,218,.08); }
+.share-option-btn .material-icons-round:first-child { font-size: 1.4rem; color: var(--brand-light); }
+.share-option-btn span:not(.material-icons-round) { flex: 1; }
 .arrow-icon { font-size: 1rem !important; color: var(--text-secondary) !important; }
-.share-group-btn:hover .arrow-icon { color: var(--primary-color) !important; }
+.share-group-btn:hover .arrow-icon { color: var(--brand-light) !important; }
 
 @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
 </style>
@@ -836,7 +649,7 @@ function jDaysInMonth(jy, jm) {
 function jWeekday(jy, jm, jd) {
     const [gy, gm, gd] = jToG(jy, jm, jd);
     const d = new Date(gy, gm-1, gd).getDay();
-    return (d + 1) % 7; // 0=Sat, 6=Fri
+    return (d + 1) % 7;
 }
 
 function formatJalali(jy, jm, jd) {
@@ -865,28 +678,17 @@ let miniYear       = TODAY_JY;
 let miniMonth      = TODAY_JM;
 let miniSelected   = null;
 
-/*
- * تغییر ۱۱: کش تعطیلات
- * هر ماه فقط یک بار از API خوانده می‌شود و نتیجه اینجا ذخیره می‌شود.
- * کلید: "jy-jm" (مثلاً "1403-7")، مقدار: آبجکت {day: {is_holiday, events}}
- */
 let holidayCache = {};
-let currentMonthHolidays = {}; // داده‌های تعطیلات ماه جاری نمایش‌یافته
+let currentMonthHolidays = {};
 
 /* ═══════════════════════════════════════════════════════
-   ۳. تغییر ۱۱: بارگذاری تعطیلات از API
+   ۳. بارگذاری تعطیلات از API
    ═══════════════════════════════════════════════════════ */
 
-/**
- * داده‌های تعطیلات یک ماه شمسی را از بک‌اند دریافت می‌کند.
- * اگر قبلاً برای همین ماه fetch شده باشد، نتیجه کش‌شده برمی‌گردد.
- * @returns {Object} مثلاً { 1: {is_holiday:true, events:['نوروز']}, 2: {...}, ... }
- */
 async function fetchHolidays(jy, jm) {
     const cacheKey = `${jy}-${jm}`;
     if (holidayCache[cacheKey]) return holidayCache[cacheKey];
 
-    // نشان دادن نوار بارگذاری
     const loadingBar = document.getElementById('holiday-loading');
     if (loadingBar) loadingBar.style.display = 'block';
 
@@ -897,7 +699,6 @@ async function fetchHolidays(jy, jm) {
         holidayCache[cacheKey] = data;
         return data;
     } catch(e) {
-        // اگر API در دسترس نبود، تقویم بدون تعطیلات نمایش داده می‌شود
         console.warn('holiday API unavailable:', e.message);
         return {};
     } finally {
@@ -909,15 +710,10 @@ async function fetchHolidays(jy, jm) {
    ۴. Calendar Rendering
    ═══════════════════════════════════════════════════════ */
 
-/**
- * تغییر ۱۱: renderCalendar حالا async است و قبل از رندر، تعطیلات ماه را می‌گیرد.
- * سپس برای هر روز تعطیل، کلاس holiday-day و data-holiday (نام تعطیل) تنظیم می‌شود.
- */
 async function renderCalendar() {
     document.getElementById('cal-month-name').textContent = JALALI_MONTHS[calMonth-1];
     document.getElementById('cal-year').textContent = toPers(calYear);
 
-    // دریافت تعطیلات ماه جاری (از کش یا API)
     currentMonthHolidays = await fetchHolidays(calYear, calMonth);
 
     const grid = document.getElementById('calendar-grid');
@@ -942,12 +738,9 @@ async function renderCalendar() {
         if (isToday)    btn.classList.add('today-day');
         if (isSelected) btn.classList.add('selected-day');
 
-        // تغییر ۱۱: بررسی آیا این روز تعطیل رسمی است
-        // currentMonthHolidays کلید عددی روز دارد (مثلاً "1" یا 1)
         const holidayInfo = currentMonthHolidays[d] || currentMonthHolidays[String(d)];
         if (holidayInfo && holidayInfo.is_holiday) {
             btn.classList.add('holiday-day');
-            // اولین رویداد را به عنوان tooltip تعیین می‌کنیم
             const eventName = (holidayInfo.events && holidayInfo.events.length > 0)
                 ? holidayInfo.events[0]
                 : 'تعطیل رسمی';
@@ -955,7 +748,6 @@ async function renderCalendar() {
             btn.setAttribute('title', eventName);
         }
 
-        // ددلاین‌های این روز
         const [gy, gm, gd] = jToG(calYear, calMonth, d);
         const dateStr = `${gy}-${String(gm).padStart(2,'0')}-${String(gd).padStart(2,'0')}`;
         const dayDeadlines = allDeadlines.filter(dl => dl.due_date === dateStr);
@@ -983,15 +775,11 @@ async function renderCalendar() {
     }
 }
 
-/**
- * تغییر ۱۱: changeMonth حالا renderCalendar را await می‌کند
- * تا تعطیلات ماه جدید هم قبل از رندر بارگذاری شوند.
- */
 function changeMonth(dir) {
     calMonth += dir;
     if (calMonth > 12) { calMonth=1; calYear++; }
     if (calMonth < 1)  { calMonth=12; calYear--; }
-    renderCalendar(); // async - fire and forget کافی است
+    renderCalendar();
 }
 
 function selectDay(jy, jm, jd) {
@@ -1004,10 +792,6 @@ function selectDay(jy, jm, jd) {
    ۵. Day Detail Panel
    ═══════════════════════════════════════════════════════ */
 
-/**
- * تغییر ۱۱: در renderDayDetail، اگر روز انتخاب‌شده تعطیل رسمی باشد،
- * نام تعطیل زیر تاریخ نشان داده می‌شود.
- */
 function renderDayDetail() {
     if (!selectedDay) return;
     const {jy, jm, jd} = selectedDay;
@@ -1016,7 +800,6 @@ function renderDayDetail() {
     document.getElementById('day-month-name').textContent = JALALI_MONTHS[jm-1];
     document.getElementById('day-year-label').textContent = toPers(jy);
 
-    // نمایش نام تعطیل رسمی (اگر ماه همان ماه نمایش‌یافته باشد)
     const holidayLabel = document.getElementById('day-holiday-name');
     if (jy === calYear && jm === calMonth) {
         const hInfo = currentMonthHolidays[jd] || currentMonthHolidays[String(jd)];
@@ -1038,7 +821,7 @@ function renderDayDetail() {
     if (dayDeadlines.length === 0) {
         list.innerHTML = `
             <div class="select-day-hint">
-                <i class="material-icons">event_available</i>
+                <span class="material-icons-round">event_available</span>
                 <p>ددلاینی برای این روز وجود ندارد</p>
             </div>`;
         return;
@@ -1054,10 +837,10 @@ const TYPE_LABELS = { project:'پروژه', exam:'امتحان', assignment:'ت�
 const TYPE_ICONS  = { project:'engineering', exam:'quiz', assignment:'assignment', other:'more_horiz' };
 
 function renderDeadlineItem(dl) {
-    const nearStyle  = (dl.days_left >= 0 && dl.days_left <= 7) ? 'background:rgba(183,28,28,.12);color:var(--error)' : 'background:rgba(0,131,143,.1);color:var(--primary-color)';
-    const daysLabel  = dl.is_done ? '<span class="dl-item-days" style="background:rgba(46,125,50,.1);color:var(--success)">✓ انجام شد</span>'
-                     : dl.days_left < 0 ? '<span class="dl-item-days" style="background:rgba(183,28,28,.12);color:var(--error)">منقضی شده</span>'
-                     : dl.days_left === 0 ? '<span class="dl-item-days" style="background:rgba(183,28,28,.2);color:var(--error)">امروز!</span>'
+    const nearStyle  = (dl.days_left >= 0 && dl.days_left <= 7) ? 'background:rgba(255,92,114,.15);color:var(--error)' : 'background:rgba(38,198,218,.15);color:var(--brand-light)';
+    const daysLabel  = dl.is_done ? '<span class="dl-item-days" style="background:rgba(46,204,113,.15);color:var(--success)">✓ انجام شد</span>'
+                     : dl.days_left < 0 ? '<span class="dl-item-days" style="background:rgba(255,92,114,.15);color:var(--error)">منقضی شده</span>'
+                     : dl.days_left === 0 ? '<span class="dl-item-days" style="background:rgba(255,92,114,.25);color:var(--error)">امروز!</span>'
                      : `<span class="dl-item-days" style="${nearStyle}">${toPers(dl.days_left)} روز مانده</span>`;
 
     return `
@@ -1067,7 +850,7 @@ function renderDeadlineItem(dl) {
             <div class="dl-item-title">${escHtml(dl.title)}</div>
             <div class="dl-item-meta">
                 <span class="countdown-type-badge" style="background:${dl.color}22;color:${dl.color}">
-                    <i class="material-icons" style="font-size:.75rem;vertical-align:middle;">${TYPE_ICONS[dl.deadline_type]||'more_horiz'}</i>
+                    <span class="material-icons-round" style="font-size:.75rem;vertical-align:middle;">${TYPE_ICONS[dl.deadline_type]||'more_horiz'}</span>
                     ${TYPE_LABELS[dl.deadline_type]||'سایر'}
                 </span>
                 <span class="dl-item-date">${dl.due_date_j}</span>
@@ -1077,16 +860,16 @@ function renderDeadlineItem(dl) {
         <div class="dl-item-actions">
             <button class="dl-action-btn done-btn ${dl.is_done?'is-done':''}"
                     onclick="toggleDone(${dl.id})" title="${dl.is_done?'علامت نشده':'علامت‌گذاری'}">
-                <i class="material-icons">${dl.is_done?'check_circle':'radio_button_unchecked'}</i>
+                <span class="material-icons-round">${dl.is_done?'check_circle':'radio_button_unchecked'}</span>
             </button>
             <button class="dl-action-btn" onclick="openShareModalFor(${dl.id})" title="اشتراک‌گذاری">
-                <i class="material-icons">share</i>
+                <span class="material-icons-round">share</span>
             </button>
             <button class="dl-action-btn" onclick="openEditModal(${dl.id})" title="ویرایش">
-                <i class="material-icons">edit</i>
+                <span class="material-icons-round">edit</span>
             </button>
             <button class="dl-action-btn delete-btn" onclick="deleteDeadline(${dl.id})" title="حذف">
-                <i class="material-icons">delete_outline</i>
+                <span class="material-icons-round">delete_outline</span>
             </button>
         </div>
     </div>`;
@@ -1106,7 +889,7 @@ function renderAllDeadlines() {
     if (filterType !== 'all') data = data.filter(dl => dl.deadline_type === filterType);
     data.sort((a,b) => a.due_date.localeCompare(b.due_date));
     if (data.length === 0) {
-        list.innerHTML = `<div class="empty-dl-state"><i class="material-icons">event_busy</i><span>ددلاینی یافت نشد</span></div>`;
+        list.innerHTML = `<div class="empty-dl-state"><span class="material-icons-round">event_busy</span><span>ددلاینی یافت نشد</span></div>`;
         return;
     }
     list.innerHTML = data.map(dl => renderDeadlineItem(dl)).join('');
@@ -1120,7 +903,7 @@ function filterDeadlines(type, btn) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ۸. Countdown Rings (ددلاین‌های نزدیک)
+   ۸. Countdown Rings
    ═══════════════════════════════════════════════════════ */
 
 function renderUpcoming() {
@@ -1134,7 +917,7 @@ function renderUpcoming() {
     if (near.length === 0) {
         list.innerHTML = `
             <div class="empty-upcoming">
-                <i class="material-icons">check_circle_outline</i>
+                <span class="material-icons-round">check_circle_outline</span>
                 <span>هیچ ددلاین نزدیکی ندارید</span>
             </div>`;
         return;
@@ -1145,7 +928,7 @@ function renderUpcoming() {
         const circ = 2 * Math.PI * r;
         const fraction = Math.max(dl.days_left, 0) / 7;
         const dashoffset = circ * (1 - fraction);
-        const ringColor = dl.days_left <= 2 ? '#E53935' : dl.days_left <= 4 ? '#FB8C00' : '#43A047';
+        const ringColor = dl.days_left <= 2 ? '#FF5C72' : dl.days_left <= 4 ? '#FFB547' : '#2ECC71';
 
         return `
         <div class="countdown-item">
@@ -1205,7 +988,7 @@ async function saveDeadline() {
 
     const btn = document.getElementById('save-deadline-btn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="material-icons spin-icon">sync</i> در حال ذخیره...';
+    btn.innerHTML = '<span class="material-icons-round spin-icon">sync</span> در حال ذخیره...';
 
     try {
         const url    = editingId ? `/api/deadlines/${editingId}` : '/api/deadlines';
@@ -1222,7 +1005,7 @@ async function saveDeadline() {
         showToast('خطا: ' + e.message, 'error');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="material-icons">save</i> ذخیره';
+        btn.innerHTML = '<span class="material-icons-round">save</span> ذخیره';
     }
 }
 
@@ -1259,7 +1042,7 @@ async function toggleDone(id) {
 
 function openAddModal(preSelectedDate) {
     editingId = null;
-    document.getElementById('modal-title-label').innerHTML = '<i class="material-icons">add_task</i> ددلاین جدید';
+    document.getElementById('modal-title-label').innerHTML = '<span class="material-icons-round">add_task</span> ددلاین جدید';
     document.getElementById('dl-title').value = '';
     document.getElementById('dl-desc').value = '';
     document.getElementById('dl-date-hidden').value = '';
@@ -1277,7 +1060,7 @@ function openEditModal(id) {
     const dl = allDeadlines.find(d => d.id === id);
     if (!dl) return;
     editingId = id;
-    document.getElementById('modal-title-label').innerHTML = '<i class="material-icons">edit</i> ویرایش ددلاین';
+    document.getElementById('modal-title-label').innerHTML = '<span class="material-icons-round">edit</span> ویرایش ددلاین';
     document.getElementById('dl-title').value = dl.title;
     document.getElementById('dl-desc').value = dl.description || '';
     const [gy, gm, gd] = dl.due_date.split('-').map(Number);
@@ -1417,10 +1200,10 @@ function showToast(msg, type='success') {
         : 'linear-gradient(135deg,var(--error),#b71c1c)';
     t.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
         background:${bg};color:white;padding:.8rem 1.75rem;border-radius:24px;
-        font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);
+        font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.4);
         display:flex;align-items:center;gap:.5rem;animation:fadeUp .25s ease;font-family:inherit;
         white-space:nowrap;`;
-    t.innerHTML = `<i class="material-icons" style="font-size:1.1rem;">${type==='success'?'check_circle':'error'}</i>${msg}`;
+    t.innerHTML = `<span class="material-icons-round" style="font-size:1.1rem;">${type==='success'?'check_circle':'error'}</span>${msg}`;
     document.body.appendChild(t);
     setTimeout(() => { t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 3500);
 }
@@ -1435,7 +1218,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     selectedDay = { jy: TODAY_JY, jm: TODAY_JM, jd: TODAY_JD };
 
-    // loadDeadlines خودش renderCalendar را صدا می‌زند (که async است)
     loadDeadlines();
 
     document.addEventListener('keydown', e => {
