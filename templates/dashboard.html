@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}داشبورد | یونی نت{% endblock %}
+{% block title %}داشبورد | یونی‌نت{% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
@@ -10,7 +10,7 @@
             <div class="datetime-inner">
                 <div class="datetime-top">
                     <div class="datetime-icon-area">
-                        <i class="material-icons datetime-main-icon">today</i>
+                        <span class="material-icons-round datetime-main-icon">today</span>
                     </div>
                     <div class="datetime-details">
                         <div class="datetime-weekday" id="dt-weekday">{{ weekday_name }}</div>
@@ -23,14 +23,14 @@
                 </div>
                 <div class="datetime-divider"></div>
                 <div class="datetime-clock-row">
-                    <i class="material-icons" style="font-size:1.1rem; opacity:.7;">schedule</i>
+                    <span class="material-icons-round" style="font-size:1.1rem; opacity:.7;">schedule</span>
                     <span class="datetime-clock" id="live-clock">--:--:--</span>
                 </div>
             </div>
         </div>
         <div class="notifications-widget">
             <div class="widget-header">
-                <i class="material-icons">notifications_active</i>
+                <span class="material-icons-round">notifications_active</span>
                 <span>اطلاعیه‌ها</span>
                 {% if notifications %}
                     <span class="notif-count-badge">{{ notifications|length }}</span>
@@ -41,7 +41,7 @@
                     {% for notif in notifications %}
                         <li class="notif-item {% if not notif.is_read %}unread{% endif %}"
                             onclick="markRead({{ notif.id }}, this)">
-                            <i class="material-icons notif-icon">info_outline</i>
+                            <span class="material-icons-round notif-icon">info_outline</span>
                             <div class="notif-body">
                                 <span class="notif-text">{{ notif.message }}</span>
                                 <small class="notif-time">{{ notif.created_at.strftime('%H:%M') }}</small>
@@ -51,7 +51,7 @@
                 </ul>
             {% else %}
                 <div class="empty-notif">
-                    <i class="material-icons">check_circle_outline</i>
+                    <span class="material-icons-round">check_circle_outline</span>
                     <span>اطلاعیه جدیدی ندارید</span>
                 </div>
             {% endif %}
@@ -60,7 +60,7 @@
 
     {% if cancelled_classes %}
     <div class="cancelled-alert-banner">
-        <div class="alert-icon"><i class="material-icons">warning_amber</i></div>
+        <div class="alert-icon"><span class="material-icons-round">warning_amber</span></div>
         <div class="alert-content">
             <strong>کلاس‌های لغو شده امروز:</strong>
             {% for c in cancelled_classes %}
@@ -82,20 +82,16 @@
 
     <div class="tabs-bar">
         <button class="dash-tab active" id="tab-btn-schedule" onclick="openTab('personal-schedule', this)">
-            <i class="material-icons">event_note</i>
+            <span class="material-icons-round">event_note</span>
             <span>برنامه هفتگی من</span>
         </button>
         <button class="dash-tab" id="tab-btn-reserve" onclick="openTab('reserve-room', this)">
-            <i class="material-icons">meeting_room</i>
+            <span class="material-icons-round">meeting_room</span>
             <span>رزرو کلاس</span>
         </button>
         <button class="dash-tab" id="tab-btn-cancelled" onclick="openTab('cancelled-classes', this)">
-            <i class="material-icons">event_busy</i>
+            <span class="material-icons-round">event_busy</span>
             <span>کلاس‌های لغو شده</span>
-            {#
-                مشکل ۱ رفع شد: badge حالا فقط تعداد دیده‌نشده‌ها رو نشون میده (unviewed_cancelled_count)
-                نه کل تعداد. وقتی کاربر تب رو باز کنه badge خودکار حذف میشه.
-            #}
             {% if unviewed_cancelled_count and unviewed_cancelled_count > 0 %}
                 <span class="tab-badge" id="cancelled-badge">{{ unviewed_cancelled_count }}</span>
             {% else %}
@@ -108,26 +104,26 @@
         <div class="section-card">
             <div class="section-card-header">
                 <div class="section-card-title">
-                    <i class="material-icons">event_note</i>
+                    <span class="material-icons-round">event_note</span>
                     <h2>برنامه کلاسی شخصی</h2>
                 </div>
                 <div class="section-card-actions">
                     <button class="btn btn-outline" onclick="openPasteModal()" title="وارد کردن برنامه از اکسل">
-                        <i class="material-icons">table_view</i>
+                        <span class="material-icons-round">table_view</span>
                         <span>وارد کردن از اکسل</span>
                     </button>
                     <button class="btn btn-outline" onclick="copyScheduleAsText()" title="کپی برنامه هفتگی">
-                        <i class="material-icons">content_copy</i>
+                        <span class="material-icons-round">content_copy</span>
                         <span>کپی برنامه</span>
                     </button>
                     <button class="btn btn-outline" onclick="printSchedule()" title="چاپ">
-                        <i class="material-icons">print</i>
+                        <span class="material-icons-round">print</span>
                         <span>چاپ</span>
                     </button>
                 </div>
             </div>
             <p class="section-hint">
-                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">touch_app</i>
+                <span class="material-icons-round" style="font-size:1rem; vertical-align:middle;">touch_app</span>
                 روی هر خانه کلیک کنید تا کلاس جدید اضافه یا ویرایش کنید.
             </p>
             <div class="schedule-wrapper">
@@ -161,16 +157,16 @@
         <div class="section-card">
             <div class="section-card-header">
                 <div class="section-card-title">
-                    <i class="material-icons">meeting_room</i>
+                    <span class="material-icons-round">meeting_room</span>
                     <h2>وضعیت کلاس‌های خالی</h2>
                 </div>
                 <button class="btn btn-outline" onclick="loadAvailableSlots()">
-                    <i class="material-icons">refresh</i>
+                    <span class="material-icons-round">refresh</span>
                     <span>بروزرسانی</span>
                 </button>
             </div>
             <p class="section-hint">
-                <i class="material-icons" style="font-size:1rem; vertical-align:middle;">info_outline</i>
+                <span class="material-icons-round" style="font-size:1rem; vertical-align:middle;">info_outline</span>
                 کلاس‌های رنگی قابل رزرو هستند. روی هر کلاس کلیک کنید تا درخواست رزرو ثبت کنید.
             </p>
             <div class="schedule-wrapper">
@@ -215,7 +211,7 @@
         <div class="section-card">
             <div class="section-card-header">
                 <div class="section-card-title">
-                    <i class="material-icons">event_busy</i>
+                    <span class="material-icons-round">event_busy</span>
                     <h2>کلاس‌های لغو شده</h2>
                 </div>
             </div>
@@ -226,11 +222,6 @@
                         <div class="cancelled-card" data-cancel-id="{{ c.id }}">
                             <div class="cancelled-card-header">
                                 <div class="cancelled-course-info">
-                                    {#
-                                        منطق نمایش اطلاعات لغو:
-                                        - اگر درس + استاد + ساعت باشد: فقط آن کلاس خاص لغو شده
-                                        - اگر فقط استاد + تاریخ باشد: تمام کلاس‌های آن استاد در آن روز
-                                    #}
                                     {% if c.course_name %}
                                         <span class="cancelled-course-name">{{ c.course_name }}</span>
                                     {% else %}
@@ -240,26 +231,25 @@
                                     {% endif %}
                                     {% if c.professor_name %}
                                         <span class="cancelled-professor">
-                                            <i class="material-icons" style="font-size:.9rem;">person</i>
+                                            <span class="material-icons-round" style="font-size:.9rem;">person</span>
                                             استاد {{ c.professor_name }}
                                         </span>
                                     {% endif %}
                                     {% if c.time_slot %}
                                         <span class="cancelled-timeslot">
-                                            <i class="material-icons" style="font-size:.85rem;">access_time</i>
+                                            <span class="material-icons-round" style="font-size:.85rem;">access_time</span>
                                             ساعت {{ c.time_slot }}
                                         </span>
                                     {% endif %}
                                 </div>
                                 <div class="cancelled-date-badge">
                                     {% if c.cancel_date %}
-                                        <i class="material-icons">event</i>
-                                        {# تبدیل تاریخ میلادی به شمسی با JS - مقدار data-gregorian برای تبدیل #}
+                                        <span class="material-icons-round">event</span>
                                         <span class="jalali-date" data-gregorian="{{ c.cancel_date.strftime('%Y-%m-%d') }}">
                                             {{ c.cancel_date.strftime('%Y/%m/%d') }}
                                         </span>
                                     {% elif c.start_date %}
-                                        <i class="material-icons">date_range</i>
+                                        <span class="material-icons-round">date_range</span>
                                         <span class="jalali-date" data-gregorian="{{ c.start_date.strftime('%Y-%m-%d') }}">
                                             {{ c.start_date.strftime('%Y/%m/%d') }}
                                         </span>
@@ -272,20 +262,20 @@
                                             ?
                                         {% endif %}
                                     {% else %}
-                                        <i class="material-icons">all_inclusive</i>
+                                        <span class="material-icons-round">all_inclusive</span>
                                         نامشخص
                                     {% endif %}
                                 </div>
                             </div>
                             {% if not c.course_name and c.professor_name %}
                                 <div class="cancelled-all-notice">
-                                    <i class="material-icons" style="font-size:.95rem; color:var(--error);">info</i>
+                                    <span class="material-icons-round" style="font-size:.95rem; color:var(--error);">info</span>
                                     تمامی کلاس‌های این استاد در روز مذکور برگزار نخواهد شد.
                                 </div>
                             {% endif %}
                             {% if c.description %}
                                 <div class="cancelled-desc">
-                                    <i class="material-icons" style="font-size:.9rem;">notes</i>
+                                    <span class="material-icons-round" style="font-size:.9rem;">notes</span>
                                     {{ c.description }}
                                 </div>
                             {% endif %}
@@ -294,7 +284,7 @@
                 </div>
             {% else %}
                 <div class="empty-state-full">
-                    <i class="material-icons">event_available</i>
+                    <span class="material-icons-round">event_available</span>
                     <h3>هیچ کلاسی لغو نشده است</h3>
                     <p>در صورت لغو هر کلاسی توسط مدیریت، در اینجا نمایش داده می‌شود.</p>
                 </div>
@@ -310,7 +300,7 @@
         <div class="modal-card-header">
             <h3 id="modal-title">افزودن کلاس</h3>
             <button class="modal-close-btn" onclick="closeModal('edit-modal')">
-                <i class="material-icons">close</i>
+                <span class="material-icons-round">close</span>
             </button>
         </div>
         <form id="schedule-form" onsubmit="handleScheduleSubmit(event)">
@@ -318,7 +308,7 @@
             <input type="hidden" id="time-input">
             <div class="form-group">
                 <label class="form-label">
-                    <i class="material-icons form-label-icon">menu_book</i>
+                    <span class="material-icons-round form-label-icon">menu_book</span>
                     نام درس
                 </label>
                 <input type="text" id="course-name" class="form-control"
@@ -326,7 +316,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    <i class="material-icons form-label-icon">person</i>
+                    <span class="material-icons-round form-label-icon">person</span>
                     نام استاد
                 </label>
                 <input type="text" id="professor-name" class="form-control"
@@ -334,7 +324,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    <i class="material-icons form-label-icon">location_on</i>
+                    <span class="material-icons-round form-label-icon">location_on</span>
                     محل برگزاری
                 </label>
                 <input type="text" id="class-location" class="form-control"
@@ -342,7 +332,7 @@
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    <i class="material-icons form-label-icon">repeat</i>
+                    <span class="material-icons-round form-label-icon">repeat</span>
                     نوع هفته
                 </label>
                 <div class="week-type-selector">
@@ -362,10 +352,10 @@
             </div>
             <div class="modal-actions">
                 <button type="submit" class="btn btn-custom">
-                    <i class="material-icons">save</i> ذخیره
+                    <span class="material-icons-round">save</span> ذخیره
                 </button>
                 <button type="button" class="btn btn-danger-outline" onclick="deleteClass()">
-                    <i class="material-icons">delete_outline</i> حذف
+                    <span class="material-icons-round">delete_outline</span> حذف
                 </button>
                 <button type="button" class="btn btn-outline" onclick="closeModal('edit-modal')">
                     انصراف
@@ -381,16 +371,16 @@
         <div class="modal-card-header">
             <h3>درخواست رزرو کلاس</h3>
             <button class="modal-close-btn" onclick="closeModal('reserve-modal')">
-                <i class="material-icons">close</i>
+                <span class="material-icons-round">close</span>
             </button>
         </div>
         <div class="reserve-slot-info-card" id="reserve-slot-info-card">
             <div class="slot-info-row">
-                <i class="material-icons">meeting_room</i>
+                <span class="material-icons-round">meeting_room</span>
                 <span id="reserve-room-display">—</span>
             </div>
             <div class="slot-info-row">
-                <i class="material-icons">access_time</i>
+                <span class="material-icons-round">access_time</span>
                 <span id="reserve-time-display">—</span>
             </div>
         </div>
@@ -398,7 +388,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="form-group">
                 <label class="form-label">
-                    <i class="material-icons form-label-icon">description</i>
+                    <span class="material-icons-round form-label-icon">description</span>
                     دلیل رزرو
                 </label>
                 <textarea id="reserve-reason" name="reason" class="form-control"
@@ -407,7 +397,7 @@
             </div>
             <div class="modal-actions">
                 <button type="submit" class="btn btn-custom">
-                    <i class="material-icons">send</i> ارسال درخواست
+                    <span class="material-icons-round">send</span> ارسال درخواست
                 </button>
                 <button type="button" class="btn btn-outline" onclick="closeModal('reserve-modal')">
                     انصراف
@@ -423,13 +413,13 @@
         <div class="modal-card-header">
             <h3>وارد کردن برنامه از اکسل</h3>
             <button class="modal-close-btn" onclick="closeModal('paste-modal')">
-                <i class="material-icons">close</i>
+                <span class="material-icons-round">close</span>
             </button>
         </div>
         <div class="excel-guide">
-            <p class="guide-title"><i class="material-icons">help_outline</i> راهنما:</p>
+            <p class="guide-title"><span class="material-icons-round">help_outline</span> راهنما:</p>
             <p>جدول برنامه هفتگی خود را در Excel انتخاب و کپی کنید (Ctrl+C)، سپس در کادر زیر پیست کنید (Ctrl+V).</p>
-            <p>سیستم به صورت خودکار نام درس، استاد، محل و نوع هفته (زوج/فرد) را تشخیص می‌دهد.</p>
+            <p>سیستم به‌صورت خودکار نام درس، استاد، محل و نوع هفته (زوج/فرد) را تشخیص می‌دهد.</p>
             <p class="guide-hint">فرمت پیشنهادی هر خانه: <code>نام درس | استاد | محل | زوج/فرد</code></p>
         </div>
         <div class="form-group">
@@ -441,12 +431,12 @@
                       oninput="parseExcelPaste()"></textarea>
         </div>
         <div id="paste-preview" class="paste-preview" style="display:none;">
-            <h4><i class="material-icons">preview</i> پیش‌نمایش ({{ "{}" }} ردیف تشخیص داده شد)</h4>
+            <h4><span class="material-icons-round">preview</span> پیش‌نمایش ({{ "{}" }} ردیف تشخیص داده شد)</h4>
             <div id="paste-preview-table"></div>
         </div>
         <div class="modal-actions">
             <button class="btn btn-custom" onclick="applyPastedSchedule()" id="apply-paste-btn" disabled>
-                <i class="material-icons">check</i> اعمال برنامه
+                <span class="material-icons-round">check</span> اعمال برنامه
             </button>
             <button class="btn btn-outline" onclick="closeModal('paste-modal')">انصراف</button>
         </div>
@@ -455,480 +445,262 @@
 
 <style>
 /* =====================================================
-   استایل‌های dashboard — بدون تغییر در UI اصلی
+   Light mode variable overrides — برای حفظ استقلال فایل
+   (در صورت یکپارچه‌سازی نهایی، بهتر است این بلاک به base.html
+   منتقل شود تا در همه صفحات یکبار تعریف شود)
    ===================================================== */
-.dashboard-container {
-    padding: 1.5rem 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
+body.light-mode{
+    --bg-0:#F3F5F9; --bg-1:#FFFFFF; --bg-2:#F8FAFC;
+    --glass-bg: rgba(15,23,42,0.035);
+    --glass-bg-strong: rgba(15,23,42,0.06);
+    --glass-border: rgba(15,23,42,0.08);
+    --glass-border-strong: rgba(15,23,42,0.16);
+    --text-primary:#0F172A; --text-secondary:#4B5566; --text-muted:#8A93A3;
+    --shadow-glass: 0 8px 28px rgba(15,23,42,0.08);
 }
-.dashboard-top-row {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 1.25rem;
-    margin-bottom: 1.5rem;
-}
-@media (max-width: 768px) {
-    .dashboard-top-row { grid-template-columns: 1fr; }
-}
-.datetime-widget {
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-    border-radius: 16px;
-    padding: 1.5rem;
-    color: white;
-    box-shadow: 0 8px 24px rgba(0,131,143,0.3);
-}
-.datetime-inner { display: flex; flex-direction: column; gap: .75rem; }
-.datetime-top { display: flex; align-items: center; gap: 1rem; }
-.datetime-icon-area {
-    width: 54px; height: 54px;
-    background: rgba(255,255,255,.2);
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-}
-.datetime-main-icon { font-size: 2rem; }
-.datetime-weekday { font-size: 1.6rem; font-weight: 700; line-height: 1; }
-.datetime-date { font-size: .9rem; opacity: .85; margin-top: .25rem; }
-.datetime-divider {
-    height: 1px;
-    background: rgba(255,255,255,.25);
-    margin: .25rem 0;
-}
-.datetime-clock-row {
-    display: flex; align-items: center; gap: .5rem;
-    opacity: .9;
-}
-.datetime-clock {
-    font-size: 1.8rem;
-    font-weight: 300;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 2px;
-}
-.notifications-widget {
-    background: var(--surface);
-    border-radius: 16px;
-    padding: 1.25rem;
-    box-shadow: var(--shadow-sm);
-    display: flex; flex-direction: column; gap: .75rem;
-    border: 1px solid var(--border-color);
-}
-.widget-header {
-    display: flex; align-items: center; gap: .5rem;
-    font-weight: 600; font-size: 1rem; color: var(--primary-color);
-}
-.notif-count-badge {
-    background: var(--primary-color); color: white;
-    border-radius: 20px; padding: .1rem .55rem;
-    font-size: .75rem; font-weight: 700;
-}
-.notif-list { list-style: none; overflow-y: auto; max-height: 130px; }
-.notif-item {
-    display: flex; align-items: flex-start; gap: .5rem;
-    padding: .5rem .6rem; border-radius: 8px;
-    cursor: pointer; transition: background .2s;
-    margin-bottom: .3rem;
-}
-.notif-item:hover { background: var(--background); }
-.notif-item.unread {
-    background: rgba(0,131,143,.08);
-    border-right: 3px solid var(--primary-color);
-}
-.notif-icon { font-size: 1.1rem; color: var(--primary-color); flex-shrink: 0; margin-top: 2px; }
-.notif-body { display: flex; flex-direction: column; gap: .1rem; }
-.notif-text { font-size: .88rem; }
-.notif-time { font-size: .75rem; color: var(--text-secondary); }
-.empty-notif {
-    display: flex; align-items: center; gap: .5rem;
-    color: var(--text-secondary); font-size: .9rem;
-    padding: .5rem;
-}
-.empty-notif i { color: var(--success); }
-.cancelled-alert-banner {
-    display: flex; align-items: flex-start; gap: 1rem;
-    background: rgba(183,28,28,.07);
-    border: 1px solid rgba(183,28,28,.3);
-    border-right: 4px solid var(--error);
-    border-radius: 10px; padding: 1rem 1.25rem;
-    margin-bottom: 1.5rem;
-}
-.alert-icon { color: var(--error); flex-shrink: 0; margin-top: 2px; }
-.alert-content { font-size: .9rem; display: flex; flex-direction: column; gap: .3rem; }
-.alert-item { color: var(--error); }
-.tabs-bar {
-    display: flex; gap: .5rem;
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 14px; padding: .5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow-sm);
-}
-.dash-tab {
-    flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem;
-    padding: .75rem 1rem;
-    border: none; background: transparent;
-    border-radius: 10px; cursor: pointer;
-    font-family: inherit; font-size: .9rem; font-weight: 500;
-    color: var(--text-secondary); transition: all .25s;
-    position: relative;
-}
-.dash-tab:hover { background: var(--background); color: var(--primary-color); }
-.dash-tab.active {
-    background: var(--primary-color);
-    color: white;
-    box-shadow: 0 4px 12px rgba(0,131,143,.3);
-}
-/* badge انیمیشن برای نمایش و حذف تعداد دیده‌نشده */
-.tab-badge {
-    background: rgba(255,255,255,.3); color: white;
-    border-radius: 20px; padding: .05rem .45rem;
-    font-size: .72rem; font-weight: 700;
-    transition: opacity .3s, transform .3s;
-}
-.tab-badge.hiding {
-    opacity: 0;
-    transform: scale(0.5);
-}
-.dash-tab:not(.active) .tab-badge {
-    background: var(--primary-color); color: white;
-}
-@media (max-width: 600px) {
-    .dash-tab span { display: none; }
-    .dash-tab { padding: .75rem; }
-}
-.tab-content { display: none; animation: fadeIn .3s ease; }
-.tab-content.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-.section-card {
-    background: var(--surface);
-    border-radius: 16px; padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
-}
-.section-card-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1rem; flex-wrap: wrap; gap: .75rem;
-}
-.section-card-title {
-    display: flex; align-items: center; gap: .5rem;
-    color: var(--primary-color);
-}
-.section-card-title h2 { font-size: 1.15rem; font-weight: 700; margin: 0; }
-.section-card-title i { font-size: 1.4rem; }
-.section-card-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
-.section-hint {
-    font-size: .85rem; color: var(--text-secondary);
-    background: var(--background); border-radius: 8px;
-    padding: .5rem .85rem; margin-bottom: 1.25rem;
-}
-.schedule-wrapper { overflow-x: auto; }
-.schedule-grid {
-    display: grid;
-    grid-template-columns: 70px repeat(5, 1fr);
-    gap: 1px;
-    background: var(--border-color);
-    border: 1px solid var(--border-color);
-    border-radius: 10px; overflow: hidden;
-    min-width: 560px;
-}
-.schedule-header {
-    background: var(--background);
-    padding: .75rem .5rem; text-align: center;
-    font-weight: 700; font-size: .85rem; color: var(--text-secondary);
-}
-.corner-cell { background: var(--background); }
-.schedule-time {
-    background: var(--background);
-    padding: .75rem .25rem; text-align: center;
-    font-size: .8rem; font-weight: 600; color: var(--text-secondary);
-    display: flex; align-items: center; justify-content: center;
-}
-.schedule-cell {
-    background: var(--surface);
-    min-height: 80px; padding: .4rem;
-    position: relative; vertical-align: top;
-}
-.clickable-cell { cursor: pointer; transition: background .18s; }
-.clickable-cell:hover { background: rgba(0,131,143,.05); }
-.clickable-cell:hover::after {
-    content: '+';
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.8rem; color: var(--primary-color);
-    opacity: .3; font-weight: 300;
-    pointer-events: none;
-}
-.clickable-cell.has-class:hover::after { display: none; }
-.cell-class-all {
-    background: rgba(0,131,143,.1);
-    border-right: 3px solid var(--primary-color);
-    border-radius: 6px; padding: .4rem .5rem;
-    height: 100%; min-height: 70px;
-    display: flex; flex-direction: column; justify-content: center;
-}
-.cell-class-split { display: flex; flex-direction: column; height: 100%; gap: 1px; }
-.cell-half {
-    flex: 1; border-radius: 5px; padding: .3rem .4rem;
-    display: flex; flex-direction: column; justify-content: center;
-    min-height: 34px;
-}
-.cell-half.bg-odd { background: rgba(33,150,243,.13); border-right: 3px solid #2196f3; }
-.cell-half.bg-even { background: rgba(76,175,80,.13); border-right: 3px solid #4caf50; }
-.cell-name { font-size: .82rem; font-weight: 700; color: var(--primary-color); margin-bottom: 2px; }
-.cell-info { font-size: .72rem; color: var(--text-secondary); line-height: 1.3; }
-.cell-week-tag {
-    font-size: .65rem; padding: .1rem .35rem;
-    border-radius: 20px; display: inline-block; margin-top: 2px;
-}
-.week-tag-odd { background: rgba(33,150,243,.15); color: #1565c0; }
-.week-tag-even { background: rgba(76,175,80,.15); color: #1b5e20; }
-.week-tag-all { background: rgba(0,131,143,.15); color: var(--primary-dark); }
-.reserve-cell { cursor: default; padding: .35rem; }
-.cell-loading { font-size: .75rem; color: var(--text-secondary); opacity: .5; }
-.room-pill {
-    display: inline-block;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white; padding: .2rem .55rem;
-    border-radius: 20px; font-size: .75rem;
-    margin: 2px; cursor: pointer;
-    transition: transform .15s, box-shadow .15s;
-    border: none; font-family: inherit;
-}
-.room-pill:hover {
-    transform: scale(1.07);
-    box-shadow: 0 3px 8px rgba(0,131,143,.35);
-}
-.cell-reserved-text {
-    font-size: .75rem; color: var(--error);
-    opacity: .7; text-align: center;
-    display: block; padding-top: .5rem;
-}
-.cell-empty-text {
-    font-size: .75rem; color: var(--text-secondary);
-    opacity: .4; text-align: center;
-    display: block; padding-top: .5rem;
-}
-.legend-row {
-    display: flex; gap: 1.5rem; margin-top: 1rem;
-    flex-wrap: wrap;
-}
-.legend-item { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-secondary); }
-.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
-.legend-dot.available { background: var(--primary-color); }
-.legend-dot.reserved { background: var(--error); }
-.legend-dot.empty-slot { background: var(--border-color); }
+/* =====================================================
+   Dashboard — 2026 Dark Glassmorphism
+   ===================================================== */
+.dashboard-container{ padding:1.75rem 1rem 3rem; max-width:1200px; margin:0 auto; position:relative; z-index:1; }
 
-/* ===================== Cancelled Cards ===================== */
-.cancelled-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1rem; margin-top: .5rem;
-}
-.cancelled-card {
-    border: 1px solid var(--border-color);
-    border-right: 4px solid var(--error);
-    border-radius: 10px; padding: 1rem;
-    background: rgba(183,28,28,.03);
-    transition: box-shadow .2s;
-}
-.cancelled-card:hover { box-shadow: var(--shadow-md); }
-.cancelled-card-header {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    gap: .75rem; margin-bottom: .5rem;
-}
-.cancelled-course-info { display: flex; flex-direction: column; gap: .25rem; }
-.cancelled-course-name { font-weight: 700; font-size: 1rem; }
-/* نمایش ویژه برای لغو تمام کلاس‌های استاد */
-.cancelled-course-name.cancelled-all-classes {
-    color: var(--error);
-    font-style: italic;
-}
-.cancelled-professor {
-    display: flex; align-items: center; gap: .25rem;
-    font-size: .85rem; color: var(--text-secondary);
-}
-/* نمایش ساعت درس لغو شده — اضافه شده برای نمایش time_slot */
-.cancelled-timeslot {
-    display: flex; align-items: center; gap: .25rem;
-    font-size: .8rem; color: var(--primary-color);
-    font-weight: 600;
-}
-.cancelled-date-badge {
-    display: flex; align-items: center; gap: .3rem;
-    font-size: .8rem; color: var(--error);
-    background: rgba(183,28,28,.08);
-    padding: .25rem .65rem; border-radius: 20px;
-    white-space: nowrap; flex-shrink: 0;
-    flex-wrap: wrap;
-}
-/* اطلاعیه لغو کل کلاس‌های استاد */
-.cancelled-all-notice {
-    display: flex; align-items: center; gap: .35rem;
-    font-size: .82rem; color: var(--error);
-    background: rgba(183,28,28,.06);
-    border-radius: 6px; padding: .4rem .65rem;
-    margin-bottom: .5rem;
-}
-.cancelled-desc {
-    display: flex; align-items: center; gap: .3rem;
-    font-size: .83rem; color: var(--text-secondary);
-    border-top: 1px dashed var(--border-color);
-    padding-top: .5rem; margin-top: .5rem;
-}
-.empty-state-full {
-    text-align: center; padding: 3rem 1rem;
-    color: var(--text-secondary);
-}
-.empty-state-full i { font-size: 3.5rem; color: var(--success); margin-bottom: .75rem; display: block; }
-.empty-state-full h3 { margin-bottom: .5rem; color: var(--text-primary); }
+.dashboard-top-row{ display:grid; grid-template-columns:300px 1fr; gap:1.25rem; margin-bottom:1.5rem; }
+@media (max-width:768px){ .dashboard-top-row{ grid-template-columns:1fr; } }
 
-/* ===================== Modals ===================== */
-.modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.4); backdrop-filter: blur(3px);
-    z-index: 2000;
-    align-items: center; justify-content: center;
-    padding: 1rem;
+.datetime-widget{
+    background:linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+    border-radius:var(--radius-lg);
+    padding:1.6rem;
+    color:#fff;
+    box-shadow:0 12px 32px rgba(0,131,143,0.4);
+    border:1px solid rgba(255,255,255,0.12);
+    position:relative;
+    overflow:hidden;
 }
-.modal-overlay.open { display: flex; animation: fadeIn .2s ease; }
-.modal-card {
-    background: var(--surface);
-    border-radius: 16px; padding: 1.5rem;
-    width: 100%; max-width: 440px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.2);
-    max-height: 90vh; overflow-y: auto;
+.datetime-widget::after{
+    content:''; position:absolute; width:140px; height:140px;
+    border-radius:50%; background:rgba(255,255,255,0.12);
+    top:-50px; left:-50px;
 }
-.modal-wide { max-width: 600px; }
-.modal-card-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1.25rem;
+.datetime-inner{ display:flex; flex-direction:column; gap:0.85rem; position:relative; z-index:1; }
+.datetime-top{ display:flex; align-items:center; gap:1rem; }
+.datetime-icon-area{
+    width:54px; height:54px; background:rgba(255,255,255,0.18);
+    border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
-.modal-card-header h3 { font-size: 1.15rem; color: var(--text-primary); }
-.modal-close-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-secondary); padding: .25rem;
-    border-radius: 50%; display: flex; align-items: center;
-    transition: background .2s;
-}
-.modal-close-btn:hover { background: var(--background); color: var(--text-primary); }
-.week-type-selector { display: flex; gap: .5rem; flex-wrap: wrap; }
-.week-type-option { cursor: pointer; }
-.week-type-option input[type="radio"] { display: none; }
-.week-type-label {
-    display: block; padding: .5rem 1rem;
-    border-radius: 8px; border: 2px solid var(--border-color);
-    font-size: .9rem; transition: all .2s; cursor: pointer;
-}
-.week-type-option input:checked + .week-type-label.all {
-    border-color: var(--primary-color);
-    background: rgba(0,131,143,.1);
-    color: var(--primary-color); font-weight: 700;
-}
-.week-type-option input:checked + .week-type-label.odd {
-    border-color: #2196f3;
-    background: rgba(33,150,243,.1);
-    color: #1565c0; font-weight: 700;
-}
-.week-type-option input:checked + .week-type-label.even {
-    border-color: #4caf50;
-    background: rgba(76,175,80,.1);
-    color: #1b5e20; font-weight: 700;
-}
-.reserve-slot-info-card {
-    background: rgba(0,131,143,.07);
-    border: 1px solid rgba(0,131,143,.2);
-    border-radius: 10px; padding: .85rem 1rem;
-    margin-bottom: 1.25rem;
-    display: flex; gap: 1rem; flex-wrap: wrap;
-}
-.slot-info-row {
-    display: flex; align-items: center; gap: .4rem;
-    font-size: .9rem; font-weight: 600;
-    color: var(--primary-color);
-}
-.slot-info-row i { font-size: 1.1rem; }
-.form-label { display: flex; align-items: center; gap: .3rem; }
-.form-label-icon { font-size: 1rem; color: var(--primary-color); }
-.modal-actions { display: flex; gap: .6rem; margin-top: 1.25rem; flex-wrap: wrap; }
-.btn-danger-outline {
-    background: transparent;
-    border: 1px solid var(--error);
-    color: var(--error);
-    display: inline-flex; align-items: center; gap: .3rem;
-    padding: .65rem 1.2rem; border-radius: 8px;
-    cursor: pointer; font-family: inherit; font-size: .9rem;
-    transition: background .2s;
-}
-.btn-danger-outline:hover { background: rgba(183,28,28,.08); }
-.excel-guide {
-    background: var(--background); border-radius: 10px;
-    padding: .85rem 1rem; margin-bottom: 1.1rem;
-    font-size: .88rem; color: var(--text-secondary);
-    display: flex; flex-direction: column; gap: .4rem;
-}
-.guide-title {
-    display: flex; align-items: center; gap: .3rem;
-    font-weight: 600; color: var(--text-primary);
-    font-size: .9rem;
-}
-.guide-hint { color: var(--primary-color); font-weight: 500; }
-.excel-guide code {
-    background: rgba(0,0,0,.06); padding: .1rem .35rem;
-    border-radius: 4px; font-size: .85em;
-}
-.excel-paste-area {
-    font-family: 'Courier New', monospace;
-    font-size: .85rem; resize: vertical;
-    direction: ltr; text-align: left;
-}
-.paste-preview {
-    background: var(--background); border-radius: 10px;
-    padding: 1rem; margin-bottom: 1rem;
-}
-.paste-preview h4 {
-    display: flex; align-items: center; gap: .4rem;
-    font-size: .95rem; margin-bottom: .75rem; color: var(--primary-color);
-}
-.preview-table {
-    width: 100%; font-size: .8rem; border-collapse: collapse; overflow-x: auto; display: block;
-}
-.preview-table th, .preview-table td {
-    padding: .35rem .6rem; border: 1px solid var(--border-color);
-    text-align: right;
-}
-.preview-table th { background: var(--primary-color); color: white; font-weight: 600; }
-.preview-table tr:nth-child(even) td { background: rgba(0,0,0,.02); }
+.datetime-main-icon{ font-size:1.9rem; }
+.datetime-weekday{ font-size:1.55rem; font-weight:800; line-height:1; }
+.datetime-date{ font-size:0.88rem; opacity:0.85; margin-top:0.25rem; }
+.datetime-divider{ height:1px; background:rgba(255,255,255,0.25); margin:0.25rem 0; }
+.datetime-clock-row{ display:flex; align-items:center; gap:0.5rem; opacity:0.9; }
+.datetime-clock{ font-size:1.7rem; font-weight:300; font-family:'Courier New', monospace; letter-spacing:2px; }
 
-/* ─── Dark Mode ─── */
-[data-theme="dark"] .notifications-widget { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .tabs-bar { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .dash-tab:not(.active) { color: var(--text-secondary); }
-[data-theme="dark"] .dash-tab:hover { background: #3a3b3c; }
-[data-theme="dark"] .section-card { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .section-hint { background: #1c1e21; }
-[data-theme="dark"] .schedule-grid { background: #3a3b3c; border-color: #3a3b3c; }
-[data-theme="dark"] .schedule-header,
-[data-theme="dark"] .schedule-time,
-[data-theme="dark"] .corner-cell { background: #242526; }
-[data-theme="dark"] .schedule-cell { background: #2d2f31; }
-[data-theme="dark"] .clickable-cell:hover { background: rgba(79,179,191,.08); }
-[data-theme="dark"] .cancelled-card { background: rgba(183,28,28,.04); border-color: #3a3b3c; }
-[data-theme="dark"] .cancelled-all-notice { background: rgba(183,28,28,.08); }
-[data-theme="dark"] .modal-card { background: #242526; border: 1px solid #3a3b3c; }
-[data-theme="dark"] .modal-overlay { background: rgba(0,0,0,.6); }
-[data-theme="dark"] .excel-guide { background: #1c1e21; }
-[data-theme="dark"] .excel-guide code { background: rgba(255,255,255,.1); }
-[data-theme="dark"] .paste-preview { background: #1c1e21; }
-[data-theme="dark"] .preview-table th { background: #00838f; }
-[data-theme="dark"] .preview-table td { border-color: #3a3b3c; }
-[data-theme="dark"] .preview-table tr:nth-child(even) td { background: rgba(255,255,255,.03); }
-[data-theme="dark"] .reserve-slot-info-card { background: rgba(79,179,191,.07); border-color: rgba(79,179,191,.2); }
-[data-theme="dark"] .week-type-label { border-color: #4a4b4c; background: #3a3b3c; color: var(--text-secondary); }
-[data-theme="dark"] .notif-item:hover { background: #3a3b3c; }
-[data-theme="dark"] .notif-item.unread { background: rgba(79,179,191,.1); }
-[data-theme="dark"] .cancelled-alert-banner { background: rgba(183,28,28,.06); }
+.notifications-widget{
+    background:var(--glass-bg); border:1px solid var(--glass-border);
+    border-radius:var(--radius-lg); padding:1.25rem;
+    backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+    box-shadow:var(--shadow-glass);
+    display:flex; flex-direction:column; gap:0.75rem;
+}
+.widget-header{ display:flex; align-items:center; gap:0.5rem; font-weight:700; font-size:0.98rem; color:var(--text-primary); }
+.widget-header .material-icons-round{ color:var(--brand-light); }
+.notif-count-badge{ background:var(--brand); color:#fff; border-radius:20px; padding:0.1rem 0.55rem; font-size:0.75rem; font-weight:700; }
+.notif-list{ list-style:none; overflow-y:auto; max-height:130px; }
+.notif-item{ display:flex; align-items:flex-start; gap:0.5rem; padding:0.5rem 0.6rem; border-radius:var(--radius-sm); cursor:pointer; transition:background 0.2s; margin-bottom:0.3rem; }
+.notif-item:hover{ background:var(--glass-bg-strong); }
+.notif-item.unread{ background:rgba(38,198,218,0.08); border-right:3px solid var(--brand-light); }
+.notif-icon{ font-size:1.1rem; color:var(--brand-light); flex-shrink:0; margin-top:2px; }
+.notif-body{ display:flex; flex-direction:column; gap:0.1rem; }
+.notif-text{ font-size:0.87rem; color:var(--text-primary); }
+.notif-time{ font-size:0.74rem; color:var(--text-muted); }
+.empty-notif{ display:flex; align-items:center; gap:0.5rem; color:var(--text-secondary); font-size:0.9rem; padding:0.5rem; }
+.empty-notif .material-icons-round{ color:var(--success); }
 
+.cancelled-alert-banner{
+    display:flex; align-items:flex-start; gap:1rem;
+    background:rgba(255,92,114,0.08); border:1px solid rgba(255,92,114,0.28);
+    border-right:4px solid var(--error);
+    border-radius:var(--radius-md); padding:1rem 1.25rem;
+    margin-bottom:1.5rem; backdrop-filter:blur(12px);
+}
+.alert-icon{ color:var(--error); flex-shrink:0; margin-top:2px; }
+.alert-content{ font-size:0.9rem; display:flex; flex-direction:column; gap:0.3rem; color:var(--text-primary); }
+.alert-item{ color:var(--error); }
+
+.tabs-bar{
+    display:flex; gap:0.5rem;
+    background:var(--glass-bg); border:1px solid var(--glass-border);
+    border-radius:var(--radius-md); padding:0.5rem;
+    margin-bottom:1.5rem; backdrop-filter:blur(16px);
+}
+.dash-tab{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:0.4rem;
+    padding:0.75rem 1rem; border:none; background:transparent;
+    border-radius:var(--radius-sm); cursor:pointer;
+    font-family:inherit; font-size:0.9rem; font-weight:500;
+    color:var(--text-secondary); transition:all 0.25s var(--ease);
+    position:relative;
+}
+.dash-tab:hover{ background:var(--glass-bg-strong); color:var(--text-primary); }
+.dash-tab.active{
+    background:linear-gradient(135deg, var(--brand), var(--brand-dark));
+    color:#fff; box-shadow:0 6px 18px rgba(0,131,143,0.4);
+}
+.tab-badge{ background:rgba(255,255,255,0.3); color:#fff; border-radius:20px; padding:0.05rem 0.45rem; font-size:0.72rem; font-weight:700; transition:opacity 0.3s, transform 0.3s; }
+.tab-badge.hiding{ opacity:0; transform:scale(0.5); }
+.dash-tab:not(.active) .tab-badge{ background:var(--brand); color:#fff; }
+@media (max-width:600px){ .dash-tab span:not(.material-icons-round){ display:none; } .dash-tab{ padding:0.75rem; } }
+
+.tab-content{ display:none; animation:dashFadeIn 0.3s ease; }
+.tab-content.active{ display:block; }
+@keyframes dashFadeIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
+
+.section-card{
+    background:var(--glass-bg); border:1px solid var(--glass-border);
+    border-radius:var(--radius-lg); padding:1.6rem;
+    backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+    box-shadow:var(--shadow-glass);
+}
+.section-card-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.75rem; }
+.section-card-title{ display:flex; align-items:center; gap:0.5rem; color:var(--text-primary); }
+.section-card-title .material-icons-round{ font-size:1.4rem; color:var(--brand-light); }
+.section-card-title h2{ font-size:1.15rem; font-weight:700; margin:0; }
+.section-card-actions{ display:flex; gap:0.5rem; flex-wrap:wrap; }
+.section-hint{
+    font-size:0.85rem; color:var(--text-secondary);
+    background:var(--glass-bg-strong); border-radius:var(--radius-sm);
+    padding:0.55rem 0.9rem; margin-bottom:1.25rem;
+}
+
+/* ---------- Buttons ---------- */
+.btn{ display:inline-flex; align-items:center; gap:0.4rem; padding:0.65rem 1.1rem; border-radius:var(--radius-pill); font-weight:600; font-size:0.86rem; border:1px solid transparent; cursor:pointer; font-family:inherit; transition:all 0.25s var(--ease); }
+.btn .material-icons-round{ font-size:1.1rem; }
+.btn-outline{ background:var(--glass-bg-strong); border:1px solid var(--glass-border-strong); color:var(--text-primary); }
+.btn-outline:hover{ background:rgba(255,255,255,0.12); transform:translateY(-2px); }
+.btn-custom{ background:linear-gradient(135deg, var(--brand-light), var(--brand)); color:#03161A; box-shadow:0 6px 18px rgba(38,198,218,0.35); }
+.btn-custom:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(38,198,218,0.5); }
+.btn-danger-outline{ background:transparent; border:1px solid var(--error); color:var(--error); display:inline-flex; align-items:center; gap:0.3rem; padding:0.65rem 1.2rem; border-radius:var(--radius-pill); cursor:pointer; font-family:inherit; font-size:0.86rem; transition:background 0.2s; }
+.btn-danger-outline:hover{ background:rgba(255,92,114,0.1); }
+
+/* ---------- Schedule grid ---------- */
+.schedule-wrapper{ overflow-x:auto; }
+.schedule-grid{
+    display:grid; grid-template-columns:70px repeat(5,1fr);
+    gap:1px; background:var(--glass-border);
+    border:1px solid var(--glass-border); border-radius:var(--radius-md);
+    overflow:hidden; min-width:560px;
+}
+.schedule-header{ background:var(--bg-2); padding:0.75rem 0.5rem; text-align:center; font-weight:700; font-size:0.85rem; color:var(--text-secondary); }
+.corner-cell{ background:var(--bg-2); }
+.schedule-time{ background:var(--bg-2); padding:0.75rem 0.25rem; text-align:center; font-size:0.8rem; font-weight:600; color:var(--text-secondary); display:flex; align-items:center; justify-content:center; }
+.schedule-cell{ background:var(--bg-1); min-height:80px; padding:0.4rem; position:relative; }
+.clickable-cell{ cursor:pointer; transition:background 0.18s; }
+.clickable-cell:hover{ background:rgba(38,198,218,0.06); }
+.clickable-cell:hover::after{ content:'+'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.8rem; color:var(--brand-light); opacity:0.4; font-weight:300; pointer-events:none; }
+.clickable-cell.has-class:hover::after{ display:none; }
+.cell-class-all{ background:rgba(0,131,143,0.18); border-right:3px solid var(--brand-light); border-radius:6px; padding:0.4rem 0.5rem; height:100%; min-height:70px; display:flex; flex-direction:column; justify-content:center; }
+.cell-class-split{ display:flex; flex-direction:column; height:100%; gap:1px; }
+.cell-half{ flex:1; border-radius:5px; padding:0.3rem 0.4rem; display:flex; flex-direction:column; justify-content:center; min-height:34px; }
+.cell-half.bg-odd{ background:rgba(33,150,243,0.18); border-right:3px solid #42A5F5; }
+.cell-half.bg-even{ background:rgba(76,175,80,0.18); border-right:3px solid #66BB6A; }
+.cell-name{ font-size:0.82rem; font-weight:700; color:var(--text-primary); margin-bottom:2px; }
+.cell-info{ font-size:0.72rem; color:var(--text-secondary); line-height:1.3; }
+.cell-week-tag{ font-size:0.65rem; padding:0.1rem 0.35rem; border-radius:20px; display:inline-block; margin-top:2px; }
+.week-tag-odd{ background:rgba(33,150,243,0.28); color:#90CAF9; }
+.week-tag-even{ background:rgba(76,175,80,0.28); color:#A5D6A7; }
+.week-tag-all{ background:rgba(38,198,218,0.28); color:var(--brand-light); }
+.reserve-cell{ cursor:default; padding:0.35rem; }
+.cell-loading{ font-size:0.75rem; color:var(--text-muted); }
+.room-pill{
+    display:inline-block; background:linear-gradient(135deg, var(--brand-light), var(--brand));
+    color:#03161A; padding:0.2rem 0.55rem; border-radius:20px; font-size:0.75rem; font-weight:600;
+    margin:2px; cursor:pointer; border:none; font-family:inherit;
+    transition:transform 0.15s, box-shadow 0.15s;
+}
+.room-pill:hover{ transform:scale(1.07); box-shadow:0 3px 10px rgba(38,198,218,0.45); }
+.cell-reserved-text{ font-size:0.75rem; color:var(--error); opacity:0.85; text-align:center; display:block; padding-top:0.5rem; }
+.cell-empty-text{ font-size:0.75rem; color:var(--text-muted); text-align:center; display:block; padding-top:0.5rem; }
+.legend-row{ display:flex; gap:1.5rem; margin-top:1rem; flex-wrap:wrap; }
+.legend-item{ display:flex; align-items:center; gap:0.4rem; font-size:0.82rem; color:var(--text-secondary); }
+.legend-dot{ width:12px; height:12px; border-radius:50%; }
+.legend-dot.available{ background:var(--brand-light); }
+.legend-dot.reserved{ background:var(--error); }
+.legend-dot.empty-slot{ background:var(--glass-border-strong); }
+
+/* ---------- Cancelled Cards ---------- */
+.cancelled-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:1rem; margin-top:0.5rem; }
+.cancelled-card{
+    border:1px solid var(--glass-border); border-right:4px solid var(--error);
+    border-radius:var(--radius-md); padding:1rem;
+    background:rgba(255,92,114,0.06); transition:box-shadow 0.2s, transform 0.25s var(--ease);
+}
+.cancelled-card:hover{ box-shadow:var(--shadow-glass); transform:translateY(-3px); }
+.cancelled-card-header{ display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; margin-bottom:0.5rem; }
+.cancelled-course-info{ display:flex; flex-direction:column; gap:0.25rem; }
+.cancelled-course-name{ font-weight:700; font-size:1rem; color:var(--text-primary); }
+.cancelled-course-name.cancelled-all-classes{ color:var(--error); font-style:italic; }
+.cancelled-professor{ display:flex; align-items:center; gap:0.25rem; font-size:0.85rem; color:var(--text-secondary); }
+.cancelled-timeslot{ display:flex; align-items:center; gap:0.25rem; font-size:0.8rem; color:var(--brand-light); font-weight:600; }
+.cancelled-date-badge{ display:flex; align-items:center; gap:0.3rem; font-size:0.8rem; color:var(--error); background:rgba(255,92,114,0.1); padding:0.25rem 0.65rem; border-radius:20px; white-space:nowrap; flex-shrink:0; flex-wrap:wrap; }
+.cancelled-all-notice{ display:flex; align-items:center; gap:0.35rem; font-size:0.82rem; color:var(--error); background:rgba(255,92,114,0.08); border-radius:6px; padding:0.4rem 0.65rem; margin-bottom:0.5rem; }
+.cancelled-desc{ display:flex; align-items:center; gap:0.3rem; font-size:0.83rem; color:var(--text-secondary); border-top:1px dashed var(--glass-border); padding-top:0.5rem; margin-top:0.5rem; }
+.empty-state-full{ text-align:center; padding:3rem 1rem; color:var(--text-secondary); }
+.empty-state-full .material-icons-round{ font-size:3.5rem; color:var(--success); margin-bottom:0.75rem; display:block; }
+.empty-state-full h3{ margin-bottom:0.5rem; color:var(--text-primary); }
+
+/* ---------- Modals ---------- */
+.modal-overlay{ display:none; position:fixed; inset:0; background:rgba(2,4,10,0.7); backdrop-filter:blur(6px); z-index:2000; align-items:center; justify-content:center; padding:1rem; }
+.modal-overlay.open{ display:flex; animation:dashFadeIn 0.2s ease; }
+.modal-card{
+    background:rgba(15,22,38,0.94); border:1px solid var(--glass-border-strong);
+    backdrop-filter:blur(24px) saturate(150%); -webkit-backdrop-filter:blur(24px) saturate(150%);
+    border-radius:var(--radius-lg); padding:1.6rem; width:100%; max-width:440px;
+    box-shadow:0 24px 70px rgba(0,0,0,0.55); max-height:90vh; overflow-y:auto;
+}
+.modal-wide{ max-width:600px; }
+.modal-card-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; }
+.modal-card-header h3{ font-size:1.15rem; color:var(--text-primary); }
+.modal-close-btn{ background:none; border:none; cursor:pointer; color:var(--text-secondary); padding:0.25rem; border-radius:50%; display:flex; align-items:center; transition:background 0.2s, color 0.2s; }
+.modal-close-btn:hover{ background:var(--glass-bg-strong); color:var(--text-primary); }
+
+.form-group{ margin-bottom:1.1rem; }
+.form-label{ display:flex; align-items:center; gap:0.3rem; font-size:0.88rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.5rem; }
+.form-label-icon{ font-size:1rem; color:var(--brand-light); }
+.form-control{
+    width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--glass-border-strong);
+    border-radius:var(--radius-sm); padding:0.7rem 0.95rem; color:var(--text-primary);
+    font-family:'Vazirmatn', sans-serif; font-size:0.92rem; transition:border-color 0.2s, box-shadow 0.2s;
+}
+.form-control:focus{ outline:none; border-color:var(--brand-light); box-shadow:0 0 0 3px rgba(38,198,218,0.15); }
+textarea.form-control{ resize:vertical; }
+
+.week-type-selector{ display:flex; gap:0.5rem; flex-wrap:wrap; }
+.week-type-option{ cursor:pointer; }
+.week-type-option input[type="radio"]{ display:none; }
+.week-type-label{ display:block; padding:0.5rem 1rem; border-radius:var(--radius-sm); border:2px solid var(--glass-border-strong); font-size:0.88rem; color:var(--text-secondary); transition:all 0.2s; cursor:pointer; }
+.week-type-option input:checked + .week-type-label.all{ border-color:var(--brand-light); background:rgba(38,198,218,0.15); color:var(--brand-light); font-weight:700; }
+.week-type-option input:checked + .week-type-label.odd{ border-color:#42A5F5; background:rgba(33,150,243,0.15); color:#90CAF9; font-weight:700; }
+.week-type-option input:checked + .week-type-label.even{ border-color:#66BB6A; background:rgba(76,175,80,0.15); color:#A5D6A7; font-weight:700; }
+
+.reserve-slot-info-card{ background:rgba(38,198,218,0.08); border:1px solid rgba(38,198,218,0.2); border-radius:var(--radius-sm); padding:0.85rem 1rem; margin-bottom:1.25rem; display:flex; gap:1rem; flex-wrap:wrap; }
+.slot-info-row{ display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; font-weight:600; color:var(--brand-light); }
+.slot-info-row .material-icons-round{ font-size:1.1rem; }
+
+.modal-actions{ display:flex; gap:0.6rem; margin-top:1.25rem; flex-wrap:wrap; }
+
+.excel-guide{ background:var(--glass-bg-strong); border-radius:var(--radius-sm); padding:0.85rem 1rem; margin-bottom:1.1rem; font-size:0.88rem; color:var(--text-secondary); display:flex; flex-direction:column; gap:0.4rem; }
+.guide-title{ display:flex; align-items:center; gap:0.3rem; font-weight:600; color:var(--text-primary); font-size:0.9rem; }
+.guide-hint{ color:var(--brand-light); font-weight:500; }
+.excel-guide code{ background:rgba(255,255,255,0.1); padding:0.1rem 0.35rem; border-radius:4px; font-size:0.85em; }
+.excel-paste-area{ font-family:'Courier New', monospace; font-size:0.85rem; direction:ltr; text-align:left; }
+.paste-preview{ background:var(--glass-bg-strong); border-radius:var(--radius-sm); padding:1rem; margin-bottom:1rem; }
+.paste-preview h4{ display:flex; align-items:center; gap:0.4rem; font-size:0.95rem; margin-bottom:0.75rem; color:var(--brand-light); }
+.preview-table{ width:100%; font-size:0.8rem; border-collapse:collapse; overflow-x:auto; display:block; }
+.preview-table th, .preview-table td{ padding:0.35rem 0.6rem; border:1px solid var(--glass-border); text-align:right; color:var(--text-primary); }
+.preview-table th{ background:var(--brand); color:#fff; font-weight:600; }
+.preview-table tr:nth-child(even) td{ background:rgba(255,255,255,0.03); }
+
+.alert-banner-success{ display:flex; align-items:center; gap:0.6rem; background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); border-right:4px solid var(--success); border-radius:var(--radius-sm); padding:0.85rem 1.25rem; margin-bottom:1rem; color:var(--success); font-weight:600; animation:dashFadeIn 0.3s ease; }
 </style>
 
 {% endblock %}
@@ -949,20 +721,10 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-/* =====================================================
-   مشکل ۱: IDs تمام کلاس‌های لغو شده برای ارسال به API
-   این آرایه از Jinja رندر میشه تا JS بتونه ازشون استفاده کنه
-   ===================================================== */
 const cancelledClassIds = {{ all_cancelled_classes | map(attribute='id') | list | tojson if all_cancelled_classes else '[]' }};
 
-/**
- * مشکل ۱: وقتی کاربر تب «کلاس‌های لغو شده» رو باز میکنه،
- * تمام IDها به API ارسال میشه تا به عنوان «دیده شده» ثبت بشن،
- * سپس badge با انیمیشن حذف میشه.
- */
 function markAllCancelledAsViewed() {
     if (!cancelledClassIds || cancelledClassIds.length === 0) return;
-
     fetch('/api/cancelled_classes/mark_viewed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -971,47 +733,26 @@ function markAllCancelledAsViewed() {
     .then(res => res.json())
     .then(data => {
         if (data.status === 'success') {
-            // badge رو با انیمیشن fade-out حذف میکنیم
             const badge = document.getElementById('cancelled-badge');
             if (badge) {
                 badge.classList.add('hiding');
-                setTimeout(() => {
-                    badge.style.display = 'none';
-                }, 320);
+                setTimeout(() => { badge.style.display = 'none'; }, 320);
             }
         }
     })
-    .catch(() => {
-        // در صورت خطا ساکت عبور میکنیم — UI رو خراب نمیکنه
-    });
+    .catch(() => {});
 }
 
-/* =====================================================
-   مدیریت تب‌ها
-   ===================================================== */
 function openTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.dash-tab').forEach(el => el.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     if (btn) btn.classList.add('active');
-
-    if (id === 'reserve-room') {
-        loadAvailableSlots();
-    }
-
-    // مشکل ۱: وقتی کاربر روی تب لغو کلاس‌ها کلیک کرد، همه رو «دیده شده» ثبت میکنیم
-    if (id === 'cancelled-classes') {
-        markAllCancelledAsViewed();
-    }
+    if (id === 'reserve-room') loadAvailableSlots();
+    if (id === 'cancelled-classes') markAllCancelledAsViewed();
 }
 
-/* =====================================================
-   تبدیل تاریخ میلادی به شمسی در کارت‌های لغو کلاس
-   (مقادیر رندر شده توسط Jinja به صورت میلادی هستند،
-    این تابع اونها رو کلاینت‌ساید به شمسی تبدیل میکنه)
-   ===================================================== */
 function gregorianToJalali(gy, gm, gd) {
-    /* الگوریتم تبدیل میلادی به شمسی */
     var g_d_no, j_d_no;
     var j_np, i;
     var g_days_in_month = [31,28,31,30,31,30,31,31,30,31,30,31];
@@ -1032,30 +773,19 @@ function gregorianToJalali(gy, gm, gd) {
 }
 
 function convertAllDatesToJalali() {
-    /* تمام عناصر .jalali-date که تاریخ میلادی دارند را شمسی میکنیم */
     document.querySelectorAll('.jalali-date[data-gregorian]').forEach(function(el) {
         var gDate = el.getAttribute('data-gregorian');
         if (!gDate) return;
         var parts = gDate.split('-');
         if (parts.length !== 3) return;
         try {
-            var j = gregorianToJalali(
-                parseInt(parts[0]),
-                parseInt(parts[1]),
-                parseInt(parts[2])
-            );
-            // فرمت شمسی: YYYY/MM/DD
-            var jStr = j[0] + '/' +
-                       String(j[1]).padStart(2, '0') + '/' +
-                       String(j[2]).padStart(2, '0');
+            var j = gregorianToJalali(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
+            var jStr = j[0] + '/' + String(j[1]).padStart(2, '0') + '/' + String(j[2]).padStart(2, '0');
             el.textContent = jStr;
-        } catch(e) { /* در صورت خطا مقدار اصلی باقی میماند */ }
+        } catch(e) {}
     });
 }
 
-/* =====================================================
-   داده‌های برنامه هفتگی
-   ===================================================== */
 const dayMap = {
     'saturday':'شنبه', 'sunday':'یکشنبه', 'monday':'دوشنبه',
     'tuesday':'سه‌شنبه', 'wednesday':'چهارشنبه'
@@ -1076,9 +806,7 @@ function renderSchedule() {
     });
     Object.entries(grouped).forEach(([key, items]) => {
         const [day, time] = key.split('__');
-        const cell = document.querySelector(
-            `#schedule-table .schedule-cell[data-day="${day}"][data-time="${time}"]`
-        );
+        const cell = document.querySelector(`#schedule-table .schedule-cell[data-day="${day}"][data-time="${time}"]`);
         if (!cell) return;
         cell.classList.add('has-class');
         cell.innerHTML = buildCellHTML(items);
@@ -1121,19 +849,15 @@ function buildCellHTML(items) {
 
 document.addEventListener('DOMContentLoaded', function() {
     renderSchedule();
-    convertAllDatesToJalali(); // تبدیل تاریخ‌های میلادی به شمسی در کارت‌ها
+    convertAllDatesToJalali();
 });
 
-/* =====================================================
-   ویرایش خانه‌های برنامه هفتگی
-   ===================================================== */
 function openEditModal(cell) {
     const day = cell.dataset.day;
     const time = cell.dataset.time;
     document.getElementById('day-input').value = day;
     document.getElementById('time-input').value = time;
-    document.getElementById('modal-title').textContent =
-        `${dayMap[day]} — ساعت ${time.replace('-', ' تا ')}`;
+    document.getElementById('modal-title').textContent = `${dayMap[day]} — ساعت ${time.replace('-', ' تا ')}`;
     document.getElementById('course-name').value = '';
     document.getElementById('professor-name').value = '';
     document.getElementById('class-location').value = '';
@@ -1180,9 +904,7 @@ function saveScheduleItem(data, onSuccess) {
     .then(res => res.json())
     .then(resp => {
         if (resp.status === 'success') {
-            const idx = mySchedules.findIndex(
-                s => s.day === data.day && s.time_slot === data.time_slot
-            );
+            const idx = mySchedules.findIndex(s => s.day === data.day && s.time_slot === data.time_slot);
             if (idx !== -1) mySchedules.splice(idx, 1);
             if (data.course_name) mySchedules.push(data);
             renderSchedule();
@@ -1196,7 +918,6 @@ function saveScheduleItem(data, onSuccess) {
         alert('خطا در ارتباط با سرور');
     });
 }
-
 
 function printSchedule() {
     const grid = document.getElementById('schedule-table');
@@ -1231,9 +952,6 @@ function printSchedule() {
     setTimeout(() => { win.print(); win.close(); }, 400);
 }
 
-/* =====================================================
-   کپی برنامه هفتگی
-   ===================================================== */
 function copyScheduleAsText() {
     const days = ['saturday','sunday','monday','tuesday','wednesday'];
     const dayNames = ['شنبه','یکشنبه','دوشنبه','سه‌شنبه','چهارشنبه'];
@@ -1264,14 +982,11 @@ function copyScheduleAsText() {
     }
     const btn = event.target.closest('button');
     const original = btn.innerHTML;
-    btn.innerHTML = '<i class="material-icons">check</i> کپی شد!';
+    btn.innerHTML = '<span class="material-icons-round">check</span> کپی شد!';
     btn.style.color = 'var(--success)';
     setTimeout(() => { btn.innerHTML = original; btn.style.color = ''; }, 2000);
 }
 
-/* =====================================================
-   وارد کردن از اکسل
-   ===================================================== */
 let parsedScheduleData = [];
 
 function openPasteModal() {
@@ -1353,12 +1068,8 @@ function parseExcelPaste() {
                 });
                 if (courseName && timeSlot) {
                     parsedScheduleData.push({
-                        day: dayKey,
-                        time_slot: timeSlot,
-                        course_name: courseName,
-                        professor_name: professorName,
-                        class_location: classLocation,
-                        week_type: weekType
+                        day: dayKey, time_slot: timeSlot, course_name: courseName,
+                        professor_name: professorName, class_location: classLocation, week_type: weekType
                     });
                 }
             });
@@ -1366,18 +1077,13 @@ function parseExcelPaste() {
     } else {
         rows.forEach(row => {
             if (row.length < 3) return;
-            const dayKey = Object.entries(dayKeywords).find(
-                ([kw]) => row[0] && row[0].toLowerCase().includes(kw.toLowerCase())
-            );
+            const dayKey = Object.entries(dayKeywords).find(([kw]) => row[0] && row[0].toLowerCase().includes(kw.toLowerCase()));
             if (!dayKey) return;
             const timeMatch = row[1] ? row[1].match(timePattern) : null;
             if (!timeMatch) return;
             parsedScheduleData.push({
-                day: dayKey[1],
-                time_slot: `${timeMatch[1]}-${timeMatch[2]}`,
-                course_name: row[2] || '',
-                professor_name: row[3] || '',
-                class_location: row[4] || '',
+                day: dayKey[1], time_slot: `${timeMatch[1]}-${timeMatch[2]}`,
+                course_name: row[2] || '', professor_name: row[3] || '', class_location: row[4] || '',
                 week_type: row[5] ? (weekOddKeywords.some(k => row[5].includes(k)) ? 'odd' :
                             weekEvenKeywords.some(k => row[5].includes(k)) ? 'even' : 'all') : 'all'
             });
@@ -1396,18 +1102,12 @@ function showPastePreview() {
     }
     container.style.display = 'block';
     container.querySelector('h4').innerHTML =
-        `<i class="material-icons">preview</i> پیش‌نمایش (${parsedScheduleData.length} ردیف تشخیص داده شد)`;
+        `<span class="material-icons-round">preview</span> پیش‌نمایش (${parsedScheduleData.length} ردیف تشخیص داده شد)`;
     document.getElementById('apply-paste-btn').disabled = false;
-    const dayNames = {
-        'saturday':'شنبه', 'sunday':'یکشنبه', 'monday':'دوشنبه',
-        'tuesday':'سه‌شنبه', 'wednesday':'چهارشنبه'
-    };
+    const dayNames = { 'saturday':'شنبه', 'sunday':'یکشنبه', 'monday':'دوشنبه', 'tuesday':'سه‌شنبه', 'wednesday':'چهارشنبه' };
     const weekNames = { 'all': 'همیشه', 'odd': 'فرد', 'even': 'زوج' };
     let html = `<div style="overflow-x:auto;"><table class="preview-table">
-        <thead><tr>
-            <th>روز</th><th>ساعت</th><th>نام درس</th>
-            <th>استاد</th><th>مکان</th><th>نوع هفته</th>
-        </tr></thead><tbody>`;
+        <thead><tr><th>روز</th><th>ساعت</th><th>نام درس</th><th>استاد</th><th>مکان</th><th>نوع هفته</th></tr></thead><tbody>`;
     parsedScheduleData.forEach(item => {
         html += `<tr>
             <td>${dayNames[item.day] || item.day}</td>
@@ -1424,12 +1124,10 @@ function showPastePreview() {
 
 function applyPastedSchedule() {
     if (parsedScheduleData.length === 0) return;
-    if (!confirm(`آیا مطمئن هستید؟ برنامه هفتگی فعلی شما پاک می‌شود و ${parsedScheduleData.length} کلاس جدید جایگزین می‌شود.`)) {
-        return;
-    }
+    if (!confirm(`آیا مطمئن هستید؟ برنامه هفتگی فعلی شما پاک می‌شود و ${parsedScheduleData.length} کلاس جدید جایگزین می‌شود.`)) return;
     const btn = document.getElementById('apply-paste-btn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="material-icons">hourglass_empty</i> در حال پردازش...';
+    btn.innerHTML = '<span class="material-icons-round">hourglass_empty</span> در حال پردازش...';
     fetch('/bulk_update_schedule', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1444,25 +1142,22 @@ function applyPastedSchedule() {
             renderSchedule();
             const msg = document.createElement('div');
             msg.className = 'alert-banner-success';
-            msg.innerHTML = `<i class="material-icons">check_circle</i> ${resp.count} کلاس با موفقیت وارد شد.`;
+            msg.innerHTML = `<span class="material-icons-round">check_circle</span> ${resp.count} کلاس با موفقیت وارد شد.`;
             document.querySelector('.dashboard-container').insertAdjacentElement('afterbegin', msg);
             setTimeout(() => msg.remove(), 4000);
         } else {
             alert('خطا: ' + (resp.message || 'خطای ناشناخته'));
             btn.disabled = false;
-            btn.innerHTML = '<i class="material-icons">check</i> اعمال برنامه';
+            btn.innerHTML = '<span class="material-icons-round">check</span> اعمال برنامه';
         }
     })
     .catch(() => {
         alert('خطا در ارتباط با سرور');
         btn.disabled = false;
-        btn.innerHTML = '<i class="material-icons">check</i> اعمال برنامه';
+        btn.innerHTML = '<span class="material-icons-round">check</span> اعمال برنامه';
     });
 }
 
-/* =====================================================
-   رزرو کلاس
-   ===================================================== */
 function loadAvailableSlots() {
     document.querySelectorAll('#reservation-table .reserve-cell').forEach(cell => {
         cell.innerHTML = '<span class="cell-loading">بارگذاری...</span>';
@@ -1474,17 +1169,12 @@ function loadAvailableSlots() {
                 cell.innerHTML = '<span class="cell-empty-text">—</span>';
             });
             slots.forEach(slot => {
-                const cell = document.querySelector(
-                    `#reservation-table .reserve-cell[data-day="${slot.day}"][data-time="${slot.time_slot}"]`
-                );
+                const cell = document.querySelector(`#reservation-table .reserve-cell[data-day="${slot.day}"][data-time="${slot.time_slot}"]`);
                 if (!cell) return;
                 if (slot.available_rooms.length > 0) {
                     let html = '';
                     slot.available_rooms.forEach(room => {
-                        html += `<button class="room-pill"
-                            onclick="openReserveModal(${slot.id}, '${room}', '${slot.day}', '${slot.time_slot}')">
-                            ${room}
-                        </button>`;
+                        html += `<button class="room-pill" onclick="openReserveModal(${slot.id}, '${room}', '${slot.day}', '${slot.time_slot}')">${room}</button>`;
                     });
                     cell.innerHTML = html;
                 } else if (slot.all_rooms.length > 0) {
@@ -1501,8 +1191,7 @@ function loadAvailableSlots() {
 
 function openReserveModal(slotId, room, day, time) {
     document.getElementById('reserve-room-display').textContent = `کلاس ${room}`;
-    document.getElementById('reserve-time-display').textContent =
-        `${dayMap[day]} — ساعت ${time.replace('-', ' تا ')}`;
+    document.getElementById('reserve-time-display').textContent = `${dayMap[day]} — ساعت ${time.replace('-', ' تا ')}`;
     document.getElementById('reserve-reason').value = '';
     const form = document.getElementById('reserve-form');
     form.action = `/submit_reservation/${slotId}/${room}`;
@@ -1510,9 +1199,6 @@ function openReserveModal(slotId, room, day, time) {
     setTimeout(() => document.getElementById('reserve-reason').focus(), 150);
 }
 
-/* =====================================================
-   مدیریت مودال‌ها
-   ===================================================== */
 function openModal(id) {
     const el = document.getElementById(id);
     el.classList.add('open');
@@ -1538,9 +1224,6 @@ document.addEventListener('keydown', e => {
     }
 });
 
-/* =====================================================
-   علامت‌گذاری نوتیفیکیشن به عنوان خوانده شده
-   ===================================================== */
 function markRead(notifId, el) {
     fetch(`/mark_notification_read/${notifId}`)
         .then(() => {
@@ -1551,18 +1234,5 @@ function markRead(notifId, el) {
         })
         .catch(() => {});
 }
-
-/* استایل inline برای alert موفقیت وارد کردن از اکسل */
-const style = document.createElement('style');
-style.textContent = `
-.alert-banner-success {
-    display: flex; align-items: center; gap: .6rem;
-    background: rgba(46,125,50,.1); border: 1px solid rgba(46,125,50,.3);
-    border-right: 4px solid var(--success);
-    border-radius: 10px; padding: .85rem 1.25rem;
-    margin-bottom: 1rem; color: var(--success);
-    font-weight: 600; animation: fadeIn .3s ease;
-}`;
-document.head.appendChild(style);
 </script>
 {% endblock %}
