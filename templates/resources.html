@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}منابع درسی | یونی نت{% endblock %}
+{% block title %}منابع درسی | یونی‌نت{% endblock %}
 
 {% block content %}
 <div class="resources-page">
@@ -9,7 +9,7 @@
     <div class="res-header">
         <div class="res-header-info">
             <div class="res-header-icon">
-                <i class="material-icons">library_books</i>
+                <span class="material-icons-round">library_books</span>
             </div>
             <div>
                 <h1 class="res-title">منابع درسی</h1>
@@ -17,49 +17,42 @@
             </div>
         </div>
         <button class="btn btn-custom res-upload-btn" onclick="openUploadModal()">
-            <i class="material-icons">cloud_upload</i>
+            <span class="material-icons-round">cloud_upload</span>
             <span>آپلود منبع جدید</span>
         </button>
     </div>
 
-    <!-- ═══════ Toolbar: Search + Filters + View + Sort ═══════ -->
+    <!-- ═══════ Toolbar ═══════ -->
     <div class="res-toolbar">
-        <!-- Search -->
         <div class="res-search-wrap">
-            <i class="material-icons res-search-icon">search</i>
+            <span class="material-icons-round res-search-icon">search</span>
             <input type="text" id="res-search-input" class="res-search-input"
                    placeholder="جستجو در منابع یا نام درس..."
                    oninput="debounceSearch()">
             <button class="res-search-clear hidden" id="search-clear-btn" onclick="clearSearch()">
-                <i class="material-icons">close</i>
+                <span class="material-icons-round">close</span>
             </button>
         </div>
 
         <div class="res-toolbar-right">
-            <!-- Type Filters -->
             <div class="res-filter-chips" id="type-filter-chips">
                 <button class="res-chip active" data-type="" onclick="setTypeFilter('', this)">همه</button>
-                <button class="res-chip" data-type="notes"
-                        onclick="setTypeFilter('notes', this)">
+                <button class="res-chip" data-type="notes" onclick="setTypeFilter('notes', this)">
                     <span class="chip-dot" style="background:var(--type-notes)"></span> جزوه
                 </button>
-                <button class="res-chip" data-type="slides"
-                        onclick="setTypeFilter('slides', this)">
+                <button class="res-chip" data-type="slides" onclick="setTypeFilter('slides', this)">
                     <span class="chip-dot" style="background:var(--type-slides)"></span> اسلاید
                 </button>
-                <button class="res-chip" data-type="sample_questions"
-                        onclick="setTypeFilter('sample_questions', this)">
+                <button class="res-chip" data-type="sample_questions" onclick="setTypeFilter('sample_questions', this)">
                     <span class="chip-dot" style="background:var(--type-sample)"></span> نمونه‌سؤال
                 </button>
-                <button class="res-chip" data-type="book"
-                        onclick="setTypeFilter('book', this)">
+                <button class="res-chip" data-type="book" onclick="setTypeFilter('book', this)">
                     <span class="chip-dot" style="background:var(--type-book)"></span> کتاب
                 </button>
             </div>
 
-            <!-- Sort -->
             <div class="res-sort-wrap">
-                <i class="material-icons" style="font-size:1rem;color:var(--text-secondary);">sort</i>
+                <span class="material-icons-round" style="font-size:1rem;color:var(--text-secondary);">sort</span>
                 <select id="sort-select" class="res-sort-select" onchange="applyFiltersAndRender()">
                     <option value="newest">جدیدترین</option>
                     <option value="popular">محبوب‌ترین</option>
@@ -67,15 +60,12 @@
                 </select>
             </div>
 
-            <!-- View Toggle -->
             <div class="view-toggle">
-                <button class="view-btn active" id="view-grid-btn"
-                        onclick="setView('grid')" title="نمایش شبکه‌ای">
-                    <i class="material-icons">grid_view</i>
+                <button class="view-btn active" id="view-grid-btn" onclick="setView('grid')" title="نمایش شبکه‌ای">
+                    <span class="material-icons-round">grid_view</span>
                 </button>
-                <button class="view-btn" id="view-list-btn"
-                        onclick="setView('list')" title="نمایش لیستی">
-                    <i class="material-icons">view_list</i>
+                <button class="view-btn" id="view-list-btn" onclick="setView('list')" title="نمایش لیستی">
+                    <span class="material-icons-round">view_list</span>
                 </button>
             </div>
         </div>
@@ -84,14 +74,14 @@
     <!-- ═══════ Stats Bar ═══════ -->
     <div class="res-stats-bar" id="res-stats-bar">
         <span id="stats-total" class="stat-item">
-            <i class="material-icons">folder</i> در حال بارگذاری...
+            <span class="material-icons-round">folder</span> در حال بارگذاری...
         </span>
     </div>
 
     <!-- ═══════ Resources Container ═══════ -->
     <div id="resources-container">
         <div class="loading-state-res">
-            <i class="material-icons spin-anim">sync</i>
+            <span class="material-icons-round spin-anim">sync</span>
             <span>در حال بارگذاری منابع...</span>
         </div>
     </div>
@@ -104,15 +94,14 @@
 <div id="upload-modal" class="res-modal-overlay" onclick="if(event.target===this)closeUploadModal()">
     <div class="res-modal-card">
         <div class="res-modal-header">
-            <h3><i class="material-icons">cloud_upload</i> آپلود منبع جدید</h3>
+            <h3><span class="material-icons-round">cloud_upload</span> آپلود منبع جدید</h3>
             <button class="res-modal-close" onclick="closeUploadModal()">
-                <i class="material-icons">close</i>
+                <span class="material-icons-round">close</span>
             </button>
         </div>
 
         <div class="res-modal-body">
 
-            <!-- DropZone -->
             <div class="dropzone" id="dropzone"
                  ondragover="handleDragOver(event)"
                  ondragleave="handleDragLeave(event)"
@@ -120,7 +109,7 @@
                  onclick="document.getElementById('file-input').click()">
                 <div class="dropzone-content" id="dropzone-content">
                     <div class="dropzone-icon">
-                        <i class="material-icons">upload_file</i>
+                        <span class="material-icons-round">upload_file</span>
                     </div>
                     <div class="dropzone-text">
                         <strong>فایل را اینجا رها کنید</strong>
@@ -131,17 +120,16 @@
                         <br><span style="font-size:.75rem;">حداکثر ۵۰ مگابایت</span>
                     </div>
                 </div>
-                <!-- وقتی فایل انتخاب شد نمایش داده می‌شود -->
                 <div class="dropzone-selected hidden" id="dropzone-selected">
                     <div class="file-preview-icon" id="file-preview-icon">
-                        <i class="material-icons">description</i>
+                        <span class="material-icons-round">description</span>
                     </div>
                     <div class="file-preview-info">
                         <div class="file-preview-name" id="file-preview-name">—</div>
                         <div class="file-preview-size" id="file-preview-size">—</div>
                     </div>
                     <button type="button" class="file-remove-btn" onclick="clearFileSelection(event)">
-                        <i class="material-icons">close</i>
+                        <span class="material-icons-round">close</span>
                     </button>
                 </div>
             </div>
@@ -149,19 +137,17 @@
                    accept=".pdf,.docx,.pptx,.zip"
                    onchange="handleFileSelect(event)">
 
-            <!-- عنوان -->
             <div class="up-form-group">
                 <label class="up-form-label">
-                    <i class="material-icons">title</i> عنوان منبع <span class="req">*</span>
+                    <span class="material-icons-round">title</span> عنوان منبع <span class="req">*</span>
                 </label>
                 <input type="text" id="up-title" class="up-form-input"
                        placeholder="مثال: جزوه کامل ریاضی مهندسی — فصل ۱ تا ۵">
             </div>
 
-            <!-- درس -->
             <div class="up-form-group">
                 <label class="up-form-label">
-                    <i class="material-icons">menu_book</i> نام درس <span class="req">*</span>
+                    <span class="material-icons-round">menu_book</span> نام درس <span class="req">*</span>
                 </label>
                 <div class="course-input-wrap">
                     <input type="text" id="up-course" class="up-form-input"
@@ -172,34 +158,33 @@
                 </div>
             </div>
 
-            <!-- نوع منبع -->
             <div class="up-form-group">
                 <label class="up-form-label">
-                    <i class="material-icons">category</i> نوع منبع <span class="req">*</span>
+                    <span class="material-icons-round">category</span> نوع منبع <span class="req">*</span>
                 </label>
                 <div class="type-chips-upload">
                     <label class="type-chip-up">
                         <input type="radio" name="up-type" value="notes" checked>
                         <span style="--chip-color:var(--type-notes)">
-                            <i class="material-icons">sticky_note_2</i> جزوه
+                            <span class="material-icons-round">sticky_note_2</span> جزوه
                         </span>
                     </label>
                     <label class="type-chip-up">
                         <input type="radio" name="up-type" value="slides">
                         <span style="--chip-color:var(--type-slides)">
-                            <i class="material-icons">slideshow</i> اسلاید
+                            <span class="material-icons-round">slideshow</span> اسلاید
                         </span>
                     </label>
                     <label class="type-chip-up">
                         <input type="radio" name="up-type" value="sample_questions">
                         <span style="--chip-color:var(--type-sample)">
-                            <i class="material-icons">quiz</i> نمونه‌سؤال
+                            <span class="material-icons-round">quiz</span> نمونه‌سؤال
                         </span>
                     </label>
                     <label class="type-chip-up">
                         <input type="radio" name="up-type" value="book">
                         <span style="--chip-color:var(--type-book)">
-                            <i class="material-icons">book</i> کتاب
+                            <span class="material-icons-round">book</span> کتاب
                         </span>
                     </label>
                 </div>
@@ -209,12 +194,11 @@
 
         <div class="res-modal-footer">
             <button class="btn btn-custom" id="upload-submit-btn" onclick="submitUpload()">
-                <i class="material-icons">cloud_upload</i> آپلود
+                <span class="material-icons-round">cloud_upload</span> آپلود
             </button>
             <button class="btn btn-outline" onclick="closeUploadModal()">انصراف</button>
         </div>
 
-        <!-- Progress Bar -->
         <div class="upload-progress hidden" id="upload-progress">
             <div class="upload-progress-bar" id="upload-progress-bar"></div>
         </div>
@@ -225,472 +209,331 @@
      CSS
 ═══════════════════════════════════════════ -->
 <style>
-/* ── Color Tokens for Resource Types ── */
-:root {
-    --type-notes:   #00838F;  /* جزوه    → تیل */
-    --type-slides:  #1565C0;  /* اسلاید  → آبی */
-    --type-sample:  #E53935;  /* نمونه   → قرمز */
-    --type-book:    #6D4C41;  /* کتاب    → قهوه‌ای */
+/* =====================================================
+   Light mode variable overrides — برای استقلال فایل
+   ===================================================== */
+body.light-mode{
+    --bg-0:#F3F5F9; --bg-1:#FFFFFF; --bg-2:#F8FAFC;
+    --glass-bg: rgba(15,23,42,0.035);
+    --glass-bg-strong: rgba(15,23,42,0.06);
+    --glass-border: rgba(15,23,42,0.08);
+    --glass-border-strong: rgba(15,23,42,0.16);
+    --text-primary:#0F172A; --text-secondary:#4B5566; --text-muted:#8A93A3;
+    --shadow-glass: 0 8px 28px rgba(15,23,42,0.08);
 }
 
-/* ── Page ── */
-.resources-page { max-width: 1200px; margin: 0 auto; padding-bottom: 3rem; }
-
-/* ── Header ── */
-.res-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+/* ── Color Tokens for Resource Types (تنظیم‌شده برای پس‌زمینه تیره) ── */
+.resources-page {
+    --type-notes:   #26C6DA;
+    --type-slides:  #42A5F5;
+    --type-sample:  #FF6B7A;
+    --type-book:    #BCAAA4;
 }
-.res-header-info { display: flex; align-items: center; gap: 1rem; }
-.res-header-icon {
-    width: 52px; height: 52px; border-radius: 14px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+
+.resources-page { max-width: 1200px; margin: 0 auto; padding-bottom: 3rem; position:relative; z-index:1; }
+
+/* ---------- Buttons ---------- */
+.btn{ display:inline-flex; align-items:center; gap:0.45rem; padding:0.7rem 1.3rem; border-radius:var(--radius-pill); font-weight:600; font-size:0.88rem; border:1px solid transparent; cursor:pointer; font-family:inherit; transition:all 0.25s var(--ease); }
+.btn .material-icons-round{ font-size:1.15rem; }
+.btn-custom{ background:linear-gradient(135deg, var(--brand-light), var(--brand)); color:#03161A; box-shadow:0 6px 18px rgba(38,198,218,0.35); }
+.btn-custom:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(38,198,218,0.5); }
+.btn-outline{ background:var(--glass-bg-strong); border:1px solid var(--glass-border-strong); color:var(--text-primary); }
+.btn-outline:hover{ background:rgba(255,255,255,0.12); }
+
+/* ---------- Header ---------- */
+.res-header{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.res-header-info{ display: flex; align-items: center; gap: 1rem; }
+.res-header-icon{
+    width: 54px; height: 54px; border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--brand), var(--brand-dark));
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 16px rgba(0,131,143,.3);
-    flex-shrink: 0;
+    box-shadow: 0 6px 20px rgba(0,131,143,.4); flex-shrink: 0;
 }
-.res-header-icon i { color: white; font-size: 1.6rem; }
-.res-title  { font-size: 1.5rem; font-weight: 800; margin: 0 0 .15rem; }
-.res-subtitle { font-size: .88rem; color: var(--text-secondary); margin: 0; }
-.res-upload-btn { display: flex; align-items: center; gap: .4rem; white-space: nowrap; }
+.res-header-icon .material-icons-round{ color: white; font-size: 1.7rem; }
+.res-title{ font-size: 1.55rem; font-weight: 800; margin: 0 0 .15rem; color:var(--text-primary); }
+.res-subtitle{ font-size: .88rem; color: var(--text-secondary); margin: 0; }
+.res-upload-btn{ display: flex; align-items: center; gap: .4rem; white-space: nowrap; }
 
-/* ── Toolbar ── */
-.res-toolbar {
-    display: flex; gap: 1rem; margin-bottom: 1rem;
-    align-items: center; flex-wrap: wrap;
+/* ---------- Toolbar ---------- */
+.res-toolbar{ display: flex; gap: 1rem; margin-bottom: 1rem; align-items: center; flex-wrap: wrap; }
+.res-search-wrap{ flex: 1; min-width: 220px; position: relative; display: flex; align-items: center; }
+.res-search-icon{ position: absolute; right: .85rem; color: var(--text-muted); font-size: 1.2rem; pointer-events: none; }
+.res-search-input{
+    width: 100%; padding: .7rem .85rem .7rem 2.6rem; padding-right: 2.6rem;
+    border: 1.5px solid var(--glass-border-strong); border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.04); font-family: inherit; font-size: .9rem;
+    color: var(--text-primary); outline: none; transition: border-color .18s, box-shadow .18s;
 }
-.res-search-wrap {
-    flex: 1; min-width: 220px;
-    position: relative; display: flex; align-items: center;
-}
-.res-search-icon {
-    position: absolute; right: .85rem;
-    color: var(--text-secondary); font-size: 1.2rem; pointer-events: none;
-}
-.res-search-input {
-    width: 100%; padding: .65rem .85rem .65rem 2.5rem;
-    padding-right: 2.6rem;
-    border: 1.5px solid var(--border-color); border-radius: 12px;
-    background: var(--surface); font-family: inherit; font-size: .9rem;
-    color: var(--text-primary); outline: none;
-    transition: border-color .18s, box-shadow .18s;
-}
-.res-search-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0,131,143,.1);
-}
-.res-search-clear {
-    position: absolute; left: .6rem;
-    background: none; border: none; cursor: pointer;
-    color: var(--text-secondary); display: flex; align-items: center;
-    border-radius: 50%; padding: .15rem;
+.res-search-input:focus{ border-color: var(--brand-light); box-shadow: 0 0 0 3px rgba(38,198,218,.15); }
+.res-search-clear{
+    position: absolute; left: .6rem; background: none; border: none; cursor: pointer;
+    color: var(--text-secondary); display: flex; align-items: center; border-radius: 50%; padding: .15rem;
     transition: color .18s;
 }
-.res-search-clear:hover { color: var(--error); }
+.res-search-clear:hover{ color: var(--error); }
 
-.res-toolbar-right {
-    display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
-}
+.res-toolbar-right{ display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
 
-/* ── Filter Chips ── */
-.res-filter-chips { display: flex; gap: .4rem; flex-wrap: wrap; }
-.res-chip {
+/* ---------- Filter Chips ---------- */
+.res-filter-chips{ display: flex; gap: .4rem; flex-wrap: wrap; }
+.res-chip{
     display: inline-flex; align-items: center; gap: .35rem;
-    padding: .35rem .85rem; border-radius: 20px;
-    border: 1.5px solid var(--border-color); background: var(--surface);
+    padding: .4rem .9rem; border-radius: 20px;
+    border: 1.5px solid var(--glass-border-strong); background: var(--glass-bg-strong);
     font-family: inherit; font-size: .8rem; font-weight: 600;
     color: var(--text-secondary); cursor: pointer; transition: all .18s;
 }
-.res-chip:hover { border-color: var(--primary-color); color: var(--primary-color); }
-.res-chip.active { background: var(--primary-color); border-color: var(--primary-color); color: white; }
-.chip-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.res-chip:hover{ border-color: var(--brand-light); color: var(--brand-light); }
+.res-chip.active{ background: linear-gradient(135deg, var(--brand-light), var(--brand)); border-color: transparent; color: #03161A; }
+.chip-dot{ width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 
-/* ── Sort & View ── */
-.res-sort-wrap {
-    display: flex; align-items: center; gap: .4rem;
-    border: 1.5px solid var(--border-color); border-radius: 10px;
-    padding: .35rem .7rem; background: var(--surface);
-}
-.res-sort-select {
-    border: none; background: none; font-family: inherit;
-    font-size: .82rem; color: var(--text-primary); cursor: pointer;
-    outline: none; padding: 0;
-}
-.view-toggle {
-    display: flex; border: 1.5px solid var(--border-color);
-    border-radius: 10px; overflow: hidden; background: var(--surface);
-}
-.view-btn {
-    padding: .4rem .65rem; border: none; background: none;
-    cursor: pointer; display: flex; align-items: center;
-    color: var(--text-secondary); transition: all .18s;
-}
-.view-btn:hover { background: var(--background); color: var(--primary-color); }
-.view-btn.active { background: var(--primary-color); color: white; }
+/* ---------- Sort & View ---------- */
+.res-sort-wrap{ display: flex; align-items: center; gap: .4rem; border: 1.5px solid var(--glass-border-strong); border-radius: var(--radius-sm); padding: .4rem .75rem; background: var(--glass-bg-strong); }
+.res-sort-select{ border: none; background: none; font-family: inherit; font-size: .82rem; color: var(--text-primary); cursor: pointer; outline: none; padding: 0; }
+.res-sort-select option{ background:var(--bg-1); color:var(--text-primary); }
+.view-toggle{ display: flex; border: 1.5px solid var(--glass-border-strong); border-radius: var(--radius-sm); overflow: hidden; background: var(--glass-bg-strong); }
+.view-btn{ padding: .45rem .7rem; border: none; background: none; cursor: pointer; display: flex; align-items: center; color: var(--text-secondary); transition: all .18s; }
+.view-btn:hover{ background: rgba(255,255,255,0.08); color: var(--brand-light); }
+.view-btn.active{ background: linear-gradient(135deg, var(--brand-light), var(--brand)); color: #03161A; }
 
-/* ── Stats Bar ── */
-.res-stats-bar {
-    display: flex; align-items: center; gap: 1.5rem;
-    margin-bottom: 1.25rem; padding: .5rem .75rem;
-    background: var(--surface); border-radius: 10px;
-    border: 1px solid var(--border-color);
-    font-size: .82rem; color: var(--text-secondary);
-    flex-wrap: wrap;
+/* ---------- Stats Bar ---------- */
+.res-stats-bar{
+    display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.25rem; padding: .55rem .85rem;
+    background: var(--glass-bg); border-radius: var(--radius-sm); border: 1px solid var(--glass-border);
+    font-size: .82rem; color: var(--text-secondary); flex-wrap: wrap;
 }
-.stat-item { display: flex; align-items: center; gap: .3rem; }
-.stat-item i { font-size: .95rem; color: var(--primary-color); }
+.stat-item{ display: flex; align-items: center; gap: .35rem; }
+.stat-item .material-icons-round{ font-size: .95rem; color: var(--brand-light); }
 
-/* ── Course Section ── */
-.course-section { margin-bottom: 1.5rem; }
-.course-section-header {
-    display: flex; align-items: center; gap: .65rem;
-    padding: .75rem 1rem; cursor: pointer;
-    background: var(--surface); border: 1px solid var(--border-color);
-    border-radius: 12px; transition: border-color .18s, box-shadow .18s;
-    user-select: none;
+/* ---------- Course Section ---------- */
+.course-section{ margin-bottom: 1.5rem; }
+.course-section-header{
+    display: flex; align-items: center; gap: .65rem; padding: .8rem 1.1rem; cursor: pointer;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md); transition: border-color .18s, box-shadow .18s; user-select: none;
+    backdrop-filter: blur(14px);
 }
-.course-section-header:hover {
-    border-color: rgba(0,131,143,.3);
-    box-shadow: var(--shadow-sm);
-}
-.course-section-header.open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
-.course-icon { color: var(--primary-color); font-size: 1.3rem; }
-.course-name { font-weight: 700; font-size: 1rem; flex: 1; }
-.course-count {
-    background: rgba(0,131,143,.12); color: var(--primary-color);
-    padding: .15rem .6rem; border-radius: 20px;
-    font-size: .75rem; font-weight: 700;
-}
-.course-toggle-icon { color: var(--text-secondary); transition: transform .25s; }
-.course-section-header.open .course-toggle-icon { transform: rotate(90deg); }
+.course-section-header:hover{ border-color: rgba(38,198,218,.3); box-shadow: var(--shadow-glass); }
+.course-section-header.open{ border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom-color: transparent; }
+.course-icon{ color: var(--brand-light); font-size: 1.3rem; }
+.course-name{ font-weight: 700; font-size: 1rem; flex: 1; color:var(--text-primary); }
+.course-count{ background: rgba(38,198,218,.15); color: var(--brand-light); padding: .15rem .65rem; border-radius: 20px; font-size: .75rem; font-weight: 700; }
+.course-toggle-icon{ color: var(--text-secondary); transition: transform .25s; }
+.course-section-header.open .course-toggle-icon{ transform: rotate(90deg); }
 
-.course-body {
-    display: none;
-    border: 1px solid var(--border-color); border-top: none;
-    border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
-    padding: 1rem; background: var(--background);
+.course-body{
+    display: none; border: 1px solid var(--glass-border); border-top: none;
+    border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md);
+    padding: 1rem; background: var(--glass-bg-strong);
 }
-.course-body.open { display: block; animation: slideDown .2s ease; }
-@keyframes slideDown { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+.course-body.open{ display: block; animation: slideDown .2s ease; }
+@keyframes slideDown{ from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
 
-/* ── Grid View ── */
-.res-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: .85rem;
-}
+/* ---------- Grid / List ---------- */
+.res-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: .85rem; }
+.res-list{ display: flex; flex-direction: column; gap: .6rem; }
 
-/* ── List View ── */
-.res-list { display: flex; flex-direction: column; gap: .6rem; }
-
-/* ── Resource Card (Grid) ── */
-.res-card {
-    background: var(--surface); border: 1px solid var(--border-color);
-    border-radius: 14px; padding: 1rem;
+/* ---------- Resource Card (Grid) ---------- */
+.res-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md); padding: 1rem;
     display: flex; flex-direction: column; gap: .7rem;
-    transition: box-shadow .2s, border-color .2s, transform .15s;
+    transition: box-shadow .2s, border-color .2s, transform .15s var(--ease);
     position: relative; overflow: hidden;
+    backdrop-filter: blur(14px);
 }
-.res-card::before {
-    content: '';
-    position: absolute; top: 0; right: 0;
-    width: 4px; height: 100%;
-    background: var(--card-type-color, var(--primary-color));
-    border-radius: 0 14px 14px 0;
-}
-.res-card:hover {
-    box-shadow: var(--shadow-md); border-color: rgba(0,131,143,.25);
-    transform: translateY(-2px);
-}
+.res-card::before{ content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: var(--card-type-color, var(--brand-light)); border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.res-card:hover{ box-shadow: var(--shadow-glass); border-color: rgba(38,198,218,.25); transform: translateY(-3px); }
 
-.res-card-top { display: flex; align-items: flex-start; gap: .75rem; }
-.res-card-file-icon {
-    width: 44px; height: 44px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; font-size: 0;
-}
-.res-card-file-icon i { font-size: 1.6rem; }
-.res-card-meta { flex: 1; min-width: 0; }
-.res-card-title {
-    font-weight: 700; font-size: .9rem; line-height: 1.35;
-    display: -webkit-box; -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical; overflow: hidden;
-    margin-bottom: .25rem;
-}
-.type-badge {
-    display: inline-flex; align-items: center; gap: .25rem;
-    font-size: .72rem; font-weight: 700; padding: .15rem .55rem;
-    border-radius: 20px;
-}
-.res-card-divider { border: none; border-top: 1px solid var(--border-color); margin: 0; }
+.res-card-top{ display: flex; align-items: flex-start; gap: .75rem; }
+.res-card-file-icon{ width: 44px; height: 44px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.res-card-file-icon .material-icons-round{ font-size: 1.6rem; }
+.res-card-meta{ flex: 1; min-width: 0; }
+.res-card-title{ font-weight: 700; font-size: .9rem; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: .25rem; color:var(--text-primary); }
+.type-badge{ display: inline-flex; align-items: center; gap: .25rem; font-size: .72rem; font-weight: 700; padding: .15rem .6rem; border-radius: 20px; }
+.res-card-divider{ border: none; border-top: 1px solid var(--glass-border); margin: 0; }
 
-.res-card-info {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: .3rem .5rem; font-size: .76rem; color: var(--text-secondary);
-}
-.res-card-info-item { display: flex; align-items: center; gap: .2rem; }
-.res-card-info-item i { font-size: .85rem; }
+.res-card-info{ display: grid; grid-template-columns: 1fr 1fr; gap: .3rem .5rem; font-size: .76rem; color: var(--text-secondary); }
+.res-card-info-item{ display: flex; align-items: center; gap: .25rem; }
+.res-card-info-item .material-icons-round{ font-size: .85rem; }
 
-.res-card-footer { display: flex; justify-content: space-between; align-items: center; }
-.res-card-uploader { display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--text-secondary); }
-.uploader-avatar {
+.res-card-footer{ display: flex; justify-content: space-between; align-items: center; }
+.res-card-uploader{ display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--text-secondary); }
+.uploader-avatar{
     width: 22px; height: 22px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(135deg, var(--brand), var(--accent));
     color: white; display: flex; align-items: center; justify-content: center;
     font-size: .65rem; font-weight: 700; flex-shrink: 0;
 }
-.res-card-actions { display: flex; gap: .35rem; }
-.res-action-btn {
-    display: flex; align-items: center; gap: .25rem;
-    padding: .3rem .65rem; border-radius: 8px;
-    border: 1px solid var(--border-color); background: var(--background);
+.res-card-actions{ display: flex; gap: .35rem; }
+.res-action-btn{
+    display: flex; align-items: center; gap: .25rem; padding: .32rem .7rem; border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-border-strong); background: var(--glass-bg-strong);
     cursor: pointer; font-family: inherit; font-size: .76rem; font-weight: 600;
     color: var(--text-secondary); transition: all .18s;
 }
-.res-action-btn i { font-size: .9rem; }
-.res-action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(0,131,143,.06); }
-.res-action-btn.liked { border-color: var(--error); color: var(--error); background: rgba(183,28,28,.07); }
-.res-action-btn.download-btn:hover { border-color: var(--success); color: var(--success); background: rgba(46,125,50,.06); }
-.res-action-btn.delete-btn:hover { border-color: var(--error); color: var(--error); background: rgba(183,28,28,.06); }
+.res-action-btn .material-icons-round{ font-size: .9rem; }
+.res-action-btn:hover{ border-color: var(--brand-light); color: var(--brand-light); background: rgba(38,198,218,.1); }
+.res-action-btn.liked{ border-color: var(--error); color: var(--error); background: rgba(255,92,114,.1); }
+.res-action-btn.download-btn:hover{ border-color: var(--success); color: var(--success); background: rgba(46,204,113,.1); }
+.res-action-btn.delete-btn:hover{ border-color: var(--error); color: var(--error); background: rgba(255,92,114,.1); }
 
-/* ── Resource Row (List View) ── */
-.res-row {
+/* ---------- Resource Row (List) ---------- */
+.res-row{
     display: flex; align-items: center; gap: .85rem;
-    background: var(--surface); border: 1px solid var(--border-color);
-    border-radius: 12px; padding: .75rem 1rem;
-    transition: box-shadow .18s, border-color .18s;
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md); padding: .8rem 1.1rem;
+    transition: box-shadow .18s, border-color .18s; backdrop-filter: blur(14px);
 }
-.res-row:hover { box-shadow: var(--shadow-sm); border-color: rgba(0,131,143,.2); }
-.res-row-icon {
-    width: 38px; height: 38px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.res-row-icon i { font-size: 1.3rem; }
-.res-row-info { flex: 1; min-width: 0; }
-.res-row-title { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.res-row-meta { display: flex; align-items: center; gap: .75rem; margin-top: .2rem; flex-wrap: wrap; }
-.res-row-meta-item { display: flex; align-items: center; gap: .2rem; font-size: .75rem; color: var(--text-secondary); }
-.res-row-meta-item i { font-size: .85rem; }
-.res-row-actions { display: flex; gap: .3rem; flex-shrink: 0; }
+.res-row:hover{ box-shadow: var(--shadow-glass); border-color: rgba(38,198,218,.2); }
+.res-row-icon{ width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.res-row-icon .material-icons-round{ font-size: 1.3rem; }
+.res-row-info{ flex: 1; min-width: 0; }
+.res-row-title{ font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color:var(--text-primary); }
+.res-row-meta{ display: flex; align-items: center; gap: .75rem; margin-top: .25rem; flex-wrap: wrap; }
+.res-row-meta-item{ display: flex; align-items: center; gap: .2rem; font-size: .75rem; color: var(--text-secondary); }
+.res-row-meta-item .material-icons-round{ font-size: .85rem; }
+.res-row-actions{ display: flex; gap: .3rem; flex-shrink: 0; }
 
-/* ── Loading / Empty ── */
-.loading-state-res {
-    display: flex; align-items: center; gap: .65rem;
-    color: var(--text-secondary); padding: 3rem;
-    justify-content: center; font-size: .9rem;
-}
-.spin-anim { animation: spin 1s linear infinite; }
-.empty-res-state {
-    text-align: center; padding: 4rem 1rem;
-    color: var(--text-secondary);
-}
-.empty-res-state i { font-size: 4rem; color: var(--border-color); display: block; margin-bottom: .75rem; }
-.empty-res-state h3 { color: var(--text-primary); margin-bottom: .5rem; }
+/* ---------- Loading / Empty ---------- */
+.loading-state-res{ display: flex; align-items: center; gap: .65rem; color: var(--text-secondary); padding: 3rem; justify-content: center; font-size: .9rem; }
+.spin-anim{ animation: spin 1s linear infinite; display:inline-block; }
+.empty-res-state{ text-align: center; padding: 4rem 1rem; color: var(--text-secondary); }
+.empty-res-state .material-icons-round{ font-size: 4rem; color: var(--glass-border-strong); display: block; margin-bottom: .75rem; }
+.empty-res-state h3{ color: var(--text-primary); margin-bottom: .5rem; }
 
-/* ── Upload Modal ── */
-.res-modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
-    z-index: 2000; align-items: center; justify-content: center; padding: 1rem;
-}
-.res-modal-overlay.open { display: flex; animation: modalIn .25s ease; }
-@keyframes modalIn { from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
+/* ---------- Upload Modal ---------- */
+.res-modal-overlay{ display: none; position: fixed; inset: 0; background: rgba(2,4,10,.72); backdrop-filter: blur(6px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; }
+.res-modal-overlay.open{ display: flex; animation: modalIn .25s ease; }
+@keyframes modalIn{ from{opacity:0;transform:scale(.97)} to{opacity:1;transform:scale(1)} }
 
-.res-modal-card {
-    background: var(--surface); border-radius: 20px; padding: 1.75rem;
-    width: 100%; max-width: 520px; box-shadow: 0 24px 64px rgba(0,0,0,.2);
-    max-height: 92vh; overflow-y: auto; border: 1px solid var(--border-color);
+.res-modal-card{
+    background: rgba(15,22,38,.94); border: 1px solid var(--glass-border-strong);
+    backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border-radius: var(--radius-lg); padding: 1.75rem; width: 100%; max-width: 520px;
+    box-shadow: 0 24px 70px rgba(0,0,0,.55); max-height: 92vh; overflow-y: auto;
 }
-.res-modal-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.5rem;
-}
-.res-modal-header h3 {
-    display: flex; align-items: center; gap: .4rem;
-    font-size: 1.1rem; font-weight: 800; margin: 0; color: var(--primary-color);
-}
-.res-modal-close {
+.res-modal-header{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.res-modal-header h3{ display: flex; align-items: center; gap: .4rem; font-size: 1.1rem; font-weight: 800; margin: 0; color: var(--brand-light); }
+.res-modal-close{
     width: 34px; height: 34px; border-radius: 50%;
-    border: 1px solid var(--border-color); background: var(--background);
+    border: 1px solid var(--glass-border-strong); background: var(--glass-bg-strong);
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     color: var(--text-secondary); transition: all .18s;
 }
-.res-modal-close:hover { border-color: var(--error); color: var(--error); }
-.res-modal-body { display: flex; flex-direction: column; gap: 1.1rem; }
-.res-modal-footer { display: flex; gap: .75rem; margin-top: 1.5rem; }
+.res-modal-close:hover{ border-color: var(--error); color: var(--error); }
+.res-modal-body{ display: flex; flex-direction: column; gap: 1.1rem; }
+.res-modal-footer{ display: flex; gap: .75rem; margin-top: 1.5rem; }
 
-/* ── Dropzone ── */
-.dropzone {
-    border: 2px dashed var(--border-color); border-radius: 14px;
+/* ---------- Dropzone ---------- */
+.dropzone{
+    border: 2px dashed var(--glass-border-strong); border-radius: var(--radius-md);
     padding: 1.5rem; text-align: center; cursor: pointer;
-    background: var(--background); transition: all .2s; position: relative;
+    background: rgba(255,255,255,0.03); transition: all .2s; position: relative;
     min-height: 130px; display: flex; align-items: center; justify-content: center;
 }
-.dropzone:hover, .dropzone.drag-over {
-    border-color: var(--primary-color);
-    background: rgba(0,131,143,.04);
-}
-.dropzone.has-file { border-style: solid; border-color: var(--primary-color); background: rgba(0,131,143,.04); }
-.dropzone-content { display: flex; flex-direction: column; align-items: center; gap: .65rem; }
-.dropzone-icon i { font-size: 2.8rem; color: var(--primary-color); opacity: .6; }
-.dropzone-text strong { display: block; font-size: .95rem; color: var(--text-primary); }
-.dropzone-text span  { display: block; font-size: .82rem; color: var(--text-secondary); }
-.dropzone-formats { font-size: .8rem; color: var(--text-secondary); background: var(--surface); padding: .3rem .85rem; border-radius: 20px; border: 1px solid var(--border-color); }
-.dropzone-selected {
-    display: flex; align-items: center; gap: 1rem; width: 100%; padding: .5rem;
-}
-.file-preview-icon {
-    width: 48px; height: 48px; border-radius: 10px;
+.dropzone:hover, .dropzone.drag-over{ border-color: var(--brand-light); background: rgba(38,198,218,.06); }
+.dropzone.has-file{ border-style: solid; border-color: var(--brand-light); background: rgba(38,198,218,.06); }
+.dropzone-content{ display: flex; flex-direction: column; align-items: center; gap: .65rem; }
+.dropzone-icon .material-icons-round{ font-size: 2.8rem; color: var(--brand-light); opacity: .7; }
+.dropzone-text strong{ display: block; font-size: .95rem; color: var(--text-primary); }
+.dropzone-text span{ display: block; font-size: .82rem; color: var(--text-secondary); }
+.dropzone-formats{ font-size: .8rem; color: var(--text-secondary); background: var(--glass-bg-strong); padding: .3rem .9rem; border-radius: 20px; border: 1px solid var(--glass-border-strong); }
+.dropzone-selected{ display: flex; align-items: center; gap: 1rem; width: 100%; padding: .5rem; }
+.file-preview-icon{
+    width: 48px; height: 48px; border-radius: var(--radius-sm);
     display: flex; align-items: center; justify-content: center;
-    background: rgba(0,131,143,.12); color: var(--primary-color);
-    flex-shrink: 0;
+    background: rgba(38,198,218,.15); color: var(--brand-light); flex-shrink: 0;
 }
-.file-preview-icon i { font-size: 1.6rem; }
-.file-preview-info { flex: 1; text-align: right; min-width: 0; }
-.file-preview-name { font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.file-preview-size { font-size: .78rem; color: var(--text-secondary); margin-top: .15rem; }
-.file-remove-btn {
+.file-preview-icon .material-icons-round{ font-size: 1.6rem; }
+.file-preview-info{ flex: 1; text-align: right; min-width: 0; }
+.file-preview-name{ font-weight: 700; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color:var(--text-primary); }
+.file-preview-size{ font-size: .78rem; color: var(--text-secondary); margin-top: .15rem; }
+.file-remove-btn{
     width: 28px; height: 28px; border-radius: 50%;
-    border: 1px solid var(--border-color); background: var(--surface);
+    border: 1px solid var(--glass-border-strong); background: var(--glass-bg-strong);
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     color: var(--text-secondary); flex-shrink: 0; transition: all .18s;
 }
-.file-remove-btn:hover { border-color: var(--error); color: var(--error); }
+.file-remove-btn:hover{ border-color: var(--error); color: var(--error); }
 
-/* ── Upload Form ── */
-.up-form-group { display: flex; flex-direction: column; gap: .4rem; }
-.up-form-label {
-    display: flex; align-items: center; gap: .3rem;
-    font-size: .88rem; font-weight: 700;
+/* ---------- Upload Form ---------- */
+.up-form-group{ display: flex; flex-direction: column; gap: .45rem; }
+.up-form-label{ display: flex; align-items: center; gap: .3rem; font-size: .88rem; font-weight: 700; color:var(--text-primary); }
+.up-form-label .material-icons-round{ font-size: .95rem; color: var(--brand-light); }
+.req{ color: var(--error); }
+.up-form-input{
+    border: 1.5px solid var(--glass-border-strong); border-radius: var(--radius-sm);
+    padding: .7rem .95rem; font-family: inherit; font-size: .9rem;
+    background: rgba(255,255,255,0.04); color: var(--text-primary);
+    transition: border-color .18s, box-shadow .18s; outline: none; width: 100%; box-sizing: border-box;
 }
-.up-form-label i { font-size: .95rem; color: var(--primary-color); }
-.req { color: var(--error); }
-.up-form-input {
-    border: 1.5px solid var(--border-color); border-radius: 10px;
-    padding: .65rem .9rem; font-family: inherit; font-size: .9rem;
-    background: var(--background); color: var(--text-primary);
-    transition: border-color .18s, box-shadow .18s; outline: none;
-    width: 100%; box-sizing: border-box;
-}
-.up-form-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0,131,143,.1); }
+.up-form-input:focus{ border-color: var(--brand-light); box-shadow: 0 0 0 3px rgba(38,198,218,.15); }
 
-.course-input-wrap { position: relative; }
-.course-suggestions {
+.course-input-wrap{ position: relative; }
+.course-suggestions{
     position: absolute; top: calc(100% + 4px); right: 0; left: 0; z-index: 100;
-    background: var(--surface); border: 1px solid var(--border-color);
-    border-radius: 10px; box-shadow: var(--shadow-md); max-height: 180px; overflow-y: auto;
+    background: rgba(15,22,38,.96); border: 1px solid var(--glass-border-strong);
+    border-radius: var(--radius-sm); box-shadow: var(--shadow-glass); max-height: 180px; overflow-y: auto;
 }
-.course-suggestion-item {
-    padding: .55rem .9rem; cursor: pointer; font-size: .88rem;
-    transition: background .15s; display: flex; align-items: center; gap: .5rem;
-}
-.course-suggestion-item:hover { background: rgba(0,131,143,.07); color: var(--primary-color); }
-.course-suggestion-item i { font-size: .95rem; color: var(--primary-color); }
+.course-suggestion-item{ padding: .55rem .9rem; cursor: pointer; font-size: .88rem; transition: background .15s; display: flex; align-items: center; gap: .5rem; color:var(--text-primary); }
+.course-suggestion-item:hover{ background: rgba(38,198,218,.1); color: var(--brand-light); }
+.course-suggestion-item .material-icons-round{ font-size: .95rem; color: var(--brand-light); }
 
-/* ── Type Chips (Upload Modal) ── */
-.type-chips-upload { display: flex; flex-wrap: wrap; gap: .5rem; }
-.type-chip-up { cursor: pointer; }
-.type-chip-up input { display: none; }
-.type-chip-up span {
-    display: inline-flex; align-items: center; gap: .3rem;
-    padding: .45rem 1rem; border-radius: 20px;
-    border: 1.5px solid var(--border-color); background: var(--background);
-    font-size: .83rem; font-weight: 600; color: var(--text-secondary);
-    cursor: pointer; transition: all .18s;
+/* ---------- Type Chips (Upload Modal) ---------- */
+.type-chips-upload{ display: flex; flex-wrap: wrap; gap: .5rem; }
+.type-chip-up{ cursor: pointer; }
+.type-chip-up input{ display: none; }
+.type-chip-up span{
+    display: inline-flex; align-items: center; gap: .3rem; padding: .45rem 1rem; border-radius: 20px;
+    border: 1.5px solid var(--glass-border-strong); background: rgba(255,255,255,0.03);
+    font-size: .83rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all .18s;
 }
-.type-chip-up span i { font-size: .95rem; }
-.type-chip-up input:checked + span {
-    border-color: var(--chip-color);
-    background: color-mix(in srgb, var(--chip-color) 12%, transparent);
-    color: var(--chip-color);
-}
-.type-chip-up:hover span { border-color: var(--chip-color); color: var(--chip-color); }
+.type-chip-up span .material-icons-round{ font-size: .95rem; }
+.type-chip-up input:checked + span{ border-color: var(--chip-color); background: color-mix(in srgb, var(--chip-color) 18%, transparent); color: var(--chip-color); }
+.type-chip-up:hover span{ border-color: var(--chip-color); color: var(--chip-color); }
 
-/* ── Upload Progress ── */
-.upload-progress {
-    margin-top: 1rem; border-radius: 10px; overflow: hidden;
-    background: var(--border-color); height: 6px;
-}
-.upload-progress-bar {
-    height: 100%; border-radius: 10px;
-    background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
-    width: 0%; transition: width .3s ease;
-}
+/* ---------- Upload Progress ---------- */
+.upload-progress{ margin-top: 1rem; border-radius: 10px; overflow: hidden; background: var(--glass-border-strong); height: 6px; }
+.upload-progress-bar{ height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--brand-light), var(--brand)); width: 0%; transition: width .3s ease; }
 
-/* ── Utilities ── */
-.hidden { display: none !important; }
-@keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+/* ---------- Utilities ---------- */
+.hidden{ display: none !important; }
+@keyframes spin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
 
 @media (max-width: 700px) {
-    .res-toolbar { flex-direction: column; align-items: stretch; }
-    .res-toolbar-right { justify-content: space-between; }
-    .res-filter-chips { display: none; } /* در موبایل فیلتر داخل accordion */
+    .res-toolbar{ flex-direction: column; align-items: stretch; }
+    .res-toolbar-right{ justify-content: space-between; }
+    .res-filter-chips{ display: none; }
 }
-
-/* ─── Dark Mode ─── */
-[data-theme="dark"] .res-search-input { background: #3a3b3c; border-color: #4a4b4c; }
-[data-theme="dark"] .res-chip { background: #2d2f31; border-color: #3a3b3c; color: var(--text-secondary); }
-[data-theme="dark"] .res-chip.active { background: var(--primary-color); color: white; }
-[data-theme="dark"] .res-sort-wrap { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .res-sort-select { color: var(--text-primary); }
-[data-theme="dark"] .view-toggle { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .view-btn { color: var(--text-secondary); }
-[data-theme="dark"] .res-stats-bar { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .course-section-header { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .course-body { background: #1c1e21; border-color: #3a3b3c; }
-[data-theme="dark"] .res-card { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .res-row { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .res-action-btn { background: #3a3b3c; border-color: #4a4b4c; color: var(--text-secondary); }
-[data-theme="dark"] .res-action-btn:hover { border-color: var(--primary-color); color: var(--primary-color); background: rgba(79,179,191,.1); }
-[data-theme="dark"] .res-action-btn.liked { border-color: var(--error); color: var(--error); background: rgba(239,83,80,.1); }
-[data-theme="dark"] .res-modal-card { background: #242526; border-color: #3a3b3c; }
-[data-theme="dark"] .dropzone { background: #1c1e21; border-color: #4a4b4c; }
-[data-theme="dark"] .dropzone:hover { background: rgba(79,179,191,.05); }
-[data-theme="dark"] .up-form-input { background: #3a3b3c; border-color: #4a4b4c; color: var(--text-primary); }
-[data-theme="dark"] .course-suggestions { background: #2d2f31; border-color: #3a3b3c; }
-[data-theme="dark"] .type-chip-up span { background: #3a3b3c; border-color: #4a4b4c; }
-[data-theme="dark"] .res-card-divider { border-color: #3a3b3c; }
-[data-theme="dark"] .dropzone-formats { background: #2d2f31; border-color: #3a3b3c; }
-
-
 </style>
 
 <!-- ═══════════════════════════════════════════
      JavaScript
 ═══════════════════════════════════════════ -->
 <script>
-/* ══════════════════════════════════════════
-   ۱. Configuration & State
-══════════════════════════════════════════ */
-
-/** رنگ، آیکون، و برچسب هر نوع منبع */
 const TYPE_CONFIG = {
-    notes:            { label:'جزوه',       icon:'sticky_note_2', color:'var(--type-notes)',  bg:'rgba(0,131,143,.1)'   },
-    slides:           { label:'اسلاید',     icon:'slideshow',      color:'var(--type-slides)', bg:'rgba(21,101,192,.1)'  },
-    sample_questions: { label:'نمونه‌سؤال', icon:'quiz',           color:'var(--type-sample)', bg:'rgba(229,57,53,.1)'   },
-    book:             { label:'کتاب',       icon:'book',           color:'var(--type-book)',   bg:'rgba(109,76,65,.1)'   },
+    notes:            { label:'جزوه',       icon:'sticky_note_2', color:'var(--type-notes)',  bg:'rgba(38,198,218,.15)'  },
+    slides:           { label:'اسلاید',     icon:'slideshow',      color:'var(--type-slides)', bg:'rgba(66,165,245,.15)'  },
+    sample_questions: { label:'نمونه‌سؤال', icon:'quiz',           color:'var(--type-sample)', bg:'rgba(255,107,122,.15)' },
+    book:             { label:'کتاب',       icon:'book',           color:'var(--type-book)',   bg:'rgba(188,170,164,.15)' },
 };
 
-/** پسوند فایل → آیکون + رنگ پس‌زمینه */
 const FORMAT_ICON = {
-    pdf:  { icon:'picture_as_pdf', bg:'rgba(229,57,53,.12)',   color:'#E53935' },
-    docx: { icon:'description',    bg:'rgba(21,101,192,.12)',  color:'#1565C0' },
-    pptx: { icon:'slideshow',      bg:'rgba(245,124,0,.12)',   color:'#F57C00' },
-    zip:  { icon:'folder_zip',     bg:'rgba(109,76,65,.12)',   color:'#6D4C41' },
+    pdf:  { icon:'picture_as_pdf', bg:'rgba(255,107,122,.18)', color:'#FF6B7A' },
+    docx: { icon:'description',    bg:'rgba(66,165,245,.18)',  color:'#42A5F5' },
+    pptx: { icon:'slideshow',      bg:'rgba(255,181,71,.18)',  color:'#FFB547' },
+    zip:  { icon:'folder_zip',     bg:'rgba(188,170,164,.18)', color:'#BCAAA4' },
 };
 
-let allResources    = [];   // همه داده‌های خام از API
-let courseSuggestions = []; // پیشنهادهای نام درس
+let allResources    = [];
+let courseSuggestions = [];
 let currentView     = 'grid';
 let currentTypeFilter = '';
 let currentSort     = 'newest';
 let searchQuery     = '';
 let searchTimer     = null;
 let selectedFile    = null;
-
-/* ══════════════════════════════════════════
-   ۲. API Functions
-══════════════════════════════════════════ */
 
 async function loadResources() {
     showLoading();
@@ -714,7 +557,7 @@ async function loadCourseSuggestions() {
     try {
         const res = await fetch('/api/resources/courses');
         if (res.ok) courseSuggestions = await res.json();
-    } catch(e) { /* نادیده بگیر */ }
+    } catch(e) {}
 }
 
 async function submitUpload() {
@@ -722,16 +565,14 @@ async function submitUpload() {
     const courseVal  = document.getElementById('up-course').value.trim();
     const typeVal    = document.querySelector('input[name="up-type"]:checked')?.value || 'notes';
 
-    // اعتبارسنجی
     if (!selectedFile) { showToast('لطفاً یک فایل انتخاب کنید', 'error'); return; }
     if (!titleVal)      { showToast('عنوان منبع الزامی است', 'error'); return; }
     if (!courseVal)     { showToast('نام درس الزامی است', 'error'); return; }
 
     const btn = document.getElementById('upload-submit-btn');
     btn.disabled = true;
-    btn.innerHTML = '<i class="material-icons spin-anim">sync</i> در حال آپلود...';
+    btn.innerHTML = '<span class="material-icons-round spin-anim">sync</span> در حال آپلود...';
 
-    // نمایش progress bar
     const progressWrap = document.getElementById('upload-progress');
     const progressBar  = document.getElementById('upload-progress-bar');
     progressWrap.classList.remove('hidden');
@@ -743,7 +584,6 @@ async function submitUpload() {
     formData.append('resource_type', typeVal);
 
     try {
-        // XHR به جای fetch برای ردیابی پیشرفت آپلود
         await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/api/resources');
@@ -782,7 +622,7 @@ async function submitUpload() {
         showToast('خطا در آپلود: ' + e.message, 'error');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="material-icons">cloud_upload</i> آپلود';
+        btn.innerHTML = '<span class="material-icons-round">cloud_upload</span> آپلود';
         progressWrap.classList.add('hidden');
         progressBar.style.width = '0%';
     }
@@ -794,13 +634,11 @@ async function likeResource(id, btn) {
         const res = await fetch(`/api/resources/${id}/like`, { method: 'POST' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'خطا');
-        // به‌روزرسانی UI بدون رفرش کامل
         const item = allResources.find(r => r.id === id);
         if (item) {
             item.is_liked    = data.action === 'liked';
             item.like_count  = data.like_count;
         }
-        // فقط همان کارت را به‌روز کن
         updateLikeButtonsForId(id, data.action === 'liked', data.like_count);
     } catch(e) {
         showToast('خطا', 'error');
@@ -810,10 +648,9 @@ async function likeResource(id, btn) {
 }
 
 function updateLikeButtonsForId(id, isLiked, count) {
-    // یک منبع ممکن است چند بار در صفحه نمایش داده شود (در بخش‌های مختلف درس)
     document.querySelectorAll(`.like-btn[data-id="${id}"]`).forEach(btn => {
         btn.classList.toggle('liked', isLiked);
-        btn.innerHTML = `<i class="material-icons">${isLiked ? 'favorite' : 'favorite_border'}</i> ${count}`;
+        btn.innerHTML = `<span class="material-icons-round">${isLiked ? 'favorite' : 'favorite_border'}</span> ${count}`;
     });
 }
 
@@ -831,9 +668,7 @@ async function deleteResource(id) {
 }
 
 function downloadResource(id, title) {
-    // شمارشگر دانلود در سرور به‌روز می‌شود
     window.location.href = `/api/resources/${id}/download`;
-    // به‌روزرسانی محلی شمارشگر
     const item = allResources.find(r => r.id === id);
     if (item) {
         item.download_count++;
@@ -843,24 +678,19 @@ function downloadResource(id, title) {
     }
 }
 
-/* ══════════════════════════════════════════
-   ۳. Rendering
-══════════════════════════════════════════ */
-
 function renderResources() {
     const container = document.getElementById('resources-container');
 
     if (allResources.length === 0) {
         container.innerHTML = `
             <div class="empty-res-state">
-                <i class="material-icons">library_books</i>
+                <span class="material-icons-round">library_books</span>
                 <h3>منبعی پیدا نشد</h3>
                 <p>${searchQuery ? 'نتیجه‌ای برای جستجوی شما یافت نشد' : 'اولین نفری باشید که منبع درسی اضافه می‌کند!'}</p>
             </div>`;
         return;
     }
 
-    // گروه‌بندی بر اساس نام درس
     const grouped = {};
     allResources.forEach(r => {
         if (!grouped[r.course_name]) grouped[r.course_name] = [];
@@ -883,12 +713,11 @@ function buildCourseSection(courseName, items, isOpen) {
 
     return `
     <div class="course-section">
-        <div class="course-section-header ${isOpen ? 'open' : ''}"
-             onclick="toggleCourse(this)">
-            <i class="material-icons course-icon">class</i>
+        <div class="course-section-header ${isOpen ? 'open' : ''}" onclick="toggleCourse(this)">
+            <span class="material-icons-round course-icon">class</span>
             <span class="course-name">${escHtml(courseName)}</span>
             <span class="course-count">${items.length} منبع</span>
-            <i class="material-icons course-toggle-icon">chevron_left</i>
+            <span class="material-icons-round course-toggle-icon">chevron_left</span>
         </div>
         <div class="course-body ${isOpen ? 'open' : ''}">
             ${bodyItems}
@@ -905,12 +734,12 @@ function buildGridCard(r) {
     <div class="res-card" style="--card-type-color:${tc.color}">
         <div class="res-card-top">
             <div class="res-card-file-icon" style="background:${fc.bg}">
-                <i class="material-icons" style="color:${fc.color}">${fc.icon}</i>
+                <span class="material-icons-round" style="color:${fc.color}">${fc.icon}</span>
             </div>
             <div class="res-card-meta">
                 <div class="res-card-title" title="${escHtml(r.title)}">${escHtml(r.title)}</div>
                 <span class="type-badge" style="background:${tc.bg};color:${tc.color}">
-                    <i class="material-icons" style="font-size:.75rem">${tc.icon}</i>
+                    <span class="material-icons-round" style="font-size:.75rem">${tc.icon}</span>
                     ${tc.label}
                 </span>
             </div>
@@ -920,16 +749,16 @@ function buildGridCard(r) {
 
         <div class="res-card-info">
             <div class="res-card-info-item">
-                <i class="material-icons">data_usage</i> ${r.file_size_str}
+                <span class="material-icons-round">data_usage</span> ${r.file_size_str}
             </div>
             <div class="res-card-info-item">
-                <i class="material-icons">file_present</i> ${r.file_format.toUpperCase()}
+                <span class="material-icons-round">file_present</span> ${r.file_format.toUpperCase()}
             </div>
             <div class="res-card-info-item">
-                <i class="material-icons">download</i> ${r.download_count} دانلود
+                <span class="material-icons-round">download</span> ${r.download_count} دانلود
             </div>
             <div class="res-card-info-item">
-                <i class="material-icons">calendar_today</i> ${r.upload_date_j}
+                <span class="material-icons-round">calendar_today</span> ${r.upload_date_j}
             </div>
         </div>
 
@@ -942,16 +771,16 @@ function buildGridCard(r) {
                 <button class="res-action-btn like-btn ${r.is_liked ? 'liked' : ''}"
                         data-id="${r.id}"
                         onclick="likeResource(${r.id}, this)">
-                    <i class="material-icons">${r.is_liked ? 'favorite' : 'favorite_border'}</i>
+                    <span class="material-icons-round">${r.is_liked ? 'favorite' : 'favorite_border'}</span>
                     ${r.like_count}
                 </button>
                 <button class="res-action-btn download-btn"
                         onclick="downloadResource(${r.id}, '${escJs(r.title)}')">
-                    <i class="material-icons">download</i>
+                    <span class="material-icons-round">download</span>
                 </button>
                 ${r.can_delete ? `
                 <button class="res-action-btn delete-btn" onclick="deleteResource(${r.id})">
-                    <i class="material-icons">delete_outline</i>
+                    <span class="material-icons-round">delete_outline</span>
                 </button>` : ''}
             </div>
         </div>
@@ -966,20 +795,20 @@ function buildListRow(r) {
     return `
     <div class="res-row">
         <div class="res-row-icon" style="background:${fc.bg}">
-            <i class="material-icons" style="color:${fc.color}">${fc.icon}</i>
+            <span class="material-icons-round" style="color:${fc.color}">${fc.icon}</span>
         </div>
         <div class="res-row-info">
             <div class="res-row-title" title="${escHtml(r.title)}">${escHtml(r.title)}</div>
             <div class="res-row-meta">
                 <span class="type-badge" style="background:${tc.bg};color:${tc.color}">
-                    <i class="material-icons" style="font-size:.72rem">${tc.icon}</i>
+                    <span class="material-icons-round" style="font-size:.72rem">${tc.icon}</span>
                     ${tc.label}
                 </span>
                 <span class="res-row-meta-item">
-                    <i class="material-icons">data_usage</i> ${r.file_size_str}
+                    <span class="material-icons-round">data_usage</span> ${r.file_size_str}
                 </span>
                 <span class="res-row-meta-item">
-                    <i class="material-icons">download</i>
+                    <span class="material-icons-round">download</span>
                     <span class="dl-count" data-id="${r.id}">${r.download_count}</span> دانلود
                 </span>
                 <span class="res-row-meta-item">
@@ -987,7 +816,7 @@ function buildListRow(r) {
                     ${escHtml(r.uploader_name)}
                 </span>
                 <span class="res-row-meta-item">
-                    <i class="material-icons">calendar_today</i> ${r.upload_date_j}
+                    <span class="material-icons-round">calendar_today</span> ${r.upload_date_j}
                 </span>
             </div>
         </div>
@@ -995,17 +824,17 @@ function buildListRow(r) {
             <button class="res-action-btn like-btn ${r.is_liked ? 'liked' : ''}"
                     data-id="${r.id}"
                     onclick="likeResource(${r.id}, this)">
-                <i class="material-icons">${r.is_liked ? 'favorite' : 'favorite_border'}</i>
+                <span class="material-icons-round">${r.is_liked ? 'favorite' : 'favorite_border'}</span>
                 ${r.like_count}
             </button>
             <button class="res-action-btn download-btn"
                     onclick="downloadResource(${r.id}, '${escJs(r.title)}')">
-                <i class="material-icons">download</i>
+                <span class="material-icons-round">download</span>
                 <span>دانلود</span>
             </button>
             ${r.can_delete ? `
             <button class="res-action-btn delete-btn" onclick="deleteResource(${r.id})">
-                <i class="material-icons">delete_outline</i>
+                <span class="material-icons-round">delete_outline</span>
             </button>` : ''}
         </div>
     </div>`;
@@ -1014,7 +843,7 @@ function buildListRow(r) {
 function showLoading() {
     document.getElementById('resources-container').innerHTML = `
         <div class="loading-state-res">
-            <i class="material-icons spin-anim">sync</i>
+            <span class="material-icons-round spin-anim">sync</span>
             <span>در حال بارگذاری...</span>
         </div>`;
 }
@@ -1022,11 +851,11 @@ function showLoading() {
 function showError(msg) {
     document.getElementById('resources-container').innerHTML = `
         <div class="empty-res-state">
-            <i class="material-icons" style="color:var(--error)">error_outline</i>
+            <span class="material-icons-round" style="color:var(--error)">error_outline</span>
             <h3>خطا در بارگذاری</h3>
             <p>${escHtml(msg)}</p>
             <button class="btn btn-outline" style="margin-top:1rem;" onclick="loadResources()">
-                <i class="material-icons">refresh</i> تلاش مجدد
+                <span class="material-icons-round">refresh</span> تلاش مجدد
             </button>
         </div>`;
 }
@@ -1035,12 +864,8 @@ function updateStats() {
     const total   = allResources.length;
     const courses = new Set(allResources.map(r => r.course_name)).size;
     document.getElementById('stats-total').innerHTML =
-        `<i class="material-icons">folder</i> ${total} منبع در ${courses} درس`;
+        `<span class="material-icons-round">folder</span> ${total} منبع در ${courses} درس`;
 }
-
-/* ══════════════════════════════════════════
-   ۴. Filter & Sort Logic
-══════════════════════════════════════════ */
 
 function applyFiltersAndRender() {
     currentSort = document.getElementById('sort-select').value;
@@ -1070,20 +895,12 @@ function clearSearch() {
     loadResources();
 }
 
-/* ══════════════════════════════════════════
-   ۵. View Toggle
-══════════════════════════════════════════ */
-
 function setView(view) {
     currentView = view;
     document.getElementById('view-grid-btn').classList.toggle('active', view === 'grid');
     document.getElementById('view-list-btn').classList.toggle('active', view === 'list');
-    renderResources();  // فقط رندر مجدد — بدون درخواست API
+    renderResources();
 }
-
-/* ══════════════════════════════════════════
-   ۶. Course Section Toggle
-══════════════════════════════════════════ */
 
 function toggleCourse(header) {
     header.classList.toggle('open');
@@ -1091,12 +908,7 @@ function toggleCourse(header) {
     body.classList.toggle('open');
 }
 
-/* ══════════════════════════════════════════
-   ۷. Upload Modal
-══════════════════════════════════════════ */
-
 function openUploadModal() {
-    // ریست فرم
     selectedFile = null;
     document.getElementById('up-title').value  = '';
     document.getElementById('up-course').value = '';
@@ -1114,8 +926,6 @@ function openUploadModal() {
 function closeUploadModal() {
     document.getElementById('upload-modal').classList.remove('open');
 }
-
-/* ── File Handling ── */
 
 function handleFileSelect(event) {
     const file = event.target.files[0];
@@ -1151,10 +961,9 @@ function setSelectedFile(file) {
     }
     selectedFile = file;
 
-    // آیکون بر اساس پسوند
     const fc = FORMAT_ICON[ext] || FORMAT_ICON.pdf;
     const iconEl = document.getElementById('file-preview-icon');
-    iconEl.innerHTML = `<i class="material-icons" style="font-size:1.6rem;color:${fc.color}">${fc.icon}</i>`;
+    iconEl.innerHTML = `<span class="material-icons-round" style="font-size:1.6rem;color:${fc.color}">${fc.icon}</span>`;
     iconEl.style.background = fc.bg;
 
     document.getElementById('file-preview-name').textContent = file.name;
@@ -1165,10 +974,9 @@ function setSelectedFile(file) {
     document.getElementById('dropzone-content').classList.add('hidden');
     document.getElementById('dropzone-selected').classList.remove('hidden');
 
-    // پیش‌پر کردن عنوان اگر خالی باشد
     const titleInput = document.getElementById('up-title');
     if (!titleInput.value.trim()) {
-        titleInput.value = file.name.replace(/\.[^.]+$/, ''); // حذف پسوند
+        titleInput.value = file.name.replace(/\.[^.]+$/, '');
     }
 }
 
@@ -1181,8 +989,6 @@ function clearFileSelection(event) {
     document.getElementById('dropzone-selected').classList.add('hidden');
 }
 
-/* ── Course Suggestions ── */
-
 function showCourseSuggestions() {
     const val  = document.getElementById('up-course').value.trim().toLowerCase();
     const wrap = document.getElementById('course-suggestions');
@@ -1191,7 +997,7 @@ function showCourseSuggestions() {
     if (matches.length === 0) { wrap.classList.add('hidden'); return; }
     wrap.innerHTML = matches.map(c => `
         <div class="course-suggestion-item" onclick="selectCourse('${escJs(c)}')">
-            <i class="material-icons">menu_book</i> ${escHtml(c)}
+            <span class="material-icons-round">menu_book</span> ${escHtml(c)}
         </div>`).join('');
     wrap.classList.remove('hidden');
 }
@@ -1201,16 +1007,11 @@ function selectCourse(name) {
     document.getElementById('course-suggestions').classList.add('hidden');
 }
 
-// کلیک خارج از suggestions → بستن
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.course-input-wrap')) {
         document.getElementById('course-suggestions')?.classList.add('hidden');
     }
 });
-
-/* ══════════════════════════════════════════
-   ۸. Utilities
-══════════════════════════════════════════ */
 
 function formatBytes(bytes) {
     if (bytes < 1024)           return `${bytes} B`;
@@ -1239,11 +1040,11 @@ function showToast(msg, type='success') {
         position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%);
         background:${bg}; color:white; padding:.8rem 1.75rem; border-radius:24px;
         font-size:.9rem; font-weight:600; z-index:9999;
-        box-shadow:0 6px 20px rgba(0,0,0,.25);
+        box-shadow:0 6px 20px rgba(0,0,0,.4);
         display:flex; align-items:center; gap:.5rem;
         animation:modalIn .25s ease; font-family:inherit; white-space:nowrap;
     `;
-    t.innerHTML = `<i class="material-icons" style="font-size:1.1rem">${type==='success'?'check_circle':'error'}</i>${msg}`;
+    t.innerHTML = `<span class="material-icons-round" style="font-size:1.1rem">${type==='success'?'check_circle':'error'}</span>${msg}`;
     document.body.appendChild(t);
     setTimeout(() => {
         t.style.transition = 'opacity .3s';
@@ -1251,10 +1052,6 @@ function showToast(msg, type='success') {
         setTimeout(() => t.remove(), 300);
     }, 3500);
 }
-
-/* ══════════════════════════════════════════
-   ۹. Init
-══════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
     loadResources();
