@@ -1,8 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}پروفایل کاربری | یونی نت{% endblock %}
+{% block title %}پروفایل کاربری | یونی‌نت{% endblock %}
 
-{# ── CSRF token برای fetch های JS ── #}
 {% block head_extra %}
 <meta name="csrf-token" content="{{ csrf_token() }}">
 {% endblock %}
@@ -10,16 +9,15 @@
 {% block content %}
 <div class="profile-container">
 
-    <!-- نمایش پیام‌های flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
             <div class="profile-alert profile-alert-{{ category }}">
-                <i class="material-icons">
+                <span class="material-icons-round">
                     {% if category == 'success' %}check_circle
                     {% elif category == 'error' %}error
                     {% else %}info{% endif %}
-                </i>
+                </span>
                 <span>{{ message }}</span>
             </div>
             {% endfor %}
@@ -30,7 +28,6 @@
     <div class="profile-header-card">
 
         {% if can_edit %}
-        <!-- فرم مجزا برای آپلود عکس — تا CSRF token خودش را داشته باشد -->
         <form action="{{ url_for('update_profile') }}" method="POST"
               enctype="multipart/form-data" id="profile-pic-form">
             {{ update_profile_form.hidden_tag() }}
@@ -47,7 +44,7 @@
 
                 {% if can_edit %}
                 <label for="file-upload" class="profile-pic-edit-btn" title="تغییر عکس پروفایل">
-                    <i class="material-icons">camera_alt</i>
+                    <span class="material-icons-round">camera_alt</span>
                     <input id="file-upload" type="file" name="profile_pic"
                            accept="image/png,image/jpg,image/jpeg,image/gif"
                            style="display:none"
@@ -60,19 +57,12 @@
         </form>
         {% endif %}
 
-        <!-- اطلاعات نمایشی کاربر -->
         <div class="profile-user-info">
             <h2 class="profile-user-name">{{ user.full_name }}</h2>
 
-            {#
-                مشکل #12 — شماره دانشجویی:
-                - صاحب حساب (can_edit) همیشه شماره خودش را می‌بیند.
-                - مدیر سیستم (is_admin) شماره همه را می‌بیند.
-                - سایر دانشجویان فقط آواتار و نام می‌بینند.
-            #}
             {% if can_edit or is_admin %}
             <p class="profile-student-id">
-                <i class="material-icons">badge</i>
+                <span class="material-icons-round">badge</span>
                 شماره دانشجویی: {{ user.student_id }}
             </p>
             {% endif %}
@@ -82,21 +72,20 @@
             {% endif %}
             {% if user.is_admin %}
             <span class="profile-admin-badge">
-                <i class="material-icons" style="font-size:.85rem;">admin_panel_settings</i>
+                <span class="material-icons-round" style="font-size:.85rem;">admin_panel_settings</span>
                 مدیر سیستم
             </span>
             {% endif %}
         </div>
 
-        <!-- دکمه پیام خصوصی (فقط برای مشاهده پروفایل دیگران) -->
         {% if not can_edit %}
         <div class="profile-actions">
             <a href="{{ url_for('chat_main', user_id=user.id) }}" class="btn btn-custom">
-                <i class="material-icons">chat</i>
+                <span class="material-icons-round">chat</span>
                 ارسال پیام
             </a>
             <a href="{{ url_for('index') }}" class="btn btn-outline">
-                <i class="material-icons">arrow_back</i>
+                <span class="material-icons-round">arrow_back</span>
                 بازگشت
             </a>
         </div>
@@ -107,21 +96,17 @@
     {% if can_edit %}
     <div class="profile-edit-card">
 
-        <!-- نوار تب‌ها: اطلاعات | امنیت | حریم خصوصی -->
         <div class="profile-tabs-bar">
-            <button class="profile-tab active" id="ptab-info"
-                    onclick="switchProfileTab('info', this)">
-                <i class="material-icons">person</i>
+            <button class="profile-tab active" id="ptab-info" onclick="switchProfileTab('info', this)">
+                <span class="material-icons-round">person</span>
                 <span>اطلاعات حساب</span>
             </button>
-            <button class="profile-tab" id="ptab-security"
-                    onclick="switchProfileTab('security', this)">
-                <i class="material-icons">lock</i>
+            <button class="profile-tab" id="ptab-security" onclick="switchProfileTab('security', this)">
+                <span class="material-icons-round">lock</span>
                 <span>امنیت</span>
             </button>
-            <button class="profile-tab" id="ptab-privacy"
-                    onclick="switchProfileTab('privacy', this)">
-                <i class="material-icons">privacy_tip</i>
+            <button class="profile-tab" id="ptab-privacy" onclick="switchProfileTab('privacy', this)">
+                <span class="material-icons-round">privacy_tip</span>
                 <span>حریم خصوصی</span>
             </button>
         </div>
@@ -133,13 +118,13 @@
 
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="material-icons form-label-icon">person</i>
+                        <span class="material-icons-round form-label-icon">person</span>
                         نام و نام خانوادگی
                     </label>
                     {{ update_profile_form.full_name(class="form-control") }}
                     {% if update_profile_form.full_name.errors %}
                         <div class="field-error">
-                            <i class="material-icons">error_outline</i>
+                            <span class="material-icons-round">error_outline</span>
                             {{ update_profile_form.full_name.errors[0] }}
                         </div>
                     {% endif %}
@@ -147,29 +132,28 @@
 
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="material-icons form-label-icon">school</i>
+                        <span class="material-icons-round form-label-icon">school</span>
                         رشته تحصیلی
                     </label>
                     {{ update_profile_form.major(class="form-select") }}
                 </div>
 
-                <!-- شماره دانشجویی — فقط نمایشی، قابل تغییر نیست -->
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="material-icons form-label-icon">badge</i>
+                        <span class="material-icons-round form-label-icon">badge</span>
                         شماره دانشجویی
                     </label>
                     <div class="readonly-field">
                         <span>{{ user.student_id }}</span>
                         <span class="readonly-badge">
-                            <i class="material-icons" style="font-size:.8rem;">lock</i>
+                            <span class="material-icons-round" style="font-size:.8rem;">lock</span>
                             غیرقابل تغییر
                         </span>
                     </div>
                 </div>
 
                 <button type="submit" class="btn btn-custom">
-                    <i class="material-icons">save</i>
+                    <span class="material-icons-round">save</span>
                     ذخیره تغییرات
                 </button>
             </form>
@@ -178,17 +162,16 @@
         <!-- ─── تب ۲: امنیت / تغییر رمز عبور ─── -->
         <div id="tab-security" class="profile-tab-content">
             <div class="security-info-banner">
-                <i class="material-icons">info_outline</i>
+                <span class="material-icons-round">info_outline</span>
                 <span>برای تغییر رمز عبور، ابتدا رمز فعلی خود را وارد کنید، سپس رمز جدید را دو بار تکرار کنید.</span>
             </div>
 
             <form method="POST" action="{{ url_for('update_password') }}" id="pw-form" novalidate>
                 {{ update_password_form.hidden_tag() }}
 
-                <!-- رمز فعلی -->
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="material-icons form-label-icon">lock</i>
+                        <span class="material-icons-round form-label-icon">lock</span>
                         رمز عبور فعلی
                     </label>
                     <div class="input-with-toggle">
@@ -197,23 +180,21 @@
                             id="pw-current",
                             placeholder="رمز عبور فعلی خود را وارد کنید"
                         ) }}
-                        <button type="button" class="toggle-pw-btn"
-                                onclick="togglePw('pw-current', this)" tabindex="-1">
-                            <i class="material-icons">visibility</i>
+                        <button type="button" class="toggle-pw-btn" onclick="togglePw('pw-current', this)" tabindex="-1">
+                            <span class="material-icons-round">visibility</span>
                         </button>
                     </div>
                     {% if update_password_form.current_password.errors %}
                         <div class="field-error">
-                            <i class="material-icons">error_outline</i>
+                            <span class="material-icons-round">error_outline</span>
                             {{ update_password_form.current_password.errors[0] }}
                         </div>
                     {% endif %}
                 </div>
 
-                <!-- رمز جدید -->
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="material-icons form-label-icon">lock_open</i>
+                        <span class="material-icons-round form-label-icon">lock_open</span>
                         رمز عبور جدید
                     </label>
                     <div class="input-with-toggle">
@@ -222,28 +203,25 @@
                             id="pw-new",
                             placeholder="حداقل ۶ کاراکتر"
                         ) }}
-                        <button type="button" class="toggle-pw-btn"
-                                onclick="togglePw('pw-new', this)" tabindex="-1">
-                            <i class="material-icons">visibility</i>
+                        <button type="button" class="toggle-pw-btn" onclick="togglePw('pw-new', this)" tabindex="-1">
+                            <span class="material-icons-round">visibility</span>
                         </button>
                     </div>
-                    <!-- نوار قدرت رمز عبور -->
                     <div class="pw-strength-bar" id="pw-strength-bar">
                         <div class="pw-strength-fill" id="pw-strength-fill"></div>
                     </div>
                     <div class="pw-strength-label" id="pw-strength-label"></div>
                     {% if update_password_form.new_password.errors %}
                         <div class="field-error">
-                            <i class="material-icons">error_outline</i>
+                            <span class="material-icons-round">error_outline</span>
                             {{ update_password_form.new_password.errors[0] }}
                         </div>
                     {% endif %}
                 </div>
 
-                <!-- تأیید رمز جدید -->
                 <div class="form-group">
                     <label class="form-label">
-                        <i class="material-icons form-label-icon">lock_open</i>
+                        <span class="material-icons-round form-label-icon">lock_open</span>
                         تکرار رمز عبور جدید
                     </label>
                     <div class="input-with-toggle">
@@ -252,23 +230,21 @@
                             id="pw-confirm",
                             placeholder="رمز جدید را دوباره وارد کنید"
                         ) }}
-                        <button type="button" class="toggle-pw-btn"
-                                onclick="togglePw('pw-confirm', this)" tabindex="-1">
-                            <i class="material-icons">visibility</i>
+                        <button type="button" class="toggle-pw-btn" onclick="togglePw('pw-confirm', this)" tabindex="-1">
+                            <span class="material-icons-round">visibility</span>
                         </button>
                     </div>
-                    <!-- نشانگر تطابق رمز -->
                     <div class="pw-match-indicator" id="pw-match-indicator"></div>
                     {% if update_password_form.confirm_new_password.errors %}
                         <div class="field-error">
-                            <i class="material-icons">error_outline</i>
+                            <span class="material-icons-round">error_outline</span>
                             {{ update_password_form.confirm_new_password.errors[0] }}
                         </div>
                     {% endif %}
                 </div>
 
                 <button type="submit" class="btn btn-custom" onclick="return validatePwForm()">
-                    <i class="material-icons">key</i>
+                    <span class="material-icons-round">key</span>
                     تغییر رمز عبور
                 </button>
             </form>
@@ -277,17 +253,16 @@
         <!-- ─── تب ۳: حریم خصوصی ─── -->
         <div id="tab-privacy" class="profile-tab-content">
             <div class="privacy-section-title">
-                <i class="material-icons">visibility</i>
+                <span class="material-icons-round">visibility</span>
                 <span>کنترل دسترسی به اطلاعات شما</span>
             </div>
 
             <div class="privacy-options">
 
-                <!-- آخرین بازدید -->
                 <div class="privacy-option-row">
                     <div class="privacy-option-info">
                         <div class="privacy-option-label">
-                            <i class="material-icons">schedule</i>
+                            <span class="material-icons-round">schedule</span>
                             آخرین بازدید
                         </div>
                         <p class="privacy-option-desc">چه کسی می‌تواند زمان آخرین فعالیت شما را ببیند؟</p>
@@ -302,11 +277,10 @@
 
                 <div class="privacy-divider"></div>
 
-                <!-- عکس پروفایل -->
                 <div class="privacy-option-row">
                     <div class="privacy-option-info">
                         <div class="privacy-option-label">
-                            <i class="material-icons">account_circle</i>
+                            <span class="material-icons-round">account_circle</span>
                             عکس پروفایل
                         </div>
                         <p class="privacy-option-desc">چه کسی می‌تواند عکس پروفایل شما را ببیند؟</p>
@@ -321,11 +295,10 @@
 
                 <div class="privacy-divider"></div>
 
-                <!-- پیام خصوصی -->
                 <div class="privacy-option-row">
                     <div class="privacy-option-info">
                         <div class="privacy-option-label">
-                            <i class="material-icons">message</i>
+                            <span class="material-icons-round">message</span>
                             دریافت پیام خصوصی
                         </div>
                         <p class="privacy-option-desc">چه کسی می‌تواند برای شما پیام مستقیم ارسال کند؟</p>
@@ -340,18 +313,11 @@
 
             </div>
 
-            <!--
-                مشکل #6 — دکمه ذخیره تنظیمات حریم خصوصی:
-                قبلاً فقط onchange بود که به‌خاطر نبود CSRF token کار نمی‌کرد.
-                حالا دکمه صریح ذخیره اضافه شد + CSRF از meta tag خوانده می‌شود.
-            -->
             <div class="privacy-footer">
                 <button type="button" class="btn btn-custom" onclick="saveAllPrivacy()" id="privacy-save-btn">
-                    <i class="material-icons">save</i>
+                    <span class="material-icons-round">save</span>
                     ذخیره تنظیمات حریم خصوصی
                 </button>
-
-                <!-- نشانگر وضعیت ذخیره -->
                 <div class="privacy-save-status" id="privacy-save-status"></div>
             </div>
         </div>
@@ -361,81 +327,95 @@
 
 </div><!-- /profile-container -->
 
-<!-- ==================== Styles ==================== -->
 <style>
-.profile-container {
-    max-width: 780px;
-    margin: 2rem auto;
-    padding: 0 1rem 3rem;
+/* =====================================================
+   Light mode variable overrides — برای استقلال فایل
+   ===================================================== */
+body.light-mode{
+    --bg-0:#F3F5F9; --bg-1:#FFFFFF; --bg-2:#F8FAFC;
+    --glass-bg: rgba(15,23,42,0.035);
+    --glass-bg-strong: rgba(15,23,42,0.06);
+    --glass-border: rgba(15,23,42,0.08);
+    --glass-border-strong: rgba(15,23,42,0.16);
+    --text-primary:#0F172A; --text-secondary:#4B5566; --text-muted:#8A93A3;
+    --shadow-glass: 0 8px 28px rgba(15,23,42,0.08);
 }
 
-/* ─── Alert ─── */
-.profile-alert {
-    display: flex; align-items: center; gap: .6rem;
-    padding: .85rem 1.1rem;
-    border-radius: 10px; margin-bottom: 1rem;
-    font-size: .9rem; font-weight: 500;
-}
-.profile-alert i { font-size: 1.1rem; flex-shrink: 0; }
-.profile-alert-success { background: rgba(46,125,50,.1); border: 1px solid rgba(46,125,50,.25); color: var(--success); }
-.profile-alert-error   { background: rgba(183,28,28,.08); border: 1px solid rgba(183,28,28,.2); color: var(--error); }
-.profile-alert-info    { background: rgba(2,136,209,.08); border: 1px solid rgba(2,136,209,.2); color: var(--info, #0288d1); }
+.profile-container { max-width: 780px; margin: 2rem auto; padding: 0 1rem 3rem; position:relative; z-index:1; }
 
-/* ─── Header Card ─── */
-.profile-header-card {
-    background: var(--surface); border-radius: 16px;
-    padding: 2rem; box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
+/* ---------- Buttons ---------- */
+.btn{ display:inline-flex; align-items:center; gap:0.45rem; padding:0.7rem 1.3rem; border-radius:var(--radius-pill); font-weight:600; font-size:0.9rem; border:1px solid transparent; cursor:pointer; font-family:inherit; transition:all 0.25s var(--ease); text-decoration:none; }
+.btn .material-icons-round{ font-size:1.15rem; }
+.btn-custom{ background:linear-gradient(135deg, var(--brand-light), var(--brand)); color:#03161A; box-shadow:0 6px 18px rgba(38,198,218,0.35); }
+.btn-custom:hover{ transform:translateY(-2px); box-shadow:0 10px 26px rgba(38,198,218,0.5); }
+.btn-outline{ background:var(--glass-bg-strong); border:1px solid var(--glass-border-strong); color:var(--text-primary); }
+.btn-outline:hover{ background:rgba(255,255,255,0.12); transform:translateY(-2px); }
+
+/* ---------- Alert ---------- */
+.profile-alert{ display:flex; align-items:center; gap:0.6rem; padding:0.85rem 1.1rem; border-radius:var(--radius-sm); margin-bottom:1rem; font-size:0.9rem; font-weight:500; border:1px solid transparent; }
+.profile-alert .material-icons-round{ font-size:1.15rem; flex-shrink:0; }
+.profile-alert-success{ background:rgba(46,204,113,0.1); border-color:rgba(46,204,113,0.25); color:var(--success); }
+.profile-alert-error{ background:rgba(255,92,114,0.1); border-color:rgba(255,92,114,0.25); color:var(--error); }
+.profile-alert-info{ background:rgba(38,198,218,0.1); border-color:rgba(38,198,218,0.25); color:var(--info); }
+
+/* ---------- Header Card ---------- */
+.profile-header-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); padding: 2.25rem 2rem;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--shadow-glass);
     margin-bottom: 1.5rem;
-    display: flex; flex-direction: column;
-    align-items: center; text-align: center; gap: 1rem;
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem;
+    position: relative; overflow: hidden;
 }
-.profile-pic-wrapper { position: relative; width: 120px; height: 120px; }
-.profile-pic-img {
+.profile-header-card::before{
+    content:''; position:absolute; width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle, var(--brand) 0%, transparent 70%);
+    top:-90px; right:-60px; opacity:0.4; pointer-events:none;
+}
+.profile-pic-wrapper{ position: relative; width: 130px; height: 130px; z-index:1; }
+.profile-pic-img{
     width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
-    border: 4px solid var(--primary-light);
-    box-shadow: 0 4px 16px rgba(0,131,143,.2);
+    border: 4px solid var(--brand-light);
+    box-shadow: 0 8px 28px rgba(0,131,143,.4);
 }
-.profile-pic-edit-btn {
+.profile-pic-edit-btn{
     position: absolute; bottom: 2px; right: 2px;
-    background: var(--primary-color); color: white;
-    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-light), var(--brand)); color:#03161A;
+    width: 36px; height: 36px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.2);
-    transition: transform .2s, background .2s;
-    border: 2px solid var(--surface);
+    cursor: pointer; box-shadow: 0 4px 14px rgba(38,198,218,.5);
+    transition: transform .2s; border: 2px solid var(--bg-1);
 }
-.profile-pic-edit-btn:hover { transform: scale(1.1); background: var(--primary-dark); }
-.profile-pic-edit-btn i { font-size: 1rem; }
+.profile-pic-edit-btn:hover{ transform: scale(1.12); }
+.profile-pic-edit-btn .material-icons-round{ font-size:1.05rem; }
 
-.profile-user-info { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
-.profile-user-name { font-size: 1.5rem; font-weight: 700; margin: 0; }
-.profile-student-id { display: flex; align-items: center; gap: .3rem; color: var(--text-secondary); font-size: .9rem; }
-.profile-student-id i { font-size: 1rem; }
-.profile-major-badge {
-    background: rgba(0,131,143,.12); color: var(--primary-dark);
-    border: 1px solid rgba(0,131,143,.2); padding: .25rem .85rem;
+.profile-user-info{ display: flex; flex-direction: column; align-items: center; gap: .4rem; z-index:1; }
+.profile-user-name{ font-size: 1.6rem; font-weight: 800; margin: 0; color:var(--text-primary); }
+.profile-student-id{ display: flex; align-items: center; gap: .3rem; color: var(--text-secondary); font-size: .9rem; }
+.profile-student-id .material-icons-round{ font-size:1rem; color:var(--brand-light); }
+.profile-major-badge{
+    background: rgba(38,198,218,0.14); color: var(--brand-light);
+    border: 1px solid rgba(38,198,218,0.3); padding: .3rem .9rem;
     border-radius: 20px; font-size: .82rem; font-weight: 600;
 }
-.profile-admin-badge {
+.profile-admin-badge{
     display: inline-flex; align-items: center; gap: .25rem;
-    background: rgba(245,124,0,.12); color: #e65100;
-    border: 1px solid rgba(245,124,0,.25); padding: .2rem .75rem;
+    background: rgba(255,181,71,0.15); color: var(--warning);
+    border: 1px solid rgba(255,181,71,0.3); padding: .25rem .8rem;
     border-radius: 20px; font-size: .78rem; font-weight: 700;
 }
-.profile-actions { display: flex; gap: .6rem; flex-wrap: wrap; justify-content: center; margin-top: .5rem; }
+.profile-actions{ display: flex; gap: .6rem; flex-wrap: wrap; justify-content: center; margin-top: .5rem; z-index:1; }
 
-/* ─── Edit Card ─── */
-.profile-edit-card {
-    background: var(--surface); border-radius: 16px;
-    overflow: hidden; box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
+/* ---------- Edit Card ---------- */
+.profile-edit-card{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); overflow: hidden;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--shadow-glass);
 }
-.profile-tabs-bar {
-    display: flex; border-bottom: 1px solid var(--border-color);
-    background: var(--background); padding: 0 .5rem; gap: .25rem;
-}
-.profile-tab {
+.profile-tabs-bar{ display: flex; border-bottom: 1px solid var(--glass-border); background: var(--glass-bg-strong); padding: 0 .5rem; gap: .25rem; }
+.profile-tab{
     display: flex; align-items: center; gap: .4rem;
     padding: 1rem 1.25rem; cursor: pointer;
     font-weight: 600; font-size: .88rem; color: var(--text-secondary);
@@ -444,150 +424,116 @@
     transition: color .2s, border-color .2s, background .2s;
     border-radius: 6px 6px 0 0;
 }
-.profile-tab:hover { color: var(--primary-color); background: rgba(0,131,143,.04); }
-.profile-tab.active { color: var(--primary-color); border-bottom-color: var(--primary-color); background: var(--surface); }
-.profile-tab i { font-size: 1.1rem; pointer-events: none; }
-.profile-tab span { pointer-events: none; }
+.profile-tab:hover{ color: var(--brand-light); background: rgba(38,198,218,.06); }
+.profile-tab.active{ color: var(--brand-light); border-bottom-color: var(--brand-light); background: var(--glass-bg); }
+.profile-tab .material-icons-round{ font-size: 1.1rem; pointer-events: none; }
+.profile-tab span:not(.material-icons-round){ pointer-events: none; }
 
-/* ─── Tab Content ─── */
-.profile-tab-content { display: none; padding: 2rem; animation: profileFadeIn .3s ease; }
-.profile-tab-content.active { display: block; }
-@keyframes profileFadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+.profile-tab-content{ display: none; padding: 2rem; animation: profileFadeIn .3s ease; }
+.profile-tab-content.active{ display: block; }
+@keyframes profileFadeIn{ from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
 
-/* ─── Form Elements ─── */
-.form-label { display: flex; align-items: center; gap: .3rem; font-weight: 600; font-size: .9rem; margin-bottom: .45rem; }
-.form-label-icon { font-size: .95rem; color: var(--primary-color); }
-.field-error { display: flex; align-items: center; gap: .3rem; color: var(--error); font-size: .82rem; margin-top: .35rem; }
-.field-error i { font-size: .9rem; }
+/* ---------- Form Elements ---------- */
+.form-group{ margin-bottom:1.2rem; }
+.form-label{ display: flex; align-items: center; gap: .3rem; font-weight: 600; font-size: .9rem; margin-bottom: .5rem; color:var(--text-primary); }
+.form-label-icon{ font-size: .95rem; color: var(--brand-light); }
+.field-error{ display: flex; align-items: center; gap: .3rem; color: var(--error); font-size: .82rem; margin-top: .4rem; }
+.field-error .material-icons-round{ font-size: .9rem; }
+.form-control, .form-select{
+    width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--glass-border-strong);
+    border-radius:var(--radius-sm); padding:0.7rem 1rem; color:var(--text-primary);
+    font-family:'Vazirmatn', sans-serif; font-size:0.92rem; transition:border-color 0.2s, box-shadow 0.2s;
+}
+.form-control:focus, .form-select:focus{ outline:none; border-color:var(--brand-light); box-shadow:0 0 0 3px rgba(38,198,218,0.15); }
+.form-select option{ background:var(--bg-1); color:var(--text-primary); }
 
-/* فیلد فقط نمایشی */
-.readonly-field {
+.readonly-field{
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--background); border: 1px solid var(--border-color);
-    border-radius: 8px; padding: .7rem 1rem;
+    background: var(--glass-bg-strong); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm); padding: .75rem 1rem;
     color: var(--text-secondary); font-size: .9rem;
 }
-.readonly-badge {
+.readonly-badge{
     display: inline-flex; align-items: center; gap: .2rem;
     font-size: .75rem; color: var(--text-secondary);
-    background: var(--border-color); padding: .15rem .5rem;
+    background: var(--glass-border-strong); padding: .15rem .55rem;
     border-radius: 20px;
 }
 
-/* ─── Password Tab ─── */
-.security-info-banner {
+/* ---------- Password Tab ---------- */
+.security-info-banner{
     display: flex; align-items: flex-start; gap: .5rem;
-    background: rgba(2,136,209,.07); border: 1px solid rgba(2,136,209,.2);
-    border-radius: 10px; padding: .85rem 1rem;
+    background: rgba(38,198,218,0.08); border: 1px solid rgba(38,198,218,0.2);
+    border-radius: var(--radius-sm); padding: .9rem 1.1rem;
     font-size: .85rem; color: var(--text-secondary);
     margin-bottom: 1.5rem; line-height: 1.6;
 }
-.security-info-banner i { font-size: 1.1rem; color: #0288d1; flex-shrink: 0; margin-top: .05rem; }
+.security-info-banner .material-icons-round{ font-size: 1.1rem; color: var(--brand-light); flex-shrink: 0; margin-top: .05rem; }
 
-.input-with-toggle { position: relative; display: flex; align-items: center; }
-.input-with-toggle .form-control { padding-left: 2.75rem; width: 100%; }
-.toggle-pw-btn {
+.input-with-toggle{ position: relative; display: flex; align-items: center; }
+.input-with-toggle .form-control{ padding-left: 2.75rem; width: 100%; }
+.toggle-pw-btn{
     position: absolute; left: .6rem;
     background: none; border: none; cursor: pointer;
     color: var(--text-secondary); padding: .25rem;
     display: flex; align-items: center; border-radius: 50%;
     transition: color .2s; line-height: 1;
 }
-.toggle-pw-btn:hover { color: var(--primary-color); }
-.toggle-pw-btn i { font-size: 1.15rem; }
+.toggle-pw-btn:hover{ color: var(--brand-light); }
+.toggle-pw-btn .material-icons-round{ font-size: 1.15rem; }
 
-/* نوار قدرت رمز */
-.pw-strength-bar {
-    height: 4px; background: var(--border-color);
-    border-radius: 4px; margin-top: .5rem; overflow: hidden;
-    display: none;
-}
-.pw-strength-fill { height: 100%; border-radius: 4px; transition: width .3s, background .3s; }
-.pw-strength-label { font-size: .78rem; margin-top: .25rem; font-weight: 600; display: none; }
+.pw-strength-bar{ height: 5px; background: var(--glass-border-strong); border-radius: 4px; margin-top: .55rem; overflow: hidden; display: none; }
+.pw-strength-fill{ height: 100%; border-radius: 4px; transition: width .3s, background .3s; }
+.pw-strength-label{ font-size: .78rem; margin-top: .3rem; font-weight: 600; display: none; }
 
-/* نشانگر تطابق */
-.pw-match-indicator {
-    font-size: .8rem; margin-top: .3rem; font-weight: 600;
-    display: flex; align-items: center; gap: .25rem;
-    min-height: 1.2rem;
-}
+.pw-match-indicator{ font-size: .8rem; margin-top: .35rem; font-weight: 600; display: flex; align-items: center; gap: .25rem; min-height: 1.2rem; }
 
-/* ─── Privacy Tab ─── */
-.privacy-section-title {
-    display: flex; align-items: center; gap: .5rem;
-    font-size: .95rem; font-weight: 700; color: var(--primary-color);
-    margin-bottom: 1.5rem;
-}
-.privacy-section-title i { font-size: 1.2rem; }
-.privacy-options { border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; }
-.privacy-option-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 1.1rem 1.25rem; gap: 1rem;
-    background: var(--surface); flex-wrap: wrap;
-}
-.privacy-option-info { flex: 1; min-width: 160px; }
-.privacy-option-label {
-    display: flex; align-items: center; gap: .4rem;
-    font-weight: 600; font-size: .9rem; color: var(--text-primary);
-    margin-bottom: .2rem;
-}
-.privacy-option-label i { font-size: 1.05rem; color: var(--primary-color); }
-.privacy-option-desc { font-size: .8rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
-.privacy-divider { height: 1px; background: var(--border-color); }
+/* ---------- Privacy Tab ---------- */
+.privacy-section-title{ display: flex; align-items: center; gap: .5rem; font-size: .95rem; font-weight: 700; color: var(--brand-light); margin-bottom: 1.5rem; }
+.privacy-section-title .material-icons-round{ font-size: 1.2rem; }
+.privacy-options{ border: 1px solid var(--glass-border); border-radius: var(--radius-md); overflow: hidden; }
+.privacy-option-row{ display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; gap: 1rem; background: var(--glass-bg-strong); flex-wrap: wrap; }
+.privacy-option-info{ flex: 1; min-width: 160px; }
+.privacy-option-label{ display: flex; align-items: center; gap: .4rem; font-weight: 600; font-size: .9rem; color: var(--text-primary); margin-bottom: .2rem; }
+.privacy-option-label .material-icons-round{ font-size: 1.05rem; color: var(--brand-light); }
+.privacy-option-desc{ font-size: .8rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+.privacy-divider{ height: 1px; background: var(--glass-border); }
 
-.privacy-select-wrapper { flex-shrink: 0; }
-.privacy-select {
-    padding: .5rem 1rem; border-radius: 8px;
-    border: 1.5px solid var(--border-color);
-    background: var(--background); color: var(--text-primary);
+.privacy-select-wrapper{ flex-shrink: 0; }
+.privacy-select{
+    padding: .55rem 1rem; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--glass-border-strong);
+    background: rgba(255,255,255,0.04); color: var(--text-primary);
     font-family: inherit; font-size: .88rem; font-weight: 600;
-    cursor: pointer; transition: border-color .2s;
-    min-width: 120px;
+    cursor: pointer; transition: border-color .2s; min-width: 120px;
 }
-.privacy-select:focus { outline: none; border-color: var(--primary-color); }
+.privacy-select:focus{ outline: none; border-color: var(--brand-light); }
+.privacy-select option{ background:var(--bg-1); color:var(--text-primary); }
 
-/* ─── Privacy Footer (دکمه ذخیره + وضعیت) ─── */
-.privacy-footer {
-    display: flex; align-items: center; gap: 1rem;
-    margin-top: 1.5rem; flex-wrap: wrap;
-}
-.privacy-save-status {
-    font-size: .85rem; font-weight: 600;
-    display: flex; align-items: center; gap: .35rem;
-    min-height: 1.5rem;
-}
-.privacy-save-status.saving { color: var(--text-secondary); }
-.privacy-save-status.saved  { color: var(--success); }
-.privacy-save-status.error  { color: var(--error); }
+.privacy-footer{ display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem; flex-wrap: wrap; }
+.privacy-save-status{ font-size: .85rem; font-weight: 600; display: flex; align-items: center; gap: .35rem; min-height: 1.5rem; }
+.privacy-save-status.saving{ color: var(--text-secondary); }
+.privacy-save-status.saved{ color: var(--success); }
+.privacy-save-status.error{ color: var(--error); }
 
-/* دکمه هنگام در حال ذخیره */
-#privacy-save-btn:disabled {
-    opacity: .6; cursor: not-allowed;
-}
+#privacy-save-btn:disabled{ opacity: .6; cursor: not-allowed; }
 
 @media (max-width: 600px) {
-    .profile-tab span { display: none; }
-    .profile-tab { padding: .85rem .75rem; }
-    .privacy-option-row { flex-direction: column; align-items: flex-start; }
-    .privacy-footer { flex-direction: column; align-items: flex-start; }
+    .profile-tab span:not(.material-icons-round){ display: none; }
+    .profile-tab{ padding: .85rem .75rem; }
+    .privacy-option-row{ flex-direction: column; align-items: flex-start; }
+    .privacy-footer{ flex-direction: column; align-items: flex-start; }
 }
 </style>
 {% endblock %}
 
 {% block scripts %}
 <script>
-/* =====================================================
-   خواندن CSRF token از meta tag
-   (مشکل #6 — بدون این token، Flask-WTF درخواست POST را رد می‌کرد)
-   ===================================================== */
 function getCsrfToken() {
     const meta = document.querySelector('meta[name="csrf-token"]');
     return meta ? meta.getAttribute('content') : '';
 }
 
-/* =====================================================
-   Tab Switcher
-   ===================================================== */
 function switchProfileTab(tabName, btn) {
     document.querySelectorAll('.profile-tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.profile-tab').forEach(el => el.classList.remove('active'));
@@ -596,9 +542,6 @@ function switchProfileTab(tabName, btn) {
     if (btn) btn.classList.add('active');
 }
 
-/* =====================================================
-   آپلود عکس پروفایل
-   ===================================================== */
 function submitProfilePic() {
     const form = document.getElementById('profile-pic-form');
     if (!form) return;
@@ -606,21 +549,15 @@ function submitProfilePic() {
     else form.submit();
 }
 
-/* =====================================================
-   Toggle نمایش / پنهان رمز عبور
-   ===================================================== */
 function togglePw(inputId, btn) {
     const input = document.getElementById(inputId);
     if (!input) return;
-    const icon = btn.querySelector('i');
+    const icon = btn.querySelector('.material-icons-round');
     const isHidden = input.type === 'password';
     input.type = isHidden ? 'text' : 'password';
     if (icon) icon.textContent = isHidden ? 'visibility_off' : 'visibility';
 }
 
-/* =====================================================
-   نوار قدرت رمز عبور
-   ===================================================== */
 function calcPasswordStrength(pw) {
     let score = 0;
     if (pw.length >= 6)  score++;
@@ -628,7 +565,7 @@ function calcPasswordStrength(pw) {
     if (/[A-Z]/.test(pw)) score++;
     if (/[0-9]/.test(pw)) score++;
     if (/[^A-Za-z0-9]/.test(pw)) score++;
-    return score; // 0-5
+    return score;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -647,11 +584,11 @@ document.addEventListener('DOMContentLoaded', function () {
             label.style.display = 'block';
             const score = calcPasswordStrength(val);
             const configs = [
-                { w: '15%',  bg: '#ef5350', text: 'خیلی ضعیف' },
-                { w: '30%',  bg: '#ff7043', text: 'ضعیف' },
-                { w: '55%',  bg: '#ffa726', text: 'متوسط' },
-                { w: '80%',  bg: '#66bb6a', text: 'قوی' },
-                { w: '100%', bg: '#2e7d32', text: 'خیلی قوی' },
+                { w: '15%',  bg: '#FF5C72', text: 'خیلی ضعیف' },
+                { w: '30%',  bg: '#FF7043', text: 'ضعیف' },
+                { w: '55%',  bg: '#FFB547', text: 'متوسط' },
+                { w: '80%',  bg: '#66BB6A', text: 'قوی' },
+                { w: '100%', bg: '#2ECC71', text: 'خیلی قوی' },
             ];
             const cfg = configs[Math.max(0, score - 1)] || configs[0];
             fill.style.width = cfg.w;
@@ -671,25 +608,20 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!pwNew || !pwConfirm || !matchEl) return;
         if (!pwConfirm.value) { matchEl.innerHTML = ''; return; }
         if (pwNew.value === pwConfirm.value) {
-            matchEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;color:var(--success)">check_circle</i><span style="color:var(--success)">رمزها مطابقت دارند</span>';
+            matchEl.innerHTML = '<span class="material-icons-round" style="font-size:.95rem;color:var(--success)">check_circle</span><span style="color:var(--success)">رمزها مطابقت دارند</span>';
         } else {
-            matchEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;color:var(--error)">cancel</i><span style="color:var(--error)">رمزها مطابقت ندارند</span>';
+            matchEl.innerHTML = '<span class="material-icons-round" style="font-size:.95rem;color:var(--error)">cancel</span><span style="color:var(--error)">رمزها مطابقت ندارند</span>';
         }
     }
 
-    // اگر سرور خطای رمز عبور برگرداند، تب امنیت باز باشد
     const hasPwError = document.querySelector('#tab-security .field-error');
     if (hasPwError) {
         switchProfileTab('security', document.getElementById('ptab-security'));
     }
 
-    // بارگذاری تنظیمات حریم خصوصی از سرور
     loadPrivacySettings();
 });
 
-/* =====================================================
-   اعتبارسنجی فرم رمز عبور قبل از submit
-   ===================================================== */
 function validatePwForm() {
     const curr    = document.getElementById('pw-current');
     const newPw   = document.getElementById('pw-new');
@@ -710,14 +642,11 @@ function validatePwForm() {
     return true;
 }
 
-/* =====================================================
-   تنظیمات حریم خصوصی
-   ===================================================== */
 function loadPrivacySettings() {
     const lsEl  = document.getElementById('priv-last-seen');
     const ppEl  = document.getElementById('priv-profile-pic');
     const msgEl = document.getElementById('priv-who-can-msg');
-    if (!lsEl) return;   // کاربر صاحب حساب نیست
+    if (!lsEl) return;
 
     fetch('/api/privacy_settings')
         .then(r => r.json())
@@ -729,11 +658,6 @@ function loadPrivacySettings() {
         .catch(() => {});
 }
 
-/*
-    مشکل #6 — تابع ذخیره همه تنظیمات یکجا:
-    - CSRF token از meta tag خوانده می‌شود و در هدر X-CSRFToken ارسال می‌شود.
-    - دکمه حین ارسال غیرفعال می‌شود تا از کلیک مکرر جلوگیری شود.
-*/
 function saveAllPrivacy() {
     const lsEl  = document.getElementById('priv-last-seen');
     const ppEl  = document.getElementById('priv-profile-pic');
@@ -743,9 +667,8 @@ function saveAllPrivacy() {
 
     if (!lsEl || !ppEl || !msgEl) return;
 
-    // نمایش حالت در حال ذخیره
     statusEl.className = 'privacy-save-status saving';
-    statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;animation:privSpin 1s linear infinite;display:inline-block;">sync</i> در حال ذخیره...';
+    statusEl.innerHTML = '<span class="material-icons-round" style="font-size:.95rem;animation:privSpin 1s linear infinite;display:inline-block;">sync</span> در حال ذخیره...';
     saveBtn.disabled = true;
 
     const payload = {
@@ -758,7 +681,6 @@ function saveAllPrivacy() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            /* CSRF token برای Flask-WTF ضروری است */
             'X-CSRFToken': getCsrfToken()
         },
         body: JSON.stringify(payload)
@@ -770,9 +692,8 @@ function saveAllPrivacy() {
     .then(data => {
         if (data.status === 'success') {
             statusEl.className = 'privacy-save-status saved';
-            statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;">check_circle</i> تنظیمات با موفقیت ذخیره شد';
+            statusEl.innerHTML = '<span class="material-icons-round" style="font-size:.95rem;">check_circle</span> تنظیمات با موفقیت ذخیره شد';
             showProfileToast('تنظیمات حریم خصوصی ذخیره شد', 'success');
-            // پاک کردن پیام بعد از چند ثانیه
             setTimeout(() => {
                 statusEl.innerHTML = '';
                 statusEl.className = 'privacy-save-status';
@@ -783,7 +704,7 @@ function saveAllPrivacy() {
     })
     .catch(err => {
         statusEl.className = 'privacy-save-status error';
-        statusEl.innerHTML = '<i class="material-icons" style="font-size:.95rem;">error</i> خطا در ذخیره تنظیمات';
+        statusEl.innerHTML = '<span class="material-icons-round" style="font-size:.95rem;">error</span> خطا در ذخیره تنظیمات';
         showProfileToast('خطا در ذخیره تنظیمات حریم خصوصی', 'error');
         console.error('Privacy save error:', err);
     })
@@ -792,9 +713,6 @@ function saveAllPrivacy() {
     });
 }
 
-/* =====================================================
-   Toast
-   ===================================================== */
 function showProfileToast(msg, type) {
     const old = document.getElementById('profile-toast');
     if (old) old.remove();
@@ -803,8 +721,8 @@ function showProfileToast(msg, type) {
     const bg = type === 'success'
         ? 'linear-gradient(135deg, var(--success), #1b5e20)'
         : 'linear-gradient(135deg, var(--error), #b71c1c)';
-    t.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:${bg};color:white;padding:.8rem 1.75rem;border-radius:24px;font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.25);display:flex;align-items:center;gap:.5rem;font-family:inherit;`;
-    t.innerHTML = `<i class="material-icons" style="font-size:1.1rem;">${type === 'success' ? 'check_circle' : 'error'}</i>${msg}`;
+    t.style.cssText = `position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:${bg};color:white;padding:.8rem 1.75rem;border-radius:24px;font-size:.9rem;font-weight:600;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.4);display:flex;align-items:center;gap:.5rem;font-family:inherit;`;
+    t.innerHTML = `<span class="material-icons-round" style="font-size:1.1rem;">${type === 'success' ? 'check_circle' : 'error'}</span>${msg}`;
     document.body.appendChild(t);
     setTimeout(() => {
         t.style.transition = 'opacity .3s';
@@ -813,9 +731,6 @@ function showProfileToast(msg, type) {
     }, 3200);
 }
 
-/* =====================================================
-   CSS Animation برای spinner
-   ===================================================== */
 const s = document.createElement('style');
 s.textContent = `@keyframes privSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`;
 document.head.appendChild(s);
