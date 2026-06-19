@@ -8,7 +8,7 @@
     <!-- ═══════ Back Button + Header ═══════ -->
     <div class="conv-page-header">
         <a href="{{ url_for('admin_conversations') }}" class="back-btn">
-            <i class="material-icons">arrow_forward</i>
+            <span class="material-icons-round">arrow_forward</span>
             <span>بازگشت به لیست مکالمات</span>
         </a>
 
@@ -21,7 +21,7 @@
                         <img src="{{ url_for('static', filename='uploads/profile_pics/' + user1.profile_pic) }}"
                              alt="{{ user1.full_name }}" class="participant-pic">
                     {% else %}
-                        <div class="participant-initials">{{ user1.full_name[0] }}</div>
+                        <div class="participant-initials pi-user1">{{ user1.full_name[0] }}</div>
                     {% endif %}
                 </a>
                 <div class="participant-info">
@@ -30,9 +30,8 @@
                 </div>
             </div>
 
-            <!-- آیکون وسط -->
             <div class="conv-between-icon">
-                <i class="material-icons">swap_horiz</i>
+                <span class="material-icons-round">swap_horiz</span>
             </div>
 
             <!-- کاربر دوم -->
@@ -47,7 +46,7 @@
                         <img src="{{ url_for('static', filename='uploads/profile_pics/' + user2.profile_pic) }}"
                              alt="{{ user2.full_name }}" class="participant-pic">
                     {% else %}
-                        <div class="participant-initials">{{ user2.full_name[0] }}</div>
+                        <div class="participant-initials pi-user2">{{ user2.full_name[0] }}</div>
                     {% endif %}
                 </a>
             </div>
@@ -56,28 +55,27 @@
         <!-- نوار آمار -->
         <div class="conv-stats-bar">
             <div class="conv-stat">
-                <i class="material-icons">chat</i>
+                <span class="material-icons-round">chat</span>
                 <span>{{ messages|length }} پیام</span>
             </div>
             {% if messages %}
             <div class="conv-stat">
-                <i class="material-icons">calendar_today</i>
+                <span class="material-icons-round">calendar_today</span>
                 <span>از {{ messages[0].timestamp.strftime('%Y/%m/%d') }}</span>
             </div>
             <div class="conv-stat">
-                <i class="material-icons">update</i>
+                <span class="material-icons-round">update</span>
                 <span>آخرین: {{ messages[-1].timestamp.strftime('%Y/%m/%d — %H:%M') }}</span>
             </div>
             {% endif %}
-            <!-- جستجو در مکالمه -->
             <div class="conv-search-wrap">
-                <i class="material-icons conv-search-icon">search</i>
+                <span class="material-icons-round conv-search-icon">search</span>
                 <input type="text" id="conv-search-input" class="conv-search-input"
                        placeholder="جستجو در پیام‌ها..."
                        oninput="filterMessages()">
                 <button class="conv-search-clear hidden" id="conv-search-clear"
                         onclick="clearConvSearch()">
-                    <i class="material-icons">close</i>
+                    <span class="material-icons-round">close</span>
                 </button>
             </div>
         </div>
@@ -88,13 +86,11 @@
 
         {% if messages %}
 
-        {# ─── گروه‌بندی پیام‌ها بر اساس تاریخ روزانه ─── #}
         {% set ns = namespace(last_date=none) %}
 
         <div class="messages-list" id="messages-list">
             {% for msg in messages %}
 
-                {# نمایش برچسب تاریخ اگر روز تغییر کرده #}
                 {% set msg_date = msg.timestamp.strftime('%Y-%m-%d') %}
                 {% if msg_date != ns.last_date %}
                     {% set ns.last_date = msg_date %}
@@ -103,14 +99,12 @@
                     </div>
                 {% endif %}
 
-                {# تعیین اینکه فرستنده کدام کاربر است #}
                 {% set is_user1 = (msg.sender_id == user1.id) %}
 
                 <div class="msg-row {{ 'msg-row-user1' if is_user1 else 'msg-row-user2' }}"
                      data-content="{{ msg.content|lower }}"
                      id="msg-{{ msg.id }}">
 
-                    <!-- آواتار فرستنده -->
                     <div class="msg-avatar-wrap">
                         {% set sender = user1 if is_user1 else user2 %}
                         {% if sender.profile_pic and sender.profile_pic != 'default.jpg' %}
@@ -123,16 +117,13 @@
                         {% endif %}
                     </div>
 
-                    <!-- حباب پیام -->
                     <div class="msg-bubble-wrap">
 
-                        <!-- نام فرستنده -->
                         <div class="msg-sender-label {{ 'label-user1' if is_user1 else 'label-user2' }}">
                             {{ sender.full_name }}
                             <span class="msg-sender-sid">{{ sender.student_id }}</span>
                         </div>
 
-                        <!-- اگر Reply دارد -->
                         {% if msg.reply_to %}
                         <div class="msg-reply-preview {{ 'reply-user1' if is_user1 else 'reply-user2' }}">
                             <div class="reply-bar"></div>
@@ -146,30 +137,26 @@
                         </div>
                         {% endif %}
 
-                        <!-- اگر Forward است -->
                         {% if msg.forwarded_from_id %}
                         <div class="msg-forward-label">
-                            <i class="material-icons">forward</i> فوروارد شده
+                            <span class="material-icons-round">forward</span> فوروارد شده
                         </div>
                         {% endif %}
 
-                        <!-- حباب اصلی پیام -->
                         <div class="msg-bubble {{ 'bubble-user1' if is_user1 else 'bubble-user2' }}
                                                {{ 'msg-deleted' if (msg.deleted_for_sender and msg.deleted_for_receiver) else '' }}
                                                {{ 'msg-edited-bubble' if msg.is_edited else '' }}">
 
                             {% if msg.deleted_for_sender and msg.deleted_for_receiver %}
                                 <span class="deleted-text">
-                                    <i class="material-icons" style="font-size:.9rem;vertical-align:middle;">remove_circle_outline</i>
+                                    <span class="material-icons-round" style="font-size:.9rem;vertical-align:middle;">remove_circle_outline</span>
                                     پیام حذف شده
                                 </span>
                             {% else %}
-                                <!-- محتوای متنی -->
                                 {% if msg.content %}
                                     <div class="msg-text">{{ msg.content }}</div>
                                 {% endif %}
 
-                                <!-- فایل پیوست -->
                                 {% if msg.file_path %}
                                     {% set ext = msg.file_path.rsplit('.', 1)[-1].lower() if '.' in msg.file_path else '' %}
                                     {% if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp'] %}
@@ -182,18 +169,18 @@
                                         <a href="{{ msg.file_path }}" target="_blank"
                                            class="msg-file-attach" download>
                                             <div class="msg-file-icon">
-                                                <i class="material-icons">
+                                                <span class="material-icons-round">
                                                     {% if ext == 'pdf' %}picture_as_pdf
                                                     {% elif ext in ['docx','doc'] %}description
                                                     {% elif ext in ['zip','rar'] %}folder_zip
                                                     {% else %}attach_file{% endif %}
-                                                </i>
+                                                </span>
                                             </div>
                                             <div class="msg-file-info">
                                                 <span class="msg-file-name">{{ msg.file_path.rsplit('/', 1)[-1] }}</span>
                                                 <span class="msg-file-ext">{{ ext.upper() }}</span>
                                             </div>
-                                            <i class="material-icons msg-file-dl">download</i>
+                                            <span class="material-icons-round msg-file-dl">download</span>
                                         </a>
                                     {% endif %}
                                 {% endif %}
@@ -204,28 +191,25 @@
                             {% endif %}
                         </div>
 
-                        <!-- زمان + وضعیت -->
                         <div class="msg-meta {{ 'meta-right' if is_user1 else 'meta-left' }}">
                             <span class="msg-time">{{ msg.timestamp.strftime('%H:%M') }}</span>
 
-                            <!-- وضعیت ارسال (فقط برای پیام‌های user1) -->
                             {% if is_user1 %}
                                 {% if msg.read_at %}
                                     <span class="msg-status status-read" title="خوانده شده در {{ msg.read_at.strftime('%H:%M') }}">
-                                        <i class="material-icons">done_all</i>
+                                        <span class="material-icons-round">done_all</span>
                                     </span>
                                 {% elif msg.delivered_at %}
                                     <span class="msg-status status-delivered" title="تحویل داده شده">
-                                        <i class="material-icons">done_all</i>
+                                        <span class="material-icons-round">done_all</span>
                                     </span>
                                 {% else %}
                                     <span class="msg-status status-sent" title="ارسال شده">
-                                        <i class="material-icons">done</i>
+                                        <span class="material-icons-round">done</span>
                                     </span>
                                 {% endif %}
                             {% endif %}
 
-                            <!-- وضعیت حذف -->
                             {% if msg.deleted_for_sender and not msg.deleted_for_receiver %}
                                 <span class="msg-del-tag">حذف برای فرستنده</span>
                             {% elif msg.deleted_for_receiver and not msg.deleted_for_sender %}
@@ -235,7 +219,6 @@
                             {% endif %}
                         </div>
 
-                        <!-- ری‌اکشن‌ها -->
                         {% if msg.reactions.count() > 0 %}
                         <div class="msg-reactions {{ 'reactions-right' if is_user1 else 'reactions-left' }}">
                             {% for reaction in msg.reactions.all() %}
@@ -254,19 +237,17 @@
             {% endfor %}
         </div><!-- /messages-list -->
 
-        <!-- نتیجه جستجو (وقتی جستجو فعال است) -->
         <div id="search-result-info" class="search-result-info hidden">
-            <i class="material-icons">search</i>
+            <span class="material-icons-round">search</span>
             <span id="search-result-text"></span>
             <button onclick="clearConvSearch()">
-                <i class="material-icons">close</i>
+                <span class="material-icons-round">close</span>
             </button>
         </div>
 
         {% else %}
-        <!-- حالت خالی -->
         <div class="empty-conv-state">
-            <i class="material-icons">chat_bubble_outline</i>
+            <span class="material-icons-round">chat_bubble_outline</span>
             <h3>هیچ پیامی وجود ندارد</h3>
             <p>این دو کاربر هنوز هیچ پیامی رد و بدل نکرده‌اند.</p>
         </div>
@@ -279,404 +260,223 @@
 <!-- ═══════ Image Viewer Overlay ═══════ -->
 <div id="image-viewer" class="image-viewer-overlay" onclick="closeImageViewer()">
     <button class="image-viewer-close" onclick="closeImageViewer()">
-        <i class="material-icons">close</i>
+        <span class="material-icons-round">close</span>
     </button>
     <img id="image-viewer-img" src="" alt="تصویر" onclick="event.stopPropagation()">
 </div>
 
 <!-- ═══════ Styles ═══════ -->
 <style>
-/* ─── Page Layout ─── */
-.admin-conv-page {
-    max-width: 860px;
-    margin: 0 auto;
-    padding-bottom: 3rem;
+/* =====================================================
+   Light mode variable overrides — برای استقلال فایل
+   ===================================================== */
+body.light-mode{
+    --bg-0:#F3F5F9; --bg-1:#FFFFFF; --bg-2:#F8FAFC;
+    --glass-bg: rgba(15,23,42,0.035);
+    --glass-bg-strong: rgba(15,23,42,0.06);
+    --glass-border: rgba(15,23,42,0.08);
+    --glass-border-strong: rgba(15,23,42,0.16);
+    --text-primary:#0F172A; --text-secondary:#4B5566; --text-muted:#8A93A3;
+    --shadow-glass: 0 8px 28px rgba(15,23,42,0.08);
 }
 
-/* ─── Back Button ─── */
-.back-btn {
+/* ---------- Layout ---------- */
+.admin-conv-page{ max-width: 860px; margin: 0 auto; padding-bottom: 3rem; position:relative; z-index:1; }
+
+/* ---------- Back Button ---------- */
+.back-btn{
     display: inline-flex; align-items: center; gap: .4rem;
     color: var(--text-secondary); text-decoration: none;
     font-size: .88rem; font-weight: 600;
-    padding: .4rem .75rem; border-radius: 10px;
-    border: 1px solid var(--border-color); background: var(--surface);
-    transition: all .18s; margin-bottom: 1.1rem;
+    padding: .45rem .85rem; border-radius: var(--radius-pill);
+    border: 1px solid var(--glass-border-strong); background: var(--glass-bg-strong);
+    transition: all .18s; margin-bottom: 1.1rem; backdrop-filter: blur(10px);
 }
-.back-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    background: rgba(0,131,143,.05);
+.back-btn .material-icons-round{ font-size: 1.1rem; }
+.back-btn:hover{ border-color: var(--brand-light); color: var(--brand-light); background: rgba(38,198,218,.08); }
+
+/* ---------- Page Header ---------- */
+.conv-page-header{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); padding: 1.35rem 1.5rem; margin-bottom: 1.25rem;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--shadow-glass);
 }
 
-/* ─── Page Header ─── */
-.conv-page-header {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 18px; padding: 1.25rem 1.5rem;
-    margin-bottom: 1.25rem;
-    box-shadow: var(--shadow-sm);
-}
+/* ---------- Participants ---------- */
+.conv-participants{ display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
+.participant-card{ display: flex; align-items: center; gap: .75rem; flex: 1; min-width: 160px; }
+.participant-card-reverse{ flex-direction: row-reverse; }
+.participant-avatar-link{ flex-shrink: 0; text-decoration: none; }
+.participant-pic{ width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid var(--glass-border-strong); transition: border-color .18s; }
+.participant-pic:hover{ border-color: var(--brand-light); }
+.participant-initials{ width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; color: #03161A; }
+.pi-user1{ background: linear-gradient(135deg, var(--brand-light), var(--brand)); }
+.pi-user2{ background: linear-gradient(135deg, #7986CB, #3949AB); }
+.participant-info{ display: flex; flex-direction: column; gap: .1rem; }
+.participant-info-left{ align-items: flex-end; }
+.participant-name{ font-weight: 700; font-size: 1rem; color:var(--text-primary); }
+.participant-sid{ font-size: .78rem; color: var(--text-secondary); }
+.conv-between-icon{ display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(38,198,218,.12); color: var(--brand-light); flex-shrink: 0; }
+.conv-between-icon .material-icons-round{ font-size: 1.3rem; }
 
-/* ─── Participants Row ─── */
-.conv-participants {
-    display: flex; align-items: center; gap: 1rem;
-    margin-bottom: 1.1rem; flex-wrap: wrap;
-}
-.participant-card {
-    display: flex; align-items: center; gap: .75rem; flex: 1; min-width: 160px;
-}
-.participant-card-reverse { flex-direction: row-reverse; }
+/* ---------- Stats Bar ---------- */
+.conv-stats-bar{ display: flex; align-items: center; gap: 1.25rem; padding-top: .9rem; border-top: 1px solid var(--glass-border); flex-wrap: wrap; }
+.conv-stat{ display: flex; align-items: center; gap: .35rem; font-size: .82rem; color: var(--text-secondary); }
+.conv-stat .material-icons-round{ font-size: .95rem; color: var(--brand-light); }
 
-.participant-avatar-link { flex-shrink: 0; text-decoration: none; }
-.participant-pic {
-    width: 50px; height: 50px; border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--border-color);
-    transition: border-color .18s;
-}
-.participant-pic:hover { border-color: var(--primary-color); }
-.participant-initials {
-    width: 50px; height: 50px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.25rem; font-weight: 800; color: white;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-}
-
-.participant-info { display: flex; flex-direction: column; gap: .1rem; }
-.participant-info-left { align-items: flex-end; }
-.participant-name { font-weight: 700; font-size: 1rem; }
-.participant-sid { font-size: .78rem; color: var(--text-secondary); }
-
-.conv-between-icon {
-    display: flex; align-items: center; justify-content: center;
-    width: 38px; height: 38px; border-radius: 50%;
-    background: rgba(0,131,143,.1); color: var(--primary-color);
-    flex-shrink: 0;
-}
-
-/* ─── Stats Bar ─── */
-.conv-stats-bar {
-    display: flex; align-items: center; gap: 1.25rem;
-    padding-top: .9rem; border-top: 1px solid var(--border-color);
-    flex-wrap: wrap;
-}
-.conv-stat {
-    display: flex; align-items: center; gap: .3rem;
-    font-size: .82rem; color: var(--text-secondary);
-}
-.conv-stat i { font-size: .95rem; color: var(--primary-color); }
-
-/* ─── Search in Conversation ─── */
-.conv-search-wrap {
-    margin-right: auto; position: relative; display: flex; align-items: center;
-}
-.conv-search-icon {
-    position: absolute; right: .7rem;
-    font-size: 1rem; color: var(--text-secondary); pointer-events: none;
-}
-.conv-search-input {
-    border: 1.5px solid var(--border-color); border-radius: 20px;
-    padding: .38rem .7rem .38rem 2.2rem; padding-right: 2.1rem;
+/* ---------- Search ---------- */
+.conv-search-wrap{ margin-right: auto; position: relative; display: flex; align-items: center; }
+.conv-search-icon{ position: absolute; right: .75rem; font-size: 1rem; color: var(--text-muted); pointer-events: none; }
+.conv-search-input{
+    border: 1.5px solid var(--glass-border-strong); border-radius: 20px;
+    padding: .42rem .75rem .42rem 2.2rem; padding-right: 2.15rem;
     font-family: inherit; font-size: .82rem;
-    background: var(--background); color: var(--text-primary);
-    outline: none; width: 220px;
-    transition: border-color .18s, box-shadow .18s;
+    background: rgba(255,255,255,0.04); color: var(--text-primary);
+    outline: none; width: 220px; transition: border-color .18s, box-shadow .18s;
 }
-.conv-search-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(0,131,143,.1);
-}
-.conv-search-clear {
-    position: absolute; left: .5rem;
-    background: none; border: none; cursor: pointer;
-    color: var(--text-secondary); display: flex; align-items: center;
-    border-radius: 50%; padding: .1rem; transition: color .18s;
-}
-.conv-search-clear:hover { color: var(--error); }
+.conv-search-input:focus{ border-color: var(--brand-light); box-shadow: 0 0 0 2px rgba(38,198,218,.15); }
+.conv-search-clear{ position: absolute; left: .5rem; background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; border-radius: 50%; padding: .1rem; transition: color .18s; }
+.conv-search-clear:hover{ color: var(--error); }
+.conv-search-clear .material-icons-round{ font-size: .95rem; }
 
-/* ─── Messages Wrapper ─── */
-.conv-messages-wrapper {
-    background: var(--surface);
-    border: 1px solid var(--border-color);
-    border-radius: 18px;
-    padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
-    position: relative;
+/* ---------- Messages Wrapper ---------- */
+.conv-messages-wrapper{
+    background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+    backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+    box-shadow: var(--shadow-glass); position: relative;
 }
+.messages-list{ display: flex; flex-direction: column; gap: .5rem; }
 
-.messages-list {
-    display: flex; flex-direction: column; gap: .5rem;
+/* ---------- Date Separator ---------- */
+.date-separator{ display: flex; align-items: center; justify-content: center; margin: .85rem 0; position: relative; }
+.date-separator::before{ content: ''; position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed var(--glass-border-strong); }
+.date-separator span{
+    position: relative; z-index: 1; background: var(--glass-bg-strong);
+    padding: .2rem .9rem; font-size: .76rem; font-weight: 600;
+    color: var(--text-secondary); border-radius: 20px; border: 1px solid var(--glass-border-strong);
 }
 
-/* ─── Date Separator ─── */
-.date-separator {
-    display: flex; align-items: center; justify-content: center;
-    margin: .75rem 0; position: relative;
-}
-.date-separator::before {
-    content: '';
-    position: absolute; left: 0; right: 0; top: 50%;
-    border-top: 1px dashed var(--border-color);
-}
-.date-separator span {
-    position: relative; z-index: 1;
-    background: var(--surface); padding: .2rem .9rem;
-    font-size: .76rem; font-weight: 600;
-    color: var(--text-secondary); border-radius: 20px;
-    border: 1px solid var(--border-color);
-}
+/* ---------- Message Row ---------- */
+.msg-row{ display: flex; align-items: flex-end; gap: .6rem; padding: .15rem 0; transition: background .15s; }
+.msg-row.highlight{ background: rgba(255,213,79,.08); border-radius: var(--radius-sm); margin: 0 -.5rem; padding: .15rem .5rem; }
+.msg-row-user1{ flex-direction: row; }
+.msg-row-user2{ flex-direction: row-reverse; }
 
-/* ─── Message Row ─── */
-.msg-row {
-    display: flex; align-items: flex-end; gap: .6rem;
-    padding: .15rem 0;
-    transition: background .15s;
-}
-.msg-row.highlight {
-    background: rgba(255, 213, 79, .15);
-    border-radius: 12px; margin: 0 -.75rem;
-    padding: .15rem .75rem;
-}
-.msg-row-user1 { flex-direction: row; }
-.msg-row-user2 { flex-direction: row-reverse; }
+/* ---------- Avatar ---------- */
+.msg-avatar-wrap{ flex-shrink: 0; align-self: flex-end; }
+.msg-avatar-img{ width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--glass-border-strong); }
+.msg-avatar-initials{ width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .8rem; font-weight: 700; color: #03161A; }
+.bg-user1{ background: linear-gradient(135deg, var(--brand-light), var(--brand)); }
+.bg-user2{ background: linear-gradient(135deg, #7986CB, #3949AB); }
 
-/* ─── Avatar ─── */
-.msg-avatar-wrap { flex-shrink: 0; align-self: flex-end; }
-.msg-avatar-img {
-    width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
-    border: 1.5px solid var(--border-color);
-}
-.msg-avatar-initials {
-    width: 32px; height: 32px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: .8rem; font-weight: 700; color: white;
-}
-.bg-user1 { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); }
-.bg-user2 { background: linear-gradient(135deg, #5c6bc0, #283593); }
+/* ---------- Bubble Wrap ---------- */
+.msg-bubble-wrap{ max-width: 68%; display: flex; flex-direction: column; gap: .2rem; }
+.msg-sender-label{ font-size: .72rem; font-weight: 700; margin-bottom: .1rem; display: flex; align-items: center; gap: .4rem; }
+.label-user1{ color: var(--brand-light); }
+.label-user2{ color: #7986CB; text-align: right; }
+.msg-sender-sid{ font-weight: 400; color: var(--text-muted); }
 
-/* ─── Bubble Wrap ─── */
-.msg-bubble-wrap {
-    max-width: 68%;
-    display: flex; flex-direction: column; gap: .2rem;
-}
+/* ---------- Reply Preview ---------- */
+.msg-reply-preview{ display: flex; gap: .5rem; align-items: stretch; border-radius: var(--radius-sm); padding: .4rem .65rem; margin-bottom: .2rem; font-size: .78rem; max-width: 100%; }
+.reply-user1{ background: rgba(38,198,218,.08); border: 1px solid rgba(38,198,218,.2); }
+.reply-user2{ background: rgba(121,134,203,.08); border: 1px solid rgba(121,134,203,.2); }
+.reply-bar{ width: 3px; border-radius: 4px; background: var(--brand-light); flex-shrink: 0; }
+.reply-content{ display: flex; flex-direction: column; gap: .1rem; overflow: hidden; }
+.reply-sender{ font-weight: 700; color: var(--brand-light); white-space: nowrap; }
+.reply-text{ color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.msg-sender-label {
-    font-size: .72rem; font-weight: 700;
-    margin-bottom: .1rem; display: flex; align-items: center; gap: .4rem;
-}
-.label-user1 { color: var(--primary-color); }
-.label-user2 { color: #3949ab; text-align: right; }
-.msg-sender-sid { font-weight: 400; color: var(--text-secondary); }
+/* ---------- Forward Label ---------- */
+.msg-forward-label{ display: flex; align-items: center; gap: .25rem; font-size: .72rem; color: var(--text-muted); font-style: italic; margin-bottom: .15rem; }
+.msg-forward-label .material-icons-round{ font-size: .9rem; }
 
-/* ─── Reply Preview ─── */
-.msg-reply-preview {
-    display: flex; gap: .5rem; align-items: stretch;
-    border-radius: 8px; padding: .4rem .6rem;
-    margin-bottom: .2rem; font-size: .78rem;
-    max-width: 100%;
-}
-.reply-user1 { background: rgba(0,131,143,.08); border: 1px solid rgba(0,131,143,.15); }
-.reply-user2 { background: rgba(57,73,171,.08); border: 1px solid rgba(57,73,171,.15); }
-.reply-bar { width: 3px; border-radius: 4px; background: var(--primary-color); flex-shrink: 0; }
-.reply-content { display: flex; flex-direction: column; gap: .1rem; overflow: hidden; }
-.reply-sender { font-weight: 700; color: var(--primary-color); white-space: nowrap; }
-.reply-text { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* ---------- Bubble ---------- */
+.msg-bubble{ padding: .65rem .9rem; border-radius: var(--radius-md); word-break: break-word; line-height: 1.6; font-size: .9rem; position: relative; }
+.bubble-user1{ background: rgba(38,198,218,.1); border: 1px solid rgba(38,198,218,.2); border-bottom-right-radius: 4px; color: var(--text-primary); }
+.bubble-user2{ background: rgba(121,134,203,.1); border: 1px solid rgba(121,134,203,.2); border-bottom-left-radius: 4px; color: var(--text-primary); }
+.msg-deleted{ opacity: .55; font-style: italic; }
+.msg-text{ white-space: pre-wrap; }
+.deleted-text{ display: flex; align-items: center; gap: .3rem; color: var(--text-secondary); font-size: .85rem; }
 
-/* ─── Forward Label ─── */
-.msg-forward-label {
-    display: flex; align-items: center; gap: .25rem;
-    font-size: .72rem; color: var(--text-secondary);
-    font-style: italic; margin-bottom: .15rem;
-}
-.msg-forward-label i { font-size: .85rem; }
+/* ---------- Image Attachment ---------- */
+.msg-image-wrap{ margin-top: .3rem; }
+.msg-image{ max-width: 220px; max-height: 220px; border-radius: var(--radius-sm); cursor: zoom-in; display: block; object-fit: cover; border: 1px solid var(--glass-border-strong); transition: opacity .18s; }
+.msg-image:hover{ opacity: .88; }
 
-/* ─── Bubble ─── */
-.msg-bubble {
-    padding: .6rem .85rem; border-radius: 14px;
-    word-break: break-word; line-height: 1.55; font-size: .9rem;
-    position: relative;
-}
-.bubble-user1 {
-    background: rgba(0,131,143,.1);
-    border: 1px solid rgba(0,131,143,.18);
-    border-bottom-right-radius: 4px;
-    color: var(--text-primary);
-}
-.bubble-user2 {
-    background: rgba(57,73,171,.08);
-    border: 1px solid rgba(57,73,171,.15);
-    border-bottom-left-radius: 4px;
-    color: var(--text-primary);
-}
-.msg-deleted { opacity: .55; font-style: italic; }
-.msg-edited-bubble { /* بدون تغییر ظاهری اضافه — فقط tag نشان داده می‌شود */ }
-
-.msg-text { white-space: pre-wrap; }
-
-.deleted-text {
-    display: flex; align-items: center; gap: .3rem;
-    color: var(--text-secondary); font-size: .85rem;
-}
-
-/* ─── Image Attachment ─── */
-.msg-image-wrap { margin-top: .3rem; }
-.msg-image {
-    max-width: 220px; max-height: 220px;
-    border-radius: 10px; cursor: zoom-in;
-    display: block; object-fit: cover;
-    border: 1px solid var(--border-color);
-    transition: opacity .18s;
-}
-.msg-image:hover { opacity: .9; }
-
-/* ─── File Attachment ─── */
-.msg-file-attach {
+/* ---------- File Attachment ---------- */
+.msg-file-attach{
     display: flex; align-items: center; gap: .65rem;
-    background: var(--background); border: 1px solid var(--border-color);
-    border-radius: 10px; padding: .5rem .75rem;
-    text-decoration: none; color: var(--text-primary);
-    margin-top: .3rem; transition: border-color .18s;
-    max-width: 240px;
+    background: var(--glass-bg-strong); border: 1px solid var(--glass-border-strong);
+    border-radius: var(--radius-sm); padding: .55rem .8rem;
+    text-decoration: none; color: var(--text-primary); margin-top: .3rem;
+    transition: border-color .18s; max-width: 240px;
 }
-.msg-file-attach:hover { border-color: var(--primary-color); }
-.msg-file-icon {
-    width: 36px; height: 36px; border-radius: 8px;
-    background: rgba(0,131,143,.1); display: flex; align-items: center;
-    justify-content: center; flex-shrink: 0;
-}
-.msg-file-icon i { color: var(--primary-color); font-size: 1.3rem; }
-.msg-file-info { flex: 1; min-width: 0; }
-.msg-file-name {
-    font-weight: 600; font-size: .82rem;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
-}
-.msg-file-ext { font-size: .72rem; color: var(--text-secondary); }
-.msg-file-dl { color: var(--text-secondary); font-size: 1.1rem; }
+.msg-file-attach:hover{ border-color: var(--brand-light); }
+.msg-file-icon{ width: 36px; height: 36px; border-radius: var(--radius-sm); background: rgba(38,198,218,.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.msg-file-icon .material-icons-round{ color: var(--brand-light); font-size: 1.3rem; }
+.msg-file-info{ flex: 1; min-width: 0; }
+.msg-file-name{ font-weight: 600; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.msg-file-ext{ font-size: .72rem; color: var(--text-secondary); }
+.msg-file-dl{ color: var(--text-secondary); font-size: 1.1rem; }
+.msg-edited-tag{ display: block; font-size: .68rem; color: var(--text-muted); margin-top: .3rem; font-style: italic; }
 
-.msg-edited-tag {
-    display: block; font-size: .68rem;
-    color: var(--text-secondary); margin-top: .3rem; font-style: italic;
-}
+/* ---------- Meta ---------- */
+.msg-meta{ display: flex; align-items: center; gap: .35rem; font-size: .72rem; color: var(--text-secondary); margin-top: .1rem; }
+.meta-right{ justify-content: flex-end; }
+.meta-left{ justify-content: flex-start; }
+.msg-status .material-icons-round{ font-size: .9rem; }
+.status-sent .material-icons-round{ color: var(--text-muted); }
+.status-delivered .material-icons-round{ color: var(--text-secondary); }
+.status-read .material-icons-round{ color: var(--brand-light); }
+.msg-del-tag{ font-size: .68rem; padding: .05rem .4rem; background: rgba(255,92,114,.1); color: var(--error); border-radius: 20px; border: 1px solid rgba(255,92,114,.2); }
 
-/* ─── Meta (time + status) ─── */
-.msg-meta {
-    display: flex; align-items: center; gap: .35rem;
-    font-size: .72rem; color: var(--text-secondary);
-    margin-top: .1rem;
-}
-.meta-right { justify-content: flex-end; }
-.meta-left  { justify-content: flex-start; }
+/* ---------- Reactions ---------- */
+.msg-reactions{ display: flex; flex-wrap: wrap; gap: .2rem; margin-top: .2rem; }
+.reactions-right{ justify-content: flex-end; }
+.reactions-left{ justify-content: flex-start; }
+.reaction-pill{ background: var(--glass-bg-strong); border: 1px solid var(--glass-border-strong); border-radius: 20px; padding: .1rem .45rem; font-size: .85rem; cursor: default; transition: transform .15s; }
+.reaction-pill:hover{ transform: scale(1.2); }
 
-.msg-status i { font-size: .9rem; }
-.status-sent      { color: var(--text-secondary); }
-.status-delivered { color: var(--text-secondary); }
-.status-read      { color: var(--primary-color); }
+/* ---------- Search Result Info ---------- */
+.search-result-info{
+    position: sticky; bottom: 0; display: flex; align-items: center; gap: .6rem;
+    background: rgba(0,131,143,.92); color: white; padding: .7rem 1.1rem;
+    border-radius: var(--radius-sm); font-size: .85rem; font-weight: 600; margin-top: 1rem;
+    backdrop-filter: blur(8px);
+}
+.search-result-info .material-icons-round{ font-size: 1.1rem; }
+.search-result-info span{ flex: 1; }
+.search-result-info button{ background: rgba(255,255,255,.2); border: none; cursor: pointer; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; color: white; transition: background .15s; }
+.search-result-info button:hover{ background: rgba(255,255,255,.35); }
+.search-result-info button .material-icons-round{ font-size: .95rem; }
 
-.msg-del-tag {
-    font-size: .68rem; padding: .05rem .4rem;
-    background: rgba(183,28,28,.1); color: var(--error);
-    border-radius: 20px; border: 1px solid rgba(183,28,28,.15);
-}
+/* ---------- Empty State ---------- */
+.empty-conv-state{ text-align: center; padding: 4rem 1rem; color: var(--text-secondary); }
+.empty-conv-state .material-icons-round{ font-size: 4rem; color: var(--glass-border-strong); display: block; margin-bottom: .75rem; }
+.empty-conv-state h3{ color: var(--text-primary); margin-bottom: .5rem; }
 
-/* ─── Reactions ─── */
-.msg-reactions {
-    display: flex; flex-wrap: wrap; gap: .2rem;
-    margin-top: .2rem;
-}
-.reactions-right { justify-content: flex-end; }
-.reactions-left  { justify-content: flex-start; }
-.reaction-pill {
-    background: var(--background); border: 1px solid var(--border-color);
-    border-radius: 20px; padding: .1rem .45rem;
-    font-size: .85rem; cursor: default;
-    transition: transform .15s;
-}
-.reaction-pill:hover { transform: scale(1.2); }
+/* ---------- Image Viewer ---------- */
+.image-viewer-overlay{ display: none; position: fixed; inset: 0; background: rgba(2,4,10,.9); z-index: 5000; align-items: center; justify-content: center; cursor: zoom-out; }
+.image-viewer-overlay.open{ display: flex; animation: fadeViewer .2s ease; }
+@keyframes fadeViewer{ from{opacity:0} to{opacity:1} }
+.image-viewer-overlay img{ max-width: 90vw; max-height: 90vh; border-radius: var(--radius-sm); object-fit: contain; box-shadow: 0 20px 60px rgba(0,0,0,.7); }
+.image-viewer-close{ position: fixed; top: 1.25rem; left: 1.25rem; width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; transition: background .18s; }
+.image-viewer-close:hover{ background: rgba(255,255,255,.25); }
+.image-viewer-close .material-icons-round{ font-size: 1.3rem; }
 
-/* ─── Search Result Info ─── */
-.search-result-info {
-    position: sticky; bottom: 0;
-    display: flex; align-items: center; gap: .6rem;
-    background: rgba(0,131,143,.95); color: white;
-    padding: .65rem 1rem; border-radius: 10px;
-    font-size: .85rem; font-weight: 600; margin-top: 1rem;
-    backdrop-filter: blur(4px);
-}
-.search-result-info i { font-size: 1.1rem; }
-.search-result-info span { flex: 1; }
-.search-result-info button {
-    background: rgba(255,255,255,.2); border: none; cursor: pointer;
-    border-radius: 50%; width: 24px; height: 24px;
-    display: flex; align-items: center; justify-content: center;
-    color: white; transition: background .15s;
-}
-.search-result-info button:hover { background: rgba(255,255,255,.3); }
-.search-result-info button i { font-size: .9rem; }
-
-/* ─── Empty State ─── */
-.empty-conv-state {
-    text-align: center; padding: 4rem 1rem;
-    color: var(--text-secondary);
-}
-.empty-conv-state i { font-size: 4rem; color: var(--border-color); display: block; margin-bottom: .75rem; }
-.empty-conv-state h3 { color: var(--text-primary); margin-bottom: .5rem; }
-
-/* ─── Image Viewer ─── */
-.image-viewer-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.88); z-index: 5000;
-    align-items: center; justify-content: center;
-    cursor: zoom-out;
-}
-.image-viewer-overlay.open { display: flex; animation: fadeViewer .2s ease; }
-@keyframes fadeViewer { from{opacity:0} to{opacity:1} }
-.image-viewer-overlay img {
-    max-width: 90vw; max-height: 90vh;
-    border-radius: 10px; object-fit: contain;
-    box-shadow: 0 16px 48px rgba(0,0,0,.5);
-}
-.image-viewer-close {
-    position: fixed; top: 1.25rem; left: 1.25rem;
-    width: 40px; height: 40px; border-radius: 50%;
-    background: rgba(255,255,255,.15); border: none;
-    cursor: pointer; display: flex; align-items: center;
-    justify-content: center; color: white; font-size: 0;
-    transition: background .18s;
-}
-.image-viewer-close i { font-size: 1.3rem; }
-.image-viewer-close:hover { background: rgba(255,255,255,.25); }
-
-/* ─── Utilities ─── */
-.hidden { display: none !important; }
+/* ---------- Utilities ---------- */
+.hidden{ display: none !important; }
 
 @media (max-width: 680px) {
-    .conv-search-input { width: 160px; }
-    .msg-bubble-wrap { max-width: 82%; }
-    .conv-stats-bar { gap: .75rem; }
+    .conv-search-input{ width: 160px; }
+    .msg-bubble-wrap{ max-width: 82%; }
+    .conv-stats-bar{ gap: .75rem; }
 }
-
-/* ─── Dark Mode overrides ─── */
-[data-theme="dark"] .back-btn { background: var(--surface); border-color: var(--border-color); }
-[data-theme="dark"] .back-btn:hover { background: rgba(79,179,191,.1); }
-[data-theme="dark"] .conv-page-header { background: var(--surface); border-color: var(--border-color); }
-[data-theme="dark"] .conv-messages-wrapper { background: var(--surface); border-color: var(--border-color); }
-[data-theme="dark"] .date-separator span { background: var(--surface); border-color: var(--border-color); }
-[data-theme="dark"] .bubble-user1 { background: rgba(79,179,191,.12); border-color: rgba(79,179,191,.2); }
-[data-theme="dark"] .bubble-user2 { background: rgba(92,107,192,.12); border-color: rgba(92,107,192,.2); }
-[data-theme="dark"] .msg-file-attach { background: #2d2f31; border-color: var(--border-color); color: var(--text-primary); }
-[data-theme="dark"] .msg-file-attach:hover { border-color: var(--primary-color); }
-[data-theme="dark"] .conv-search-input { background: #3a3b3c; color: var(--text-primary); border-color: #4a4b4c; }
-[data-theme="dark"] .reaction-pill { background: #2d2f31; border-color: var(--border-color); }
-[data-theme="dark"] .msg-image { border-color: var(--border-color); }
-
 </style>
 
 <!-- ═══════ Scripts ═══════ -->
 <script>
-/* ══════════════════════════════════
-   جستجو در پیام‌های مکالمه
-══════════════════════════════════ */
-
 let searchTimer = null;
 
 function filterMessages() {
@@ -700,7 +500,6 @@ function _doFilter() {
             r.style.display = '';
         });
         resultInfo.classList.add('hidden');
-        // dateSeparator‌ها هم نمایش داده شوند
         document.querySelectorAll('.date-separator').forEach(d => d.style.display = '');
         return;
     }
@@ -711,20 +510,16 @@ function _doFilter() {
     rows.forEach(row => {
         const content = (row.dataset.content || '').toLowerCase();
         const matches = content.includes(q);
-
         row.classList.toggle('hidden', !matches);
         row.style.display = matches ? '' : 'none';
         row.classList.toggle('highlight', matches);
-
         if (matches) {
             matchCount++;
             if (!firstMatch) firstMatch = row;
         }
     });
 
-    // مخفی کردن separator‌هایی که زیرشان پیامی نیست
     document.querySelectorAll('.date-separator').forEach(sep => {
-        // بررسی اینکه آیا پیام نمایان بعد از این separator وجود دارد
         let next = sep.nextElementSibling;
         let hasVisible = false;
         while (next && !next.classList.contains('date-separator')) {
@@ -736,13 +531,11 @@ function _doFilter() {
         sep.style.display = hasVisible ? '' : 'none';
     });
 
-    // نمایش اطلاعات جستجو
     resultInfo.classList.remove('hidden');
     if (matchCount === 0) {
         resultText.textContent = 'پیامی یافت نشد';
     } else {
         resultText.textContent = `${matchCount} پیام یافت شد`;
-        // اسکرول به اولین نتیجه
         if (firstMatch) firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
@@ -751,10 +544,6 @@ function clearConvSearch() {
     document.getElementById('conv-search-input').value = '';
     _doFilter();
 }
-
-/* ══════════════════════════════════
-   Image Viewer
-══════════════════════════════════ */
 
 function openImageViewer(src) {
     document.getElementById('image-viewer-img').src = src;
@@ -767,21 +556,13 @@ function closeImageViewer() {
     document.body.style.overflow = '';
 }
 
-/* ══════════════════════════════════
-   Init
-══════════════════════════════════ */
-
 document.addEventListener('DOMContentLoaded', function () {
-    // اسکرول به انتهای مکالمه (آخرین پیام)
     const list = document.getElementById('messages-list');
     if (list) {
-        // کمی تاخیر تا مرورگر layout را کامل کند
         setTimeout(() => {
             list.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }, 150);
     }
-
-    // Escape: بستن image viewer
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') closeImageViewer();
     });
