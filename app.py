@@ -1,6 +1,3 @@
-import eventlet
-eventlet.monkey_patch()
-
 import os
 import json
 import re
@@ -8,6 +5,7 @@ import jdatetime
 from datetime import datetime, timedelta, date
 from functools import wraps
 from zoneinfo import ZoneInfo
+from concurrent.futures import ThreadPoolExecutor
 
 from flask import (Flask, render_template, request, redirect, url_for,
                    session, abort, flash, jsonify, send_from_directory)
@@ -35,14 +33,12 @@ def now_tehran():
 
 
 def fmt_time(dt):
-    """فرمت‌بندی ساعت:دقیقه برای ارسال به کلاینت"""
     if dt is None:
         return ''
     return dt.strftime('%H:%M')
 
 
 def fmt_datetime(dt):
-    """فرمت‌بندی کامل تاریخ و ساعت"""
     if dt is None:
         return ''
     return dt.strftime('%Y-%m-%d %H:%M')
@@ -68,6 +64,7 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
 for folder in [UPLOAD_FOLDER, CHAT_UPLOAD_FOLDER, RESOURCE_UPLOAD_FOLDER]:
     os.makedirs(folder, exist_ok=True)
 
+# ─── Database ───
 database_url = os.getenv("DATABASE_URL")
 if not database_url:
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -85,22 +82,18 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-try:
-    import psycogreen.psycopg2
-    psycogreen.psycopg2.patch()
-except ImportError:
-    pass
-
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 limiter = Limiter(key_func=get_remote_address, app=app, storage_uri="memory://")
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+
+# ─── SocketIO: threading mode (سازگار با ویندوز / Python 3.12) ───
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+
 csrf = CSRFProtect(app)
 
 ONLINE_USERS_MEMORY = set()
 HOLIDAY_CACHE = {}
 
-# ساعت‌های مجاز تشکیل کلاس
 CLASS_TIME_SLOTS = ['08:00-10:00', '10:00-12:00', '12:00-14:00',
                     '14:00-16:00', '16:00-18:00', '18:00-20:00']
 
@@ -137,10 +130,9 @@ class User(db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=now_tehran)
     last_seen = db.Column(db.DateTime, default=now_tehran)
-    # تنظیمات حریم خصوصی
-    last_seen_visibility = db.Column(db.String(20), default='all')   # all / contacts / none
+    last_seen_visibility = db.Column(db.String(20), default='all')
     profile_pic_visibility = db.Column(db.String(20), default='all')
-    who_can_message = db.Column(db.String(20), default='all')        # all / none
+    who_can_message = db.Column(db.String(20), default='all')
     chat_theme = db.Column(db.String(50), default='default')
 
 
@@ -154,10 +146,9 @@ class Message(db.Model):
     timestamp = db.Column(db.DateTime, default=now_tehran, index=True)
     read_at = db.Column(db.DateTime, nullable=True)
     delivered_at = db.Column(db.DateTime, nullable=True)
-    # ویژگی‌های جدید
     reply_to_id = db.Column(db.Integer, db.ForeignKey('message.id'), nullable=True)
     is_edited = db.Column(db.Boolean, default=False)
-    edit_history = db.Column(db.Text, nullable=True)  # JSON: [{content, edited_at}]
+    edit_history = db.Column(db.Text, nullable=True)
     deleted_for_sender = db.Column(db.Boolean, default=False)
     deleted_for_receiver = db.Column(db.Boolean, default=False)
     is_pinned = db.Column(db.Boolean, default=False)
@@ -191,11 +182,10 @@ class UserBlock(db.Model):
 
 
 class GroupMember(db.Model):
-    """نقش و وضعیت هر کاربر در گروه عمومی"""
     __tablename__ = 'group_member'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
-    role = db.Column(db.String(20), default='member')   # member / admin
+    role = db.Column(db.String(20), default='member')
     is_muted = db.Column(db.Boolean, default=False)
     is_banned = db.Column(db.Boolean, default=False)
     joined_at = db.Column(db.DateTime, default=now_tehran)
@@ -203,10 +193,9 @@ class GroupMember(db.Model):
 
 
 class GroupSetting(db.Model):
-    """تنظیمات گروه عمومی — همیشه یک ردیف"""
     __tablename__ = 'group_setting'
     id = db.Column(db.Integer, primary_key=True)
-    is_readonly = db.Column(db.Boolean, default=False)   # فقط ادمین پیام بفرستد
+    is_readonly = db.Column(db.Boolean, default=False)
     pinned_message_id = db.Column(db.Integer, nullable=True)
 
 
@@ -273,7 +262,6 @@ class ChannelMessageReaction(db.Model):
 
 
 class ChannelMessageView(db.Model):
-    """ردیابی بازدید پیام کانال توسط هر کاربر"""
     __tablename__ = 'channel_message_view'
     id = db.Column(db.Integer, primary_key=True)
     message_id = db.Column(db.Integer, db.ForeignKey('channel_message.id'), nullable=False)
@@ -316,17 +304,11 @@ class Reservation(db.Model):
 
 
 class CancelledClass(db.Model):
-    """
-    منطق:
-    - اگر professor_name + course_name + time_slot مشخص باشد → فقط آن کلاس خاص لغو است
-    - اگر professor_name + cancel_date مشخص باشد (بدون time_slot) → تمام کلاس‌های آن استاد در آن روز
-    - بازه تاریخی: start_date / end_date
-    """
     __tablename__ = 'cancelled_class'
     id = db.Column(db.Integer, primary_key=True)
     professor_name = db.Column(db.String(100), nullable=True)
     course_name = db.Column(db.String(100), nullable=True)
-    time_slot = db.Column(db.String(20), nullable=True)   # ساعت تشکیل کلاس (جدید)
+    time_slot = db.Column(db.String(20), nullable=True)
     cancel_date = db.Column(db.Date, nullable=True)
     start_date = db.Column(db.Date, nullable=True)
     end_date = db.Column(db.Date, nullable=True)
@@ -338,7 +320,6 @@ class CancelledClass(db.Model):
 
 
 class CancelledClassView(db.Model):
-    """ردیابی اینکه کدام کاربر کدام لغو کلاس را دیده"""
     __tablename__ = 'cancelled_class_view'
     id = db.Column(db.Integer, primary_key=True)
     cancelled_class_id = db.Column(db.Integer, db.ForeignKey('cancelled_class.id'), nullable=False)
@@ -362,27 +343,19 @@ class SystemSetting(db.Model):
     value = db.Column(db.String(100), nullable=True)
 
 
-# ==========================================
-# Deadline Models
-# ==========================================
-
 class Deadline(db.Model):
     __tablename__ = 'deadline'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    deadline_type = db.Column(db.String(50), default='other')  # project/exam/assignment/other
-    due_date = db.Column(db.Date, nullable=False)  # ذخیره به صورت میلادی
+    deadline_type = db.Column(db.String(50), default='other')
+    due_date = db.Column(db.Date, nullable=False)
     color = db.Column(db.String(10), default='#6C63FF')
     is_done = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=now_tehran)
     user = db.relationship('User', foreign_keys=[user_id])
 
-
-# ==========================================
-# Study Resource Models
-# ==========================================
 
 class StudyResource(db.Model):
     __tablename__ = 'study_resource'
@@ -390,10 +363,10 @@ class StudyResource(db.Model):
     uploader_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     title = db.Column(db.String(200), nullable=False)
     course_name = db.Column(db.String(100), nullable=False)
-    resource_type = db.Column(db.String(50), nullable=False)  # notes/slides/sample_questions/book
+    resource_type = db.Column(db.String(50), nullable=False)
     file_path = db.Column(db.String(255), nullable=False)
-    file_size = db.Column(db.Integer, default=0)   # bytes
-    file_format = db.Column(db.String(10), nullable=False)  # pdf/docx/pptx/zip
+    file_size = db.Column(db.Integer, default=0)
+    file_format = db.Column(db.String(10), nullable=False)
     upload_date = db.Column(db.DateTime, default=now_tehran)
     download_count = db.Column(db.Integer, default=0)
     is_deleted = db.Column(db.Boolean, default=False)
@@ -413,15 +386,13 @@ class ResourceLike(db.Model):
 
 
 # ==========================================
-# create_initial_data
+# Holiday Fetcher (ThreadPoolExecutor)
 # ==========================================
 
 def _fetch_day_holiday(args):
     """
     یک روز شمسی را از holidayapi.ir می‌خواند.
-    طراحی شده برای فراخوانی موازی با eventlet.GreenPool.
-    چون eventlet.monkey_patch() اجرا شده، urllib.request
-    به طور خودکار از سوکت‌های سبز (green sockets) استفاده می‌کند.
+    با ThreadPoolExecutor به صورت موازی اجرا می‌شود.
     """
     import urllib.request as urlreq
     jy, jm, day = args
@@ -437,11 +408,10 @@ def _fetch_day_holiday(args):
                 ]
             }
     except Exception:
-        # اگر API پاسخ نداد، روز را تعطیل نمی‌دانیم
         return day, {'is_holiday': False, 'events': []}
 
+
 def create_initial_data():
-    """ایجاد داده‌های اولیه پس از db.create_all() — ایمن در برابر اجرای مکرر"""
     try:
         if not User.query.filter_by(student_id='admin').first():
             admin = User(
@@ -457,7 +427,6 @@ def create_initial_data():
         else:
             print("✓ Admin user already exists, skipping.")
 
-        # ایجاد تنظیمات پیش‌فرض گروه
         if not GroupSetting.query.first():
             db.session.add(GroupSetting())
             db.session.commit()
@@ -484,7 +453,6 @@ def get_file_format(filename):
 
 
 def is_group_admin(user_id):
-    """بررسی اینکه آیا کاربر ادمین گروه است (ادمین سایت یا ادمین گروه)"""
     user = db.session.get(User, user_id)
     if user and user.is_admin:
         return True
@@ -493,7 +461,6 @@ def is_group_admin(user_id):
 
 
 def serialize_reactions(reactions_query):
-    """تبدیل reactions به dict برای ارسال به کلاینت"""
     result = {}
     for r in reactions_query.all():
         user = db.session.get(User, r.user_id)
@@ -508,7 +475,6 @@ def serialize_reactions(reactions_query):
 
 
 def serialize_message(msg, current_user_id, show_student_id=False):
-    """تبدیل Message به dict"""
     reply_data = None
     if msg.reply_to_id and msg.reply_to:
         reply_data = {
@@ -541,7 +507,6 @@ def serialize_message(msg, current_user_id, show_student_id=False):
 
 
 def serialize_group_message(msg, current_user_id, show_student_id=False):
-    """تبدیل GroupMessage به dict"""
     reply_data = None
     if msg.reply_to_id and msg.reply_to:
         reply_data = {
@@ -568,7 +533,6 @@ def serialize_group_message(msg, current_user_id, show_student_id=False):
 
 
 def serialize_channel_message(msg, current_user_id, is_admin=False):
-    """تبدیل ChannelMessage به dict"""
     result = {
         'id': msg.id,
         'sender_id': msg.sender_id,
@@ -581,19 +545,16 @@ def serialize_channel_message(msg, current_user_id, is_admin=False):
         'is_pinned': msg.is_pinned,
         'reactions': {} if msg.is_deleted else serialize_reactions(msg.reactions),
     }
-    # آمار بازدید فقط برای ادمین
     if is_admin:
         result['view_count'] = msg.view_count
     return result
 
 
 def parse_mentions(content):
-    """استخراج شماره دانشجویی‌های mention شده با @"""
     return re.findall(r'@(\w+)', content)
 
 
 def send_mention_notifications(content, sender_id, context='group'):
-    """ارسال نوتیفیکیشن به کاربران mention شده"""
     mentioned_ids = parse_mentions(content)
     sender = db.session.get(User, sender_id)
     sender_name = sender.full_name if sender else '?'
@@ -613,14 +574,19 @@ def send_mention_notifications(content, sender_id, context='group'):
 
 class AuthService:
     @staticmethod
-    def register_user(full_name, student_id, major, password):
+    def register_user(student_id, password):
+        """
+        ثبت‌نام با شماره دانشجویی و کد ملی.
+        full_name و major از طریق ویرایش پروفایل تکمیل می‌شوند.
+        full_name به صورت موقت برابر شماره دانشجویی قرار می‌گیرد.
+        """
         try:
             hashed = generate_password_hash(password, method='pbkdf2:sha256')
             is_admin = (student_id == 'admin')
             new_user = User(
-                full_name=full_name,
+                full_name=student_id,   # placeholder — کاربر در پروفایل تکمیل می‌کند
                 student_id=student_id,
-                major=major,
+                major=None,
                 password_hash=hashed,
                 is_admin=is_admin
             )
@@ -673,9 +639,9 @@ class ChatService:
             ).outerjoin(
                 unread_subquery, unread_subquery.c.sender_id == other_user_id
             ).group_by(Message.id, User.id, unread_subquery.c.unread_count).order_by(Message.timestamp.desc()).all()
+
             conversations = []
             for msg, other_user, unread in results:
-                # بررسی بلاک
                 blocked = UserBlock.query.filter(
                     or_(
                         and_(UserBlock.blocker_id == user_id, UserBlock.blocked_id == other_user.id),
@@ -705,7 +671,6 @@ class ChatService:
     @staticmethod
     def get_chat_history(current_user_id, other_user_id, limit=50, offset=0):
         try:
-            # علامت‌گذاری پیام‌های خوانده‌نشده به عنوان خوانده‌شده
             Message.query.filter(
                 and_(
                     Message.sender_id == other_user_id,
@@ -742,7 +707,6 @@ class ChatService:
             reply_to_id=reply_to_id,
             forwarded_from_id=forwarded_from_id
         )
-        # اگر گیرنده آنلاین است، delivered_at را همین لحظه ست کن
         if StateManager.is_online(receiver_id):
             msg.delivered_at = now_tehran()
         db.session.add(msg)
@@ -762,14 +726,14 @@ MAJOR_CHOICES = [
 
 
 class RegistrationForm(FlaskForm):
-    full_name = StringField('نام و نام خانوادگی',
-                            validators=[DataRequired(message='نام الزامی است')])
+    """
+    فرم ثبت‌نام — فقط شماره دانشجویی و رمز عبور (کد ملی).
+    نام و رشته تحصیلی در بخش ویرایش پروفایل تکمیل می‌شوند.
+    """
     student_id = StringField('شماره دانشجویی', validators=[
         DataRequired(message='شماره دانشجویی الزامی است'),
         Length(min=10, max=10, message='شماره دانشجویی باید ۱۰ رقم باشد')
     ])
-    major = SelectField('رشته تحصیلی', choices=MAJOR_CHOICES,
-                        validators=[DataRequired(message='انتخاب رشته الزامی است')])
     password = PasswordField('کد ملی (رمز عبور)', validators=[
         DataRequired(message='رمز عبور الزامی است'),
         Length(min=10, max=10, message='رمز عبور باید ۱۰ رقم باشد')
@@ -940,23 +904,20 @@ def register():
     if form.validate_on_submit():
         try:
             user = AuthService.register_user(
-                form.full_name.data,
-                form.student_id.data,
-                form.major.data,
-                form.password.data
+                student_id=form.student_id.data,
+                password=form.password.data
             )
             session['current_user_id'] = user.id
             session['current_user_name'] = user.full_name
             session['current_user_pic'] = user.profile_pic
             session['is_admin'] = user.is_admin
-            flash('ثبت‌نام با موفقیت انجام شد. خوش آمدید!', 'success')
+            flash('ثبت‌نام با موفقیت انجام شد. لطفاً نام و رشته تحصیلی خود را در پروفایل تکمیل کنید.', 'success')
             return redirect(url_for('dashboard'))
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"register error: {e}")
             flash('خطا در ثبت‌نام. لطفاً دوباره تلاش کنید.', 'error')
     else:
-        # ارسال خطاهای اعتبارسنجی برای نمایش به کاربر
         for field, errors in form.errors.items():
             for error in errors:
                 flash(f'{error}', 'error')
@@ -1039,7 +1000,6 @@ def dashboard():
     except Exception:
         all_cancelled = []
 
-    # شمارش لغو کلاس‌های دیده‌نشده
     try:
         all_cancelled_ids = [c.id for c in all_cancelled]
         if all_cancelled_ids:
@@ -1086,9 +1046,6 @@ def update_schedule():
         day = data.get('day')
         time_slot = data.get('time_slot')
 
-        # منطق حذف هوشمند:
-        # اگر 'all' انتخاب شد → همه ورودی‌های آن slot حذف شوند (زوج، فرد، همه)
-        # اگر 'odd' یا 'even' انتخاب شد → فقط همان نوع + 'all' حذف شود تا امکان همزمانی باشد
         if week_type == 'all':
             ClassSchedule.query.filter_by(
                 user_id=user_id, day=day, time_slot=time_slot
@@ -1284,14 +1241,6 @@ def handle_reservation(req_id, action):
 @app.route('/admin/add_cancelled_class', methods=['POST'])
 @admin_required
 def add_cancelled_class():
-    """
-    فرم ارسالی (از تقویم شمسی تبدیل به میلادی):
-    - professor, course, time_slot
-    - cancel_date_j (شمسی YYYY/MM/DD)، start_date_j، end_date_j
-    - desc
-    منطق: اگر time_slot ارسال شود → کلاس خاص لغو است
-           اگر فقط professor + cancel_date → تمام کلاس‌های آن استاد در آن روز
-    """
     try:
         prof = request.form.get('professor', '').strip()
         course = request.form.get('course', '').strip()
@@ -1299,7 +1248,6 @@ def add_cancelled_class():
         desc = request.form.get('desc', '').strip()
 
         def jalali_to_gregorian(j_str):
-            """تبدیل YYYY/MM/DD شمسی به date میلادی"""
             if not j_str:
                 return None
             try:
@@ -1349,9 +1297,7 @@ def delete_cancelled_class(class_id):
 @app.route('/admin/conversations')
 @admin_required
 def admin_conversations():
-    """ادمین می‌تواند لیست تمام مکالمات خصوصی را ببیند"""
     try:
-        # آخرین پیام هر جفت کاربر
         subq = db.session.query(
             func.min(case(
                 (Message.sender_id < Message.receiver_id, Message.sender_id),
@@ -1393,7 +1339,6 @@ def admin_conversations():
 @app.route('/admin/conversation/<int:u1>/<int:u2>')
 @admin_required
 def admin_view_conversation(u1, u2):
-    """ادمین مکالمه خصوصی بین دو کاربر را می‌بیند"""
     user1 = db.session.get(User, u1)
     user2 = db.session.get(User, u2)
     if not user1 or not user2:
@@ -1416,7 +1361,6 @@ def admin_view_conversation(u1, u2):
 @csrf.exempt
 @login_required
 def mark_cancelled_classes_viewed():
-    """علامت‌گذاری یک یا چند لغو کلاس به عنوان دیده‌شده"""
     try:
         data = request.get_json() or {}
         class_ids = data.get('ids', [])
@@ -1439,7 +1383,6 @@ def mark_cancelled_classes_viewed():
 @app.route('/api/cancelled_classes/unviewed_count')
 @login_required
 def unviewed_cancelled_count():
-    """تعداد لغو کلاس‌های دیده‌نشده برای کاربر فعلی"""
     try:
         user_id = session['current_user_id']
         all_ids = [c.id for c in CancelledClass.query.all()]
@@ -1452,7 +1395,7 @@ def unviewed_cancelled_count():
                       ).all()]
         count = len(set(all_ids) - set(viewed_ids))
         return jsonify({'count': count})
-    except Exception as e:
+    except Exception:
         return jsonify({'count': 0})
 
 
@@ -1556,24 +1499,18 @@ def privacy_settings():
         'who_can_message': user.who_can_message
     })
 
-# ==========================================
-# Routes — Chat Theme
-# ==========================================
 
 @app.route('/api/chat_theme', methods=['GET', 'POST'])
 @csrf.exempt
 @login_required
 def chat_theme():
-    """ذخیره و بازیابی تم شخصی پیام‌رسان"""
     user = db.session.get(User, session['current_user_id'])
     if not user:
         return jsonify({'error': 'کاربر یافت نشد'}), 404
-
     if request.method == 'POST':
         try:
             data = request.get_json() or {}
             theme = data.get('theme', 'default')
-            # اعتبارسنجی: فقط تم‌های مجاز
             allowed_themes = [
                 'default', 'ocean', 'forest', 'sunset', 'midnight',
                 'rose', 'aurora', 'desert', 'lavender', 'slate'
@@ -1586,7 +1523,6 @@ def chat_theme():
         except Exception as e:
             db.session.rollback()
             return jsonify({'error': str(e)}), 500
-
     return jsonify({'theme': user.chat_theme or 'default'})
 
 
@@ -1599,40 +1535,33 @@ def chat_theme():
 def get_month_holidays(jy, jm):
     """
     تعطیلات یک ماه شمسی را از holidayapi.ir می‌خواند و کش می‌کند.
-    تمام روزهای ماه به صورت موازی (با GreenPool) fetch می‌شوند،
-    بنابراین تأخیر کلی برابر تأخیر تک‌درخواست (نه مجموع) است.
+    تمام روزها با ThreadPoolExecutor به صورت موازی fetch می‌شوند.
     """
-    # اعتبارسنجی ساده
     if not (1 <= jm <= 12) or not (1300 <= jy <= 1500):
         return jsonify({'error': 'پارامتر نامعتبر'}), 400
 
     cache_key = (jy, jm)
     if cache_key in HOLIDAY_CACHE:
-        # از کش سرو می‌شود — بدون هیچ درخواست خارجی
         return jsonify(HOLIDAY_CACHE[cache_key])
 
-    # تعداد روزهای این ماه شمسی
     if jm <= 6:
         total_days = 31
     elif jm <= 11:
         total_days = 30
     else:
-        # اسفند: ۲۹ یا ۳۰ روز — محاسبه دقیق
         try:
             import jdatetime as _jdt
             total_days = 30 if _jdt.date(jy, 12, 30) else 29
         except Exception:
             total_days = 29
 
-    # fetch موازی: همه روزهای ماه هم‌زمان درخواست می‌شوند
     args_list = [(jy, jm, d) for d in range(1, total_days + 1)]
-    pool = eventlet.GreenPool(size=total_days)
 
     month_data = {}
-    for day, day_info in pool.imap(_fetch_day_holiday, args_list):
-        month_data[day] = day_info
+    with ThreadPoolExecutor(max_workers=total_days) as executor:
+        for day, day_info in executor.map(_fetch_day_holiday, args_list):
+            month_data[day] = day_info
 
-    # ذخیره در کش
     HOLIDAY_CACHE[cache_key] = month_data
     return jsonify(month_data)
 
@@ -1722,6 +1651,7 @@ def check_user_online(user_id):
         'last_seen': fmt_datetime(user.last_seen)
     })
 
+
 @app.route('/api/online_users')
 @login_required
 def get_online_users():
@@ -1763,13 +1693,12 @@ def get_all_users():
 
 
 # ==========================================
-# Routes — Message API (خصوصی)
+# Routes — Message API
 # ==========================================
 
 @app.route('/api/messages/search')
 @login_required
 def search_messages():
-    """جستجو در تاریخچه پیام‌های یک مکالمه"""
     try:
         q = request.args.get('q', '').strip()
         other_user_id = request.args.get('user_id', type=int)
@@ -1802,7 +1731,6 @@ def react_message(msg_id):
             return jsonify({'error': 'emoji الزامی است'}), 400
         user_id = session['current_user_id']
         msg = Message.query.get_or_404(msg_id)
-        # بررسی دسترسی
         if msg.sender_id != user_id and msg.receiver_id != user_id:
             return jsonify({'error': 'دسترسی غیرمجاز'}), 403
         existing = MessageReaction.query.filter_by(
@@ -1841,7 +1769,6 @@ def edit_message(msg_id):
         msg = Message.query.get_or_404(msg_id)
         if msg.sender_id != user_id:
             return jsonify({'error': 'فقط فرستنده می‌تواند پیام را ویرایش کند'}), 403
-        # ذخیره تاریخچه ویرایش
         history = json.loads(msg.edit_history) if msg.edit_history else []
         history.append({'content': msg.content, 'edited_at': fmt_datetime(now_tehran())})
         msg.content = new_content
@@ -1863,9 +1790,6 @@ def edit_message(msg_id):
 @csrf.exempt
 @login_required
 def delete_message(msg_id):
-    """
-    حذف پیام: delete_for=me یا delete_for=everyone
-    """
     try:
         data = request.get_json() or {}
         delete_for = data.get('delete_for', 'me')
@@ -1917,14 +1841,12 @@ def pin_message(msg_id):
 @csrf.exempt
 @login_required
 def forward_message(msg_id):
-    """فوروارد پیام به مکالمه خصوصی یا گروه"""
     try:
         data = request.get_json() or {}
-        target_type = data.get('target_type', 'private')  # private / group
+        target_type = data.get('target_type', 'private')
         target_id = data.get('target_id')
         user_id = session['current_user_id']
         original = Message.query.get_or_404(msg_id)
-        # بررسی دسترسی
         if original.sender_id != user_id and original.receiver_id != user_id:
             return jsonify({'error': 'دسترسی غیرمجاز'}), 403
 
@@ -2042,42 +1964,32 @@ def toggle_block_user(target_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+
 @app.route('/api/mark_read/<int:other_user_id>', methods=['POST'])
 @csrf.exempt
 @login_required
 def mark_messages_read(other_user_id):
-    """
-    وقتی کاربر یک مکالمه را باز می‌کند، تمام پیام‌های خوانده‌نشده
-    از طرف other_user را به عنوان خوانده‌شده علامت می‌زند.
-    """
     try:
         current_uid = session['current_user_id']
         now = now_tehran()
-        
-        # تمام پیام‌های دریافتی از این کاربر که هنوز خوانده نشده‌اند
         updated_msgs = Message.query.filter(
             Message.sender_id == other_user_id,
             Message.receiver_id == current_uid,
             Message.read_at.is_(None)
         ).all()
-        
         for msg in updated_msgs:
             msg.read_at = now
-        
         db.session.commit()
-        
-        # اطلاع‌رسانی به فرستنده از طریق socket که پیام‌ها خوانده شد
         for msg in updated_msgs:
             room = f"chat-{min(current_uid, other_user_id)}-{max(current_uid, other_user_id)}"
             socketio.emit('message_read_update', {
                 'message_id': msg.id
             }, room=room)
-        
         return jsonify({'status': 'success', 'updated': len(updated_msgs)})
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
-    
+
 
 @app.route('/api/users/blocked')
 @login_required
@@ -2218,7 +2130,6 @@ def toggle_group_admin(user_id):
 @csrf.exempt
 @login_required
 def delete_group_message(msg_id):
-    """ادمین یا فرستنده می‌تواند پیام گروه را حذف کند"""
     try:
         user_id = session['current_user_id']
         msg = GroupMessage.query.get_or_404(msg_id)
@@ -2399,7 +2310,6 @@ def react_channel_message(msg_id):
 @csrf.exempt
 @login_required
 def view_channel_message(msg_id):
-    """ثبت بازدید پیام کانال — فقط یک بار برای هر کاربر"""
     try:
         user_id = session['current_user_id']
         existing = ChannelMessageView.query.filter_by(
@@ -2429,7 +2339,7 @@ def get_pinned_channel_message():
         user_id = session['current_user_id']
         is_admin = session.get('is_admin', False)
         return jsonify(serialize_channel_message(pinned, user_id, is_admin))
-    except Exception as e:
+    except Exception:
         return jsonify(None)
 
 
@@ -2471,7 +2381,6 @@ def get_deadlines():
         result = []
         for d in deadlines:
             days_left = (d.due_date - today).days
-            # تبدیل تاریخ میلادی به شمسی
             try:
                 jd = jdatetime.date.fromgregorian(date=d.due_date)
                 due_date_j = jd.strftime('%Y/%m/%d')
@@ -2503,7 +2412,6 @@ def create_deadline():
         title = data.get('title', '').strip()
         if not title:
             return jsonify({'error': 'عنوان الزامی است'}), 400
-        # تبدیل تاریخ شمسی به میلادی
         due_date_j = data.get('due_date_j', '')
         if due_date_j:
             parts = due_date_j.replace('-', '/').split('/')
@@ -2578,7 +2486,6 @@ def delete_deadline(deadline_id):
 @csrf.exempt
 @login_required
 def share_deadline(deadline_id):
-    """اشتراک‌گذاری ددلاین در گروه یا چت خصوصی"""
     try:
         dl = Deadline.query.get_or_404(deadline_id)
         if dl.user_id != session['current_user_id']:
@@ -2605,16 +2512,6 @@ def share_deadline(deadline_id):
         )
         if dl.description:
             share_content += f"\n{dl.description}"
-
-        # پیام خاص برای اشتراک‌گذاری ددلاین (با JSON metadata)
-        share_metadata = json.dumps({
-            'type': 'deadline_share',
-            'deadline_id': dl.id,
-            'title': dl.title,
-            'due_date_j': due_str,
-            'deadline_type': dl.deadline_type,
-            'color': dl.color
-        }, ensure_ascii=False)
 
         now = now_tehran()
         sender = db.session.get(User, user_id)
@@ -2680,13 +2577,11 @@ def share_deadline(deadline_id):
 @csrf.exempt
 @login_required
 def import_shared_deadline(deadline_id):
-    """افزودن ددلاین اشتراک‌گذاری‌شده توسط دیگران به ددلاین‌های خودم"""
     try:
         source = Deadline.query.get_or_404(deadline_id)
         user_id = session['current_user_id']
         if source.user_id == user_id:
             return jsonify({'error': 'این ددلاین از شماست'}), 400
-        # جلوگیری از تکرار
         exists = Deadline.query.filter_by(
             user_id=user_id,
             title=source.title,
@@ -2865,7 +2760,6 @@ def download_resource(resource_id):
         resource = StudyResource.query.get_or_404(resource_id)
         resource.download_count += 1
         db.session.commit()
-        # مسیر فایل
         filename = resource.file_path.split('/')[-1]
         return send_from_directory(
             app.config['RESOURCE_UPLOAD_FOLDER'],
@@ -2898,13 +2792,12 @@ def delete_resource(resource_id):
 @app.route('/api/resources/courses')
 @login_required
 def get_resource_courses():
-    """لیست نام درس‌های موجود در منابع"""
     try:
         courses = db.session.query(StudyResource.course_name).filter_by(
             is_deleted=False
         ).distinct().order_by(StudyResource.course_name).all()
         return jsonify([c[0] for c in courses])
-    except Exception as e:
+    except Exception:
         return jsonify([])
 
 
@@ -2950,32 +2843,27 @@ def handle_connect():
     if uid:
         StateManager.set_online(uid)
         join_room(f"user_{uid}")
-        # به‌روزرسانی delivered_at برای پیام‌های دریافتی و دیده‌نشده
         try:
-            with app.app_context():
-                updated = Message.query.filter(
-                    Message.receiver_id == uid,
-                    Message.delivered_at.is_(None)
-                ).all()
-                now = now_tehran()
-                for m in updated:
-                    m.delivered_at = now
-                db.session.commit()
-                # اطلاع به فرستندگان
-                for m in updated:
-                    room = f"chat-{min(m.sender_id, m.receiver_id)}-{max(m.sender_id, m.receiver_id)}"
-                    socketio.emit('message_delivered', {
-                        'message_id': m.id
-                    }, room=room)
+            updated = Message.query.filter(
+                Message.receiver_id == uid,
+                Message.delivered_at.is_(None)
+            ).all()
+            now = now_tehran()
+            for m in updated:
+                m.delivered_at = now
+            db.session.commit()
+            for m in updated:
+                room = f"chat-{min(m.sender_id, m.receiver_id)}-{max(m.sender_id, m.receiver_id)}"
+                socketio.emit('message_delivered', {
+                    'message_id': m.id
+                }, room=room)
         except Exception:
             pass
-        # به‌روزرسانی last_seen
         try:
-            with app.app_context():
-                user = db.session.get(User, uid)
-                if user:
-                    user.last_seen = now_tehran()
-                    db.session.commit()
+            user = db.session.get(User, uid)
+            if user:
+                user.last_seen = now_tehran()
+                db.session.commit()
         except Exception:
             pass
 
@@ -2986,11 +2874,10 @@ def handle_disconnect():
     if uid:
         StateManager.set_offline(uid)
         try:
-            with app.app_context():
-                user = db.session.get(User, uid)
-                if user:
-                    user.last_seen = now_tehran()
-                    db.session.commit()
+            user = db.session.get(User, uid)
+            if user:
+                user.last_seen = now_tehran()
+                db.session.commit()
         except Exception:
             pass
 
@@ -3015,7 +2902,6 @@ def handle_send_message(data):
             return
 
         oid = int(data['other_user_id'])
-        # بررسی بلاک
         block = UserBlock.query.filter(
             or_(
                 and_(UserBlock.blocker_id == uid, UserBlock.blocked_id == oid),
@@ -3075,7 +2961,6 @@ def handle_join_group():
     uid = session.get('current_user_id')
     if uid:
         join_room('public_group')
-        # ثبت عضویت در صورت عدم وجود
         try:
             _get_or_create_group_member(uid)
             db.session.commit()
@@ -3091,7 +2976,6 @@ def handle_group_message(data):
             emit('error', {'message': 'ابتدا وارد شوید'})
             return
 
-        # بررسی وضعیت اعضا و تنظیمات گروه
         member = GroupMember.query.filter_by(user_id=uid).first()
         user = db.session.get(User, uid)
 
@@ -3124,7 +3008,6 @@ def handle_group_message(data):
         )
         db.session.add(msg)
 
-        # نوتیفیکیشن برای mention‌ها
         if content:
             send_mention_notifications(content, uid, 'group')
 
@@ -3206,4 +3089,10 @@ with app.app_context():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port, debug=False)
+    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    print(f"\n{'='*50}")
+    print(f"  یونی‌نت — اجرای محلی")
+    print(f"  آدرس: http://127.0.0.1:{port}")
+    print(f"  ادمین پیش‌فرض: student_id=admin | password=admin123")
+    print(f"{'='*50}\n")
+    socketio.run(app, host='127.0.0.1', port=port, debug=debug)
